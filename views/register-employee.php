@@ -2,7 +2,7 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>የሰራተኞች አስተዳደር</h1>
+                <h1>የሰራተኞች አስተዳደር teddy</h1>
             </div>
             <div class="col-sm-6 text-right">
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-registration">
