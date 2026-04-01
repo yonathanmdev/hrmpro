@@ -1,0 +1,11 @@
+# HRM/public/.htaccess
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # ፋይሉ ወይም ፎልደሩ በገሃድ ካለ እሱን ክፈት (CSS, JS, Images)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # ካልሆነ ሁሉንም ወደ index.php በ action መልክ ላከው
+    RewriteRule ^(.*)$ index.php?action=$1 [L,QSA]
+</IfModule>
