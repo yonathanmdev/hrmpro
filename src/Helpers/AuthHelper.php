@@ -18,4 +18,7 @@ class AuthHelper {
             exit();
         }
     }
+   public function change(){
+
+   }
 }
