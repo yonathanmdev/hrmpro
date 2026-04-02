@@ -30,7 +30,7 @@ class Database {
             } catch(PDOException $exception) {
                 // ለደህንነት ሲባል ስህተቱን በ log ፋይል ላይ ብቻ መያዝ ይሻላል
                 error_log("የዳታቤዝ ግንኙነት ስህተት፦ " . $exception->getMessage());
-                die("የዳታቤዝ ግንኙነት አልተሳካም። እባክዎ ቆይተው ይሞክሩ።");
+                die("የዳታቤዝ ግንኙነት አልተሳካም። እባክዎ ቆይተው ይሞክሩ።".$exception->getMessage());
             }
         }
         return self::$conn;
