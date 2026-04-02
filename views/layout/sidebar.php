@@ -246,7 +246,7 @@ if (in_array($userRole, ['system_admin', 'org_admin', 'hr_director', 'hr_officer
           </a>
         </li>
         <?php endif; ?>
-      <?php if ($userRole === 'hr_director' || $userRole === 'hr_officer'): ?>
+      <?php if ($userRole === 'hr_director'): ?>
               <li class="nav-item">
           <a href="/HRM/register-director" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
@@ -262,9 +262,9 @@ if (in_array($userRole, ['system_admin', 'org_admin', 'hr_director', 'hr_officer
         </li>
 
         <li class="nav-item">
-          <a href="/HRM/register-employee" class="nav-link">
+          <a href="pages/forms/validation.html" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
-            <p>ሰራተኛ መመዝገብ</p>
+            <p>Validation</p>
           </a>
         </li>
       <?php endif; ?>
