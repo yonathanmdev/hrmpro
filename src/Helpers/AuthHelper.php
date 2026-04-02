@@ -18,6 +18,9 @@ class AuthHelper {
             exit();
         }
     }
+   public function change(){
+
+   }
     public static function checkLogin() {
         if(true){
             echo "User is logged in.";
