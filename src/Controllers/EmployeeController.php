@@ -64,7 +64,7 @@ $data = [
                 $_SESSION['error'] = "መመዝገብ አልተሳካም!";
             }
 
-            header("Location: /HRM/employee-list");
+            header("Location: " . $_ENV['BASE_URL'] . "/employee-list");
             exit();
         }
     }

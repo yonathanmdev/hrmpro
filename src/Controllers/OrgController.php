@@ -45,13 +45,13 @@ class OrgController extends BaseController {
         // 2. Validation
         if (empty($orgName) || empty($orgDescription)) {
             $_SESSION['error'] = "እባክዎ ሁሉንም መስኮች በትክክል ይሙሉ!";
-            header("Location: /HRM/register-organization");
+            header("Location: " . $_ENV['BASE_URL'] . "/register-organization");
             exit();
         }
 
         if (!$registeredBy) {
             $_SESSION['error'] = "ለዚህ ተግባር መጀመሪያ መግባት (Login) አለብዎት!";
-            header("Location: /login");
+            header("Location: " . $_ENV['BASE_URL'] . "/login");
             exit();
         }
         // 3. UUID ማመንጨት (ለ Organization)
@@ -65,7 +65,7 @@ class OrgController extends BaseController {
 
             if ($result) {
                 $_SESSION['success'] = "ድርጅቱ እና ዋና መሥሪያ ቤቱ በተሳካ ሁኔታ ተመዝግቧል!";
-                header("Location: /HRM/register-organization");
+                header("Location: " . $_ENV['BASE_URL'] . "/register-organization");
                 exit();
             }
         } catch (\Exception $e) {
@@ -76,7 +76,7 @@ class OrgController extends BaseController {
                 error_log("Registration Error: " . $e->getMessage());
                 $_SESSION['error'] = "የቴክኒክ ስህተት አጋጥሟል፤ እባክዎ ቆይተው ይሞክሩ።";
             }
-            header("Location: /HRM/register-organization");
+            header("Location: " . $_ENV['BASE_URL'] . "/register-organization");
             exit();
         }
     }
@@ -131,7 +131,7 @@ public function handleBranchRegistration() {
         $branchLevel = $branchModel->getBranchById($_SESSION['user']['branch_id']);
         if (!$branchLevel || !isset($branchLevel['level'])) {
             $_SESSION['error'] = "የቅርንጫፍ መረጃ አልተገኘም!";
-            header("Location: /HRM/register-branch");
+            header("Location: " . $_ENV['BASE_URL'] . "/register-branch");
             exit();
         }
         $level = $branchLevel['level'] + 1; // የተጠቃሚው ቅርንጫፍ የሚገኘው በእርሱ በላይ ነው
@@ -140,7 +140,7 @@ public function handleBranchRegistration() {
         // 2. Validation
         if (empty($branchName)) {
             $_SESSION['error'] = "እባክዎ የቅርንጫፉን ስም በትክክል ያስገቡ!";
-            header("Location: /HRM/register-branch");
+            header("Location: " . $_ENV['BASE_URL'] . "/register-branch");
             exit();        
  }
         // 3. UUID ማመንጨት (ለ Branch)
@@ -159,7 +159,7 @@ public function handleBranchRegistration() {
 
             if ($result) {
                 $_SESSION['success'] = "ቅርንጫፉ በተሳካ ሁኔታ ተመዝግቧል!";
-                header("Location: /HRM/register-branch");
+                header("Location: " . $_ENV['BASE_URL'] . "/register-branch");
                 exit();
             }
         } catch (\PDOException $e) {
@@ -169,7 +169,7 @@ public function handleBranchRegistration() {
                 error_log("Branch Registration Error: " . $e->getMessage());
                 $_SESSION['error'] = "የዳታቤዝ ስህተት አጋጥሟል፤ እባክዎ ቆይተው ይሞክሩ።";
             }
-            header("Location: /HRM/register-branch");
+            header("Location: " . $_ENV['BASE_URL'] . "/register-branch");
             exit();
         }
     }

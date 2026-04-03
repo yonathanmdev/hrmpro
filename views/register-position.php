@@ -81,7 +81,7 @@
   <div class="modal-dialog modal-md">
     <div class="modal-content">
 
-      <form id="orgForm" method="POST" action="/HRM/register-position-process">
+      <form id="orgForm" method="POST" action="register-position-process">
 
         <!-- Header -->
         <div class="modal-header bg-secondary">

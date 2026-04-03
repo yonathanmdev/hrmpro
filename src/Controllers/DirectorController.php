@@ -10,7 +10,7 @@ class DirectorController extends BaseController {
          $branch_id = $_SESSION['user']['branch_id'] ?? null;
          if (!$branch_id) {
             $_SESSION['error'] = "የቅርንጫፍ መረጃ አልተገኘም!";
-            header("Location: /HRM/register-director");
+            header("Location: " . $_ENV['BASE_URL'] . "/register-director");
             exit();
         }
         $directorModel = new Director($this->db);
@@ -35,7 +35,7 @@ class DirectorController extends BaseController {
             // 3. Validation: ስሙ ባዶ አለመሆኑን ማረጋገጥ
             if (empty($directorName)) {
                 $_SESSION['error'] = "እባክዎ የዳይሬክተሩን ስም በትክክል ያስገቡ!";
-                header("Location: /HRM/register-director");
+                header("Location: " . $_ENV['BASE_URL'] . "/register-director");
                 exit();
             }
 
@@ -50,11 +50,11 @@ class DirectorController extends BaseController {
 
                 if ($result) {
                     $_SESSION['success'] = "ዳይሬክቱሩ በተሳካ ሁኔታ ተመዝግቧል!";
-                    header("Location: /HRM/register-director");
+                    header("Location: " . $_ENV['BASE_URL'] . "/register-director");
                     exit();
                 } else {
                     $_SESSION['error'] = "ምዝገባው አልተሳካም፤ እባክዎ እንደገና ይሞክሩ።";
-                    header("Location: /HRM/register-director");
+                    header("Location: " . $_ENV['BASE_URL'] . "/register-director");
                     exit();
                 }
             } catch (\PDOException $e) {
@@ -65,7 +65,7 @@ class DirectorController extends BaseController {
                     error_log("Org Registration Error: " . $e->getMessage());
                     $_SESSION['error'] = "የዳታቤዝ ስህተት አጋጥሟል፤ እባክዎ ቆይተው ይሞክሩ።";
                 }
-                header("Location: /HRM/register-director");
+                header("Location: " . $_ENV['BASE_URL'] . "/register-director");
                 exit();
             }
 
@@ -75,7 +75,7 @@ class DirectorController extends BaseController {
         $branch_id = $_SESSION['user']['branch_id'] ?? null;
         if (!$branch_id) {
             $_SESSION['error'] = "የቅርንጫፍ መረጃ አልተገኘም!";
-            header("Location: /HRM/register-position");
+            header("Location: " . $_ENV['BASE_URL'] . "/register-position");
             exit();
         }
         $directorModel = new Director($this->db);
@@ -111,7 +111,7 @@ class DirectorController extends BaseController {
         }
         if (empty($positionName) || empty($director_id) || empty($positionCode) || empty($seraDereja) || empty($seraRken) || empty($salary)) {
             $_SESSION['error'] = "እባክዎ ሁሉንም አስፈላጊ መረጃዎች በትክክል ያስገቡ!";
-            header("Location: /HRM/register-position");
+            header("Location: " . $_ENV['BASE_URL'] . "/register-position");
             exit();
         }
 
@@ -136,11 +136,11 @@ class DirectorController extends BaseController {
 
             if ($result) {
                 $_SESSION['success'] = "መደቡ በተሳካ ሁኔታ ተመዝግቧል!";
-                header("Location: /HRM/register-position");
+                header("Location: " . $_ENV['BASE_URL'] . "/register-position");
                 exit();
             } else {
                 $_SESSION['error'] = "ምዝገባው አልተሳካም፤ እባክዎ እንደገና ይሞክሩ።";
-                header("Location: /HRM/register-position");
+                header("Location: " . $_ENV['BASE_URL'] . "/register-position");
                 exit();
             }
         } catch (\PDOException $e) {
@@ -150,7 +150,7 @@ class DirectorController extends BaseController {
                 error_log("Position Registration Error: " . $e->getMessage());
                 $_SESSION['error'] = "የዳታቤዝ ስህተት አጋጥሟል፤ እባክዎ ቆይተው ይሞክሩ።";
             }
-            header("Location: /HRM/register-position");
+            header("Location: " . $_ENV['BASE_URL'] . "/register-position");
             exit(); 
 }
    

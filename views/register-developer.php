@@ -56,7 +56,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form action="/HRM/register-dev-process" method="POST">
+      <form action="register-dev-process" method="POST">
         <div class="modal-body">
           <div class="row">
             <div class="col-md-6">

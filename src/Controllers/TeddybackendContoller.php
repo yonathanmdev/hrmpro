@@ -19,7 +19,7 @@ class TeddybackendContoller extends BaseController {
             $position_code= trim($_POST['position_code'] ?? '');
             if (empty($position_name) || empty($director_uuid)) {
                 $_SESSION['error'] = "እባክዎ አስፈላጊ መረጃዎችን በትክክል ያስገቡ!";
-                header("Location: /HRM/register-posstion");
+                header("Location: " . $_ENV['BASE_URL'] . "/register-posstion");
                 exit();
             }
 
@@ -31,7 +31,7 @@ class TeddybackendContoller extends BaseController {
             } else {
                 $_SESSION['error'] = "መደብ መመዝገቢያ ላይ ችግር አጋጥሟል!";
             }
-            header("Location: /HRM/register-posstion");
+            header("Location: " . $_ENV['BASE_URL'] . "/register-posstion");
             exit();
         }
     }
@@ -51,7 +51,7 @@ public function handleDeveloperRegistration() {
         // Validate required fields
         if (empty($full_name) || empty($position)) {
             $_SESSION['error'] = "እባክዎ አስፈላጊ መረጃዎችን በትክክል ያስገቡ!";
-            header("Location: /HRM/register-developer");
+            header("Location: " . $_ENV['BASE_URL'] . "/register-developer");
             exit();
         }
 
@@ -76,7 +76,7 @@ public function handleDeveloperRegistration() {
         }
 
         // Redirect to prevent form resubmission (PRG pattern)
-        header("Location: /HRM/register-developer");
+        header("Location: " . $_ENV['BASE_URL'] . "/register-developer");
         exit();
     }
 }
