@@ -1,5 +1,0 @@
----
-deployment:
-  tasks:
-    - export DEPLOYPATH=/home/ajcimstu/fayda.ajcims.com/HRM/
-    - /bin/cp -R * $DEPLOYPATH

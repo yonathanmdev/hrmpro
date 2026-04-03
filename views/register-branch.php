@@ -76,7 +76,7 @@
   <div class="modal-dialog modal-md">
     <div class="modal-content">
 
-      <form id="orgForm" method="POST" action="/HRM/register-branch-process">
+      <form id="orgForm" method="POST" action="register-branch-process">
 
         <!-- Header -->
         <div class="modal-header bg-secondary">

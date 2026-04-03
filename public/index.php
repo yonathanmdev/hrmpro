@@ -1,70 +1,69 @@
 <?php
 session_start();
+
+// Composer autoload
 require_once __DIR__ . '/../vendor/autoload.php';
 
-// ለዴቨሎፕመንት ጊዜ ብቻ
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+// Load .env
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..'); // project root
+$dotenv->safeLoad(); // safeLoad avoids fatal error if .env missing
 
-// 1. የዳታቤዝ ኮኔክሽን
+// Display errors for development only
+if ($_ENV['APP_ENV'] === 'local') {
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+}
+
+// Database connection
 $db = \App\Config\Database::getConnection();
 
-/**
- * 2. የRoute ካርታ (Routes Map)
- */
+// Route map
 $baseRoutes = [
-    // Authentication
     'login'                         => ['AuthController', 'showLoginForm', false],
     'login_process'                 => ['AuthController', 'handleLogin', false],
     'dashboard'                     => ['DashboardController', 'index', true],
-
-    // User Management
-    'register-user'                 => ['UserController', 'showRegisterForm', true],
-    'register-process'              => ['UserController', 'handleRegistration', true],
-
-    // Organization Management
-    'register-organization'         => ['OrgController', 'showRegisterForm', true],
-    'register-organization-process' => ['OrgController', 'handleRegistration', true],
-    'update-organization-process'   => ['OrgController', 'handleEditOrganization', true],
-    'register-branch'               => ['OrgController', 'showRegisterForm', true],
-    'register-branch-process'       => ['OrgController', 'handleBranchRegistration', true],
+    'register-user'                  => ['UserController', 'showRegisterForm', true],
+    'register-process'               => ['UserController', 'handleRegistration', true],
+    'register-organization'          => ['OrgController', 'showRegisterForm', true],
+    'register-organization-process'  => ['OrgController', 'handleRegistration', true],
+    'update-organization-process'    => ['OrgController', 'handleEditOrganization', true],
+    'register-branch'                => ['OrgController', 'showRegisterForm', true],
+    'register-branch-process'        => ['OrgController', 'handleBranchRegistration', true],
 ];
 
-// የውጭ የRoute ፋይሎችን እዚህ ጋር ኢንክሉድ እናደርጋለን
+// Include extra routes if needed
 $teddyRoutes = require_once __DIR__ . '/../src/Routes/Teddyroutes.php';
 $yoniRoutes  = require_once __DIR__ . '/../src/Routes/Yoniroutes.php';
 
-// ሁሉንም Route በአንድ ላይ ቀላቅል (Merge)
 $routes = array_merge($baseRoutes, $teddyRoutes, $yoniRoutes);
 
-// 3. Action መቀበል
+// Get action from query string
 $action = $_GET['action'] ?? 'login';
 
-// 4. Route መኖሩን ማረጋገጥ
+// Check route exists
 if (!isset($routes[$action])) {
-    header("Location: /HRM/login");
+    header("Location: " . $_ENV['BASE_URL'] . "/login");
     exit();
 }
 
 [$controllerName, $method, $requiresAuth] = $routes[$action];
 
-// 5. የAuth ማረጋገጫ (Centralized)
+// Check authentication if required
 if ($requiresAuth) {
     \App\Controllers\AuthController::checkAuth();
 }
 
-// 6. Controller-ን በዳይናሚክ መንገድ መጥራት
+// Dynamic controller
 $controllerClass = "\\App\\Controllers\\$controllerName";
 
-if (class_exists($controllerClass)) {
-    // እዚህ ጋር $db ን ወደ ኮንስትራክተሩ እንልካለን
-    $controller = new $controllerClass($db);
-    
-    if (method_exists($controller, $method)) {
-        $controller->$method();
-    } else {
-        die("ስህተት: ሜተዱ '$method' በክላሱ '$controllerName' ውስጥ አልተገኘም።");
-    }
-} else {
-    die("ስህተት: Controller ክላሱ '$controllerClass' አልተገኘም።");
+if (!class_exists($controllerClass)) {
+    die("Controller '$controllerClass' not found");
 }
+
+$controller = new $controllerClass($db);
+
+if (!method_exists($controller, $method)) {
+    die("Method '$method' not found in controller '$controllerName'");
+}
+
+$controller->$method();

@@ -42,11 +42,11 @@ class AuthController extends BaseController {
                     'role'               => $user['role']
                 ];
 
-                header("Location: /HRM/dashboard");
+                header("Location:" . $_ENV['BASE_URL'] . "/dashboard");
                 exit();
             } else {
                 $_SESSION['error'] = "ኢሜይል ወይም ፓስወርድ አልተዛመደም። እባክዎ እንደገና ይሞክሩ!";
-                header("Location: /HRM/login");
+                header("Location: " . $_ENV['BASE_URL'] . "/login");
                 exit();
             }
         }
@@ -61,21 +61,22 @@ class AuthController extends BaseController {
         
         // ጥያቄው የመጣው በ Fetch/AJAX መሆኑን ማረጋገጥ
         // ይህ የሚታወቀው በ Header ውስጥ application/json ሲኖር ነው
-        if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['SERVER_PROTOCOL'], 'HTTP') !== false && 
-            (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
-            
-            header('Content-Type: application/json');
-            http_response_code(401); // Unauthorized status code
-            echo json_encode([
-                'status' => 'error', 
-                'message' => 'session_expired',
-                'redirect' => '/HRM/login'
-            ]);
-            exit();
-        }
+        if (isset($_SERVER['HTTP_ACCEPT']) 
+    && strpos($_SERVER['SERVER_PROTOCOL'], 'HTTP') !== false 
+    && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+
+    header('Content-Type: application/json');
+    http_response_code(401); // Unauthorized status code
+    echo json_encode([
+        'status' => 'error', 
+        'message' => 'session_expired',
+        'redirect' => rtrim($_ENV['BASE_URL'], '/') . '/login'
+    ]);
+    exit();
+}
 
         // ለተለመደ የገጽ ጥያቄ (Direct Page Access)
-        header("Location: /HRM/login");
+        header("Location: " . $_ENV['BASE_URL'] . "/login");
         exit();
     }
 }
@@ -84,7 +85,7 @@ class AuthController extends BaseController {
      */
     public function logout() {
         session_destroy();
-        header("Location: /HRM/login");
+        header("Location:  " . $_ENV['BASE_URL'] . "/login");
         exit();
     }
 }

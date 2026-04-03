@@ -81,12 +81,12 @@ class UserController extends BaseController {
             if (empty($firstName) || empty($email) || empty($password) || empty($role) || empty($fatherName) 
                 || empty($gFatherName) || empty($phone) ) {
                 $_SESSION['error'] = "እባክዎ ሁሉንም አስፈላጊ መረጃዎች በትክክል ያስገቡ!";
-                header("Location: /HRM/register-user");
+                header("Location: " . $_ENV['BASE_URL'] . "/register-user");
                 exit();
             }
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $_SESSION['error'] = "እባክዎ ትክክለኛ ኢሜይል ያስገቡ!";
-                header("Location: /HRM/register-user");
+                header("Location: " . $_ENV['BASE_URL'] . "/register-user");
                 exit();
             }
      
@@ -114,11 +114,11 @@ class UserController extends BaseController {
 
                 if ($result) {
                     $_SESSION['success'] = "ተጠቃሚው በተሳካ ሁኔታ ተመዝግቧል!";
-                    header("Location: /HRM/register-user");
+                    header("Location: " . $_ENV['BASE_URL'] . "/register-user");
                     exit();
                 } else {
                     $_SESSION['error'] = "ምዝገባው አልተሳካም፤ እባክዎ እንደገና ይሞክሩ።";
-                    header("Location: /HRM/register-user");
+                    header("Location: " . $_ENV['BASE_URL'] . "/register-user");
                     exit();
                 }
 
@@ -130,7 +130,7 @@ class UserController extends BaseController {
                     error_log("Registration Error: " . $e->getMessage());
                     $_SESSION['error'] = "የቴክኒክ ስህተት አጋጥሟል፤ እባክዎ ቆይተው ይሞክሩ።";
                 }
-                header("Location: /HRM/register-user");
+                header("Location: " . $_ENV['BASE_URL'] . "/register-user");
                 exit();
             }
         }
