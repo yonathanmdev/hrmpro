@@ -10,7 +10,6 @@
   <!-- /.control-sidebar -->
 </div>
 <!-- ./wrapper -->
-<script>const BASE_URL = "<?= '/HRM' ?>"; // or use $_ENV['BASE_URL'] if you have .env</script>
 
 <!-- jQuery -->
 <script src="plugins/jquery/jquery.min.js"></script>
@@ -72,6 +71,7 @@
    <script src="dist/js/pages/dashboard.js"></script>
 <?php endif; ?>
 <?php if (isset($is_organization_page) && $is_organization_page === true): ?>
+    <script>const BASE_URL = "<?= '/HRM' ?>"; // Define BASE_URL for AJAX calls</script>
     <script src="dist/js/pages/organizations-logic.js"></script>
     <?php endif; ?>
    <?php if (isset($is_register_user_page) && $is_register_user_page === true): ?>

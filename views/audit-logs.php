@@ -1,14 +1,3 @@
-<div class="content-wrapper">
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>የኦዲት ሎግ</h1>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section class="content">
         <div class="container-fluid">
             <!-- Statistics Cards -->
@@ -183,7 +172,6 @@
             </div>
         </div>
     </section>
-</div>
 
 <!-- Modal for log details -->
 <div class="modal fade" id="logDetailsModal" tabindex="-1" role="dialog">
