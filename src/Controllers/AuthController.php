@@ -42,9 +42,15 @@ class AuthController extends BaseController {
                     'role'               => $user['role']
                 ];
 
+                // Log successful login
+                \App\Helpers\AuditHelper::logLogin($user['id'], true);
+
                 header("Location:" . $_ENV['BASE_URL'] . "/dashboard");
                 exit();
             } else {
+                // Log failed login attempt
+                \App\Helpers\AuditHelper::logLogin(null, false);
+
                 $_SESSION['error'] = "ኢሜይል ወይም ፓስወርድ አልተዛመደም። እባክዎ እንደገና ይሞክሩ!";
                 header("Location: " . $_ENV['BASE_URL'] . "/login");
                 exit();
@@ -84,6 +90,13 @@ class AuthController extends BaseController {
      * መውጫ (Logout)
      */
     public function logout() {
+        $userId = $_SESSION['user']['id'] ?? null;
+        
+        // Log logout before destroying session
+        if ($userId) {
+            \App\Helpers\AuditHelper::logLogout($userId);
+        }
+        
         session_destroy();
         header("Location:  " . $_ENV['BASE_URL'] . "/login");
         exit();

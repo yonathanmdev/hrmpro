@@ -19,4 +19,8 @@ return [
     'register-director-process'  => ['DirectorController', 'handleDirector', true],
     'register-position'          => ['DirectorController', 'showPosition', true],
     'register-position-process'  => ['DirectorController', 'handlePositionRegistration', true],
+
+    // Audit Logs
+    'audit-logs'                   => ['AuditController', 'showAuditLogs', true],
+    'audit-stats'                  => ['AuditController', 'getAuditStats', true],
 ];

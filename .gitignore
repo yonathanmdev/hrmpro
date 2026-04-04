@@ -10,3 +10,4 @@ storage/
 # Ignore public folder .htaccess
 /public/.htaccess
 .env
+*.sql
