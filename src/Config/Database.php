@@ -25,7 +25,7 @@ class Database {
                 ]);
             } catch(PDOException $e) {
                 error_log("Database connection error: " . $e->getMessage());
-                die("የዳታቤዝ ግንኙነት አልተሳካም። እባክዎ ቆይተው ይሞክሩ።");
+                die("የዳታቤዝ ግንኙነት አልተሳካም። እባክዎ ቆይተው ይሞክሩ።".$e->getMessage());
             }
         }
 

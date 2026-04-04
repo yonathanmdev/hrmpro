@@ -14,12 +14,12 @@ class User {
      * አዲስ ተጠቃሚ መመዝገቢያ
      * ዳታው አስቀድሞ በ Controller ተዘጋጅቶ መምጣት አለበት
      */
-    public function create($id, $organization_id, $branch_id, $firstName, $fatherName, $grandFatherName, $email, $password, $role, $registeredBy) {
+    public function create($id, $organization_id, $branch_id, $firstName, $fatherName, $grandFatherName, $phone, $email, $password, $role, $registeredBy) {
         
         $sql = "INSERT INTO users (
                     id, organization_id, branch_id, first_name, father_name, grand_father_name, 
-                    email, password, role, registered_by
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    phone, email, password, role, registered_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         try {
             $stmt = $this->db->prepare($sql);
@@ -31,6 +31,7 @@ class User {
                 $firstName,
                 $fatherName,
                 $grandFatherName,
+                $phone,
                 $email,
                 $password, // አስቀድሞ Hash የተደረገ
                 $role,
@@ -96,4 +97,39 @@ class User {
         return [];
     }
 }
+public function findById($id){
+    $stmt = $this->db->prepare("SELECT id, first_name, father_name, grand_father_name, phone, email FROM users WHERE id = ?");
+    $stmt->execute([$id]);
+    return $stmt->fetch();
+}
+public function updateUser($id, $data)
+{
+    // $id መኖሩን እና ባዶ አለመሆኑን ማረጋገጥ
+    if (!$id) return false;
+
+    $sql = "UPDATE users SET 
+        first_name = ?, 
+        father_name = ?, 
+        grand_father_name = ?, 
+        phone = ?, 
+        email = ? 
+        WHERE id = ?";
+
+    // የ params ቅደም ተከተል ከ SQL ጥያቄው ምልክቶች (?) ጋር አንድ መሆን አለበት
+    $params = [
+        $data['first_name'],
+        $data['father_name'],
+        $data['grand_father_name'],
+        $data['phone'],
+        $data['email'],
+        $id // ID መጨረሻ ላይ መሆኑን አረጋግጥ
+    ];
+
+    $stmt = $this->db->prepare($sql);
+    $result = $stmt->execute($params);
+
+    //rowCount() በትክክል አንድ መስመር መቀየሩን ያረጋግጥልናል
+    return $result && $stmt->rowCount() > 0;
+}
+
 }

@@ -76,7 +76,7 @@
   <div class="modal-dialog modal-md">
     <div class="modal-content">
 
-      <form id="orgForm" method="POST" action="register-branch-process">
+      <form id="orgForm" method="POST" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-branch-process">
 
         <!-- Header -->
         <div class="modal-header bg-secondary">

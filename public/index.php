@@ -22,14 +22,7 @@ $baseRoutes = [
     'login'                         => ['AuthController', 'showLoginForm', false],
     'login_process'                 => ['AuthController', 'handleLogin', false],
     'dashboard'                     => ['DashboardController', 'index', true],
-    'register-user'                  => ['UserController', 'showRegisterForm', true],
-    'register-process'               => ['UserController', 'handleRegistration', true],
-    'register-organization'          => ['OrgController', 'showRegisterForm', true],
-    'register-organization-process'  => ['OrgController', 'handleRegistration', true],
-    'update-organization-process'    => ['OrgController', 'handleEditOrganization', true],
-    'register-branch'                => ['OrgController', 'showRegisterForm', true],
-    'register-branch-process'        => ['OrgController', 'handleBranchRegistration', true],
-];
+   ];
 
 // Include extra routes if needed
 $teddyRoutes = require_once __DIR__ . '/../src/Routes/Teddyroutes.php';

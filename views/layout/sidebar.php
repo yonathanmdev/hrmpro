@@ -36,7 +36,7 @@
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
           <li class="nav-item menu-open">
-            <a href="dashboard" class="nav-link active">
+            <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/dashboard" class="nav-link active">
               <i class="nav-icon fas fa-tachometer-alt"></i>
               <p>
                 Dashboard
@@ -46,7 +46,7 @@
 
           </li>
           <li class="nav-item">
-            <a href="register-developer" class="nav-link">
+            <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-developer" class="nav-link">
               <i class="nav-icon fas fa-th"></i>
               <p>
                 register-developer
@@ -226,21 +226,21 @@ if (in_array($userRole, ['system_admin', 'org_admin', 'hr_director', 'hr_officer
        <?php if ($userRole === 'system_admin' || $userRole === 'org_admin'): ?>
       <?php if ($userRole === 'system_admin'): ?>
         <li class="nav-item">
-          <a href="register-organization" class="nav-link">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-organization" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
             <p>ድርጅት</p>
           </a>
         </li>
       <?php elseif ($userRole === 'org_admin'): ?>
         <li class="nav-item">
-          <a href="register-branch" class="nav-link">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-branch" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
             <p>ቅርንጫፍ</p>
           </a>
         </li>
       <?php endif; ?>
          <li class="nav-item">
-          <a href="register-user" class="nav-link">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-user" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
             <p>ተቆጣጣሪ</p>
           </a>
@@ -248,14 +248,14 @@ if (in_array($userRole, ['system_admin', 'org_admin', 'hr_director', 'hr_officer
         <?php endif; ?>
       <?php if ($userRole === 'hr_director'): ?>
               <li class="nav-item">
-          <a href="register-director" class="nav-link">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-director" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
             <p>ዲይሬክተር</p>
           </a>
         </li>
 
         <li class="nav-item">
-          <a href="register-position" class="nav-link">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-position" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
             <p>መደብ መመዝገብ</p>
           </a>

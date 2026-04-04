@@ -106,6 +106,7 @@ class UserController extends BaseController {
                     $firstName,
                     $fatherName,
                     $gFatherName,
+                    $phone,
                     $email,
                     $hashedPassword,
                     $role,
@@ -135,4 +136,88 @@ class UserController extends BaseController {
             }
         }
     }
+
+public function getUserById()
+{
+     AuthHelper::checkRole(['system_admin', 'org_admin']);
+    header('Content-Type: application/json');
+
+    $id = $_GET['id'] ?? null;
+
+    if (!$id) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Invalid ID'
+        ]);
+        return;
+    }
+
+    $userModel = new User($this->db);
+    $user = $userModel->findById($id);
+
+    if ($user) {
+        echo json_encode([
+            'status' => 'success',
+            'data' => $user
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'User not found'
+        ]);
+    }
+}
+public function handleUpdateUser()
+{
+    AuthHelper::checkRole(['system_admin', 'org_admin']);
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header("Location: " . $_ENV['BASE_URL'] . "/register-user");
+        exit();
+    }
+
+    try {
+        // 1. መረጃዎችን መቀበል
+        $id = $_POST['id'] ?? null; // በ Form ውስጥ <input type="hidden" name="id"> መኖሩን አረጋግጥ
+        
+        $data = [
+            'first_name'        => trim($_POST['edit_firstname']),
+            'father_name'       => trim($_POST['edit_fathername']),
+            'grand_father_name' => trim($_POST['edit_grandfathername']),
+            'phone'             => trim($_POST['edit_phone']),
+            'email'             => trim($_POST['edit_email'])
+        ];
+
+        // 2. Validation (መሰረታዊ ማረጋገጫ)
+        if (empty($id) || in_array("", $data)) {
+            $_SESSION['error'] = "እባክዎ ሁሉንም አስፈላጊ መረጃዎች በትክክል ያስገቡ!";
+            header("Location: " . $_ENV['BASE_URL'] . "/register-user");
+            exit();
+        }
+
+        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['error'] = "ትክክለኛ ኢሜይል ያስገቡ!";
+            header("Location: " . $_ENV['BASE_URL'] . "/register-user");
+            exit();
+        }
+
+        // 3. Update ለማድረግ መሞከር
+        $userModel = new User($this->db);
+        $isUpdated = $userModel->updateUser($id, $data);
+
+        if ($isUpdated) {
+            $_SESSION['success'] = "መረጃው በተሳካ ሁኔታ ተቀይሯል!";
+        } else {
+            // እዚህ ጋር ዳታቤዙ ላይ ምንም ለውጥ ካልተደረገ (ለምሳሌ መረጃው ያው ከሆነ)
+            $_SESSION['info'] = "ምንም የተቀየረ አዲስ መረጃ የለም።";
+        }
+
+    } catch (\Exception $e) {
+        error_log("Update Error: " . $e->getMessage());
+        $_SESSION['error'] = "የቴክኒክ ስህተት ተፈጥሯል።";
+    }
+
+    header("Location: " . $_ENV['BASE_URL'] . "/register-user");
+    exit();
+}
 }

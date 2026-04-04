@@ -77,7 +77,7 @@
   <div class="modal-dialog modal-md">
     <div class="modal-content">
 
-      <form id="orgForm" method="POST" action="register-director-process">
+      <form id="orgForm" method="POST" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-director-process">
 
         <!-- Header -->
         <div class="modal-header bg-secondary">
