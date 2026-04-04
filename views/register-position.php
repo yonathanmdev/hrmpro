@@ -81,7 +81,7 @@
   <div class="modal-dialog modal-md">
     <div class="modal-content">
 
-      <form id="orgForm" method="POST" action="register-position-process">
+      <form id="orgForm" method="POST" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-position-process">
 
         <!-- Header -->
         <div class="modal-header bg-secondary">

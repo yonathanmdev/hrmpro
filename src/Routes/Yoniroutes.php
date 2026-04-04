@@ -5,6 +5,9 @@ return [
     // User Management
     'register-user'                 => ['UserController', 'showRegisterForm', true],
     'register-process'              => ['UserController', 'handleRegistration', true],
+    'edit-user'                     => ['UserController', 'getUserById', true],
+    'edit-user-process'             => ['UserController', 'handleUpdateUser', true],
+
 
     // Organization Management
     'register-organization'         => ['OrgController', 'showRegisterForm', true],

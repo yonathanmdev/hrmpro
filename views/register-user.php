@@ -92,7 +92,7 @@ echo htmlspecialchars($roleMap[$role] ?? 'ባለሙያ');
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
 
-     <form id="userForm" action="register-process" method="POST">
+     <form id="userForm" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-process" method="POST">
 
         <!-- Header -->
         <div class="modal-header bg-secondary">
