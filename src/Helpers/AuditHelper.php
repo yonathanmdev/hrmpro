@@ -91,6 +91,48 @@ class AuditHelper {
     }
 
     /**
+     * Log director creation
+     */
+    public static function logDirectorCreation($directorId, $directorData) {
+        self::log('director_created', 'director', $directorId, null, $directorData);
+    }
+
+    /**
+     * Log director update
+     */
+    public static function logDirectorUpdate($directorId, $oldData, $newData) {
+        self::log('director_updated', 'director', $directorId, $oldData, $newData);
+    }
+
+    /**
+     * Log position creation
+     */
+    public static function logPositionCreation($positionId, $positionData) {
+        self::log('position_created', 'position', $positionId, null, $positionData);
+    }
+
+    /**
+     * Log position update
+     */
+    public static function logPositionUpdate($positionId, $oldData, $newData) {
+        self::log('position_updated', 'position', $positionId, $oldData, $newData);
+    }
+
+    /**
+     * Log developer creation
+     */
+    public static function logDeveloperCreation($developerId, $developerData) {
+        self::log('developer_created', 'developer', $developerId, null, $developerData);
+    }
+
+    /**
+     * Log developer update
+     */
+    public static function logDeveloperUpdate($developerId, $oldData, $newData) {
+        self::log('developer_updated', 'developer', $developerId, $oldData, $newData);
+    }
+
+    /**
      * Get audit logs
      */
     public static function getLogs($filters = [], $limit = 100, $offset = 0) {

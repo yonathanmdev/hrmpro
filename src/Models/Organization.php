@@ -66,6 +66,16 @@ class Organization {
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Find organization by ID
+     */
+    public function findById($id) {
+        $sql = "SELECT * FROM organizations WHERE id = ? LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 public function updateOrganization($id, $name) {
         $sql = "UPDATE organizations SET name = ? WHERE id = ?";
         

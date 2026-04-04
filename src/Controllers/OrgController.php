@@ -64,6 +64,13 @@ class OrgController extends BaseController {
             $result = $orgModel->create($id, $orgName, $orgDescription, $registeredBy);
 
             if ($result) {
+                // Log organization creation
+                \App\Helpers\AuditHelper::logOrgCreation($id, [
+                    'name' => $orgName,
+                    'description' => $orgDescription,
+                    'registered_by' => $registeredBy
+                ]);
+
                 $_SESSION['success'] = "ድርጅቱ እና ዋና መሥሪያ ቤቱ በተሳካ ሁኔታ ተመዝግቧል!";
                 header("Location: " . $_ENV['BASE_URL'] . "/register-organization");
                 exit();
@@ -100,9 +107,15 @@ public function handleEditOrganization() {
         $orgModel = new Organization($this->db);
 
         try {
+            // Get old data for logging
+            $oldData = $orgModel->findById($orgId);
+            
             $result = $orgModel->updateOrganization($orgId, $orgName);
 
             if ($result) {
+                // Log organization update
+                \App\Helpers\AuditHelper::logOrgUpdate($orgId, $oldData, ['name' => $orgName]);
+
                 echo json_encode(['status' => 'success', 'message' => 'ድርጅቱ በተሳካ ሁኔታ ተሻሽሏል!']);
                 exit();
             } else {
@@ -158,6 +171,15 @@ public function handleBranchRegistration() {
             ]);
 
             if ($result) {
+                // Log branch creation
+                \App\Helpers\AuditHelper::logBranchCreation($id, [
+                    'org_id' => $orgId,
+                    'parent_id' => $parentId,
+                    'name' => $branchName,
+                    'level' => $level,
+                    'registered_by' => $registeredBy
+                ]);
+
                 $_SESSION['success'] = "ቅርንጫፉ በተሳካ ሁኔታ ተመዝግቧል!";
                 header("Location: " . $_ENV['BASE_URL'] . "/register-branch");
                 exit();

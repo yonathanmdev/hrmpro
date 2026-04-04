@@ -49,6 +49,14 @@ class DirectorController extends BaseController {
                 $result = $directorModel->create($id, $organization_id, $branch_id, $directorName, $registeredBy);
 
                 if ($result) {
+                    // Log director creation
+                    \App\Helpers\AuditHelper::logDirectorCreation($id, [
+                        'organization_id' => $organization_id,
+                        'branch_id' => $branch_id,
+                        'name' => $directorName,
+                        'registered_by' => $registeredBy
+                    ]);
+
                     $_SESSION['success'] = "ዳይሬክቱሩ በተሳካ ሁኔታ ተመዝግቧል!";
                     header("Location: " . $_ENV['BASE_URL'] . "/register-director");
                     exit();
@@ -135,6 +143,23 @@ class DirectorController extends BaseController {
                                             $registeredBy);
 
             if ($result) {
+                // Log position creation
+                \App\Helpers\AuditHelper::logPositionCreation($id, [
+                    'director_id' => $director_id,
+                    'organization_id' => $organization_id,
+                    'branch_id' => $branch_id,
+                    'name' => $positionName,
+                    'code' => $positionCode,
+                    'sera_dereja' => $seraDereja,
+                    'sera_rken' => $seraRken,
+                    'salary' => $salary,
+                    'yeteyash_huneta' => $yeteyashHuneta,
+                    'nesa_hkmna' => $nesaHkmna,
+                    'cloth_duration' => $clothDuration,
+                    'description' => $description,
+                    'registered_by' => $registeredBy
+                ]);
+
                 $_SESSION['success'] = "መደቡ በተሳካ ሁኔታ ተመዝግቧል!";
                 header("Location: " . $_ENV['BASE_URL'] . "/register-position");
                 exit();

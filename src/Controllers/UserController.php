@@ -216,9 +216,16 @@ public function handleUpdateUser()
 
         // 3. Update ለማድረግ መሞከር
         $userModel = new User($this->db);
+        
+        // Get old data for logging
+        $oldData = $userModel->findById($id);
+        
         $isUpdated = $userModel->updateUser($id, $data);
 
         if ($isUpdated) {
+            // Log the user update
+            \App\Helpers\AuditHelper::logUserUpdate($id, $oldData, $data);
+            
             $_SESSION['success'] = "መረጃው በተሳካ ሁኔታ ተቀይሯል!";
         } else {
             // እዚህ ጋር ዳታቤዙ ላይ ምንም ለውጥ ካልተደረገ (ለምሳሌ መረጃው ያው ከሆነ)

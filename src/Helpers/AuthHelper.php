@@ -13,9 +13,24 @@ class AuthHelper {
         $userRole = $_SESSION['user']['role'] ?? null;
 
         if (!in_array($userRole, $allowedRoles)) {
-            $_SESSION['error'] = "Access Denied: You do not have permission to perform this action.";
-            header("Location: /HRM/login");
-            exit();
+            // Check if this is an AJAX request
+            $isAjax = isset($_SERVER['HTTP_ACCEPT']) &&
+                     strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false;
+
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                http_response_code(403); // Forbidden
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'access_denied',
+                    'redirect' => '/HRM/login'
+                ]);
+                exit();
+            } else {
+                $_SESSION['error'] = "Access Denied: You do not have permission to perform this action.";
+                header("Location: /HRM/login");
+                exit();
+            }
         }
     }
 }
