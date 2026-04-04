@@ -1,12 +1,16 @@
 <?php
 namespace App\Controllers;
 
+use App\Helpers\AuditHelper;
+
 class BaseController {
     protected $db;
 
     // ሁሉም ኮንትሮለሮች የዳታቤዝ ኮኔክሽን እንዲኖራቸው
     public function __construct($db) {
         $this->db = $db;
+        // Initialize audit logging
+        AuditHelper::init($db);
     }
 
     /**

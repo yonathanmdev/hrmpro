@@ -114,6 +114,19 @@ class UserController extends BaseController {
                 );
 
                 if ($result) {
+                    // Log the user creation
+                    \App\Helpers\AuditHelper::logUserCreation($uuid, [
+                        'organization_id' => $organization_id,
+                        'branch_id' => $mainBranchId,
+                        'first_name' => $firstName,
+                        'father_name' => $fatherName,
+                        'grand_father_name' => $gFatherName,
+                        'phone' => $phone,
+                        'email' => $email,
+                        'role' => $role,
+                        'registered_by' => $registeredBy
+                    ]);
+
                     $_SESSION['success'] = "ተጠቃሚው በተሳካ ሁኔታ ተመዝግቧል!";
                     header("Location: " . $_ENV['BASE_URL'] . "/register-user");
                     exit();
