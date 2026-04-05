@@ -140,6 +140,15 @@ class AuditHelper {
     }
 
     /**
+     * Log employee job change
+     */
+    public static function logEmployeeJobChange($employeeId, $jobChangeData) {
+        self::log('employee_job_changed', 'employee', $employeeId, null, $jobChangeData, [
+            'change_type' => 'job_assignment'
+        ]);
+    }
+
+    /**
      * Get audit logs
      */
     public static function getLogs($filters = [], $limit = 100, $offset = 0) {

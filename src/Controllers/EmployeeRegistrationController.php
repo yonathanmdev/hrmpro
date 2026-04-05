@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-
+use DateTime;
 use App\Models\EmployeeRegistration;
 use Ramsey\Uuid\Uuid;
 
@@ -32,6 +32,149 @@ class EmployeeRegistrationController extends BaseController {
         $this->render('employee-registration', $data);
     }
 
+    public function showEditForm() {
+        $uuid = $_GET['uuid'] ?? null;
+        if (!$uuid) {
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        $user = $_SESSION['user'] ?? [];
+        $branchId = $user['branch_id'] ?? null;
+        $organizationId = $user['organization_id'] ?? null;
+
+        if (!$organizationId || !$branchId) {
+            $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        $employeeModel = new EmployeeRegistration($this->db);
+        $employee = $employeeModel->getEmployeeByUuid($uuid);
+
+        if (!$employee) {
+            $_SESSION['error'] = 'ሰራተኛ አልተገኘም።';
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        // Get available jobs (active + current job)
+        $availableJobs = $employeeModel->getAvailableJobsByBranch($branchId, $employee['job_property_id']);
+
+        $data = [
+            'title' => 'HRM - የሰራተኛ ማስተካከያ',
+            'user'  => $user,
+            'employee' => $employee,
+            'availableJobs' => $availableJobs,
+        ];
+
+        $this->render('employee-edit', $data);
+    }
+
+    public function handleEdit() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        $uuid = $_POST['uuid'] ?? null;
+        if (!$uuid) {
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        $user = $_SESSION['user'] ?? [];
+        $organizationId = $user['organization_id'] ?? null;
+        $branchId = $user['branch_id'] ?? null;
+
+        if (!$organizationId || !$branchId || empty($user['id'])) {
+            $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        // Server-side validation
+        $validationErrors = $this->validateEmployeeData($_POST);
+        if (!empty($validationErrors)) {
+            $_SESSION['error'] = implode('<br>', $validationErrors);
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        // Get current employee to check for job change
+        $employeeModel = new EmployeeRegistration($this->db);
+        $currentEmployee = $employeeModel->getEmployeeByUuid($uuid);
+
+        if (!$currentEmployee) {
+            $_SESSION['error'] = 'ሰራተኛ አልተገኘም።';
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        $oldJobId = $currentEmployee['job_property_id'];
+        $newJobId = trim($_POST['job_property_id'] ?? '');
+
+        // Handle file uploads (optional for editing)
+        $imageName = $this->uploadFile('employee_image', 'images');
+        $file201Name = $this->uploadFile('employee_file201', 'documents');
+
+        // Use existing files if no new files uploaded
+        if (!$imageName) {
+            $imageName = $currentEmployee['employee_image'];
+        }
+        if (!$file201Name) {
+            $file201Name = $currentEmployee['employee_file201'];
+        }
+
+        $data = [
+            'employee_id' => trim($_POST['employee_id'] ?? ''),
+            'pension_number' => trim($_POST['pension_number'] ?? null) ?: null,
+            'first_name' => trim($_POST['first_name'] ?? ''),
+            'father_name' => trim($_POST['father_name'] ?? ''),
+            'g_father_name' => trim($_POST['g_father_name'] ?? ''),
+            'mother_name' => trim($_POST['mother_name'] ?? ''),
+            'sex' => $_POST['sex'] ?? 'Male',
+            'birth_date' => trim($_POST['birth_date'] ?? null) ?: null,
+            'phone_number' => trim($_POST['phone_number'] ?? null) ?: null,
+            'yegabcha_huneta' => trim($_POST['yegabcha_huneta'] ?? ''),
+            'job_property_id' => $newJobId,
+            'date_of_employed' => trim($_POST['date_of_employed'] ?? null) ?: null,
+            'level_of_education' => trim($_POST['level_of_education'] ?? ''),
+            'department' => trim($_POST['department'] ?? null) ?: null,
+            'employment_situation' => trim($_POST['employment_situation'] ?? ''),
+            'immidate_boss' => trim($_POST['immidate_boss'] ?? null) ?: null,
+            'experience' => trim($_POST['experience'] ?? null) ?: null,
+            'annual_rest' => isset($_POST['annual_rest']) ? (int) $_POST['annual_rest'] : 0,
+            'displin_situation' => trim($_POST['displin_situation'] ?? ''),
+            'competency_situation' => trim($_POST['competency_situation'] ?? null) ?: null,
+            'effeciency' => $this->normalizeDecimal($_POST['effeciency'] ?? null),
+            'level_of_effeciency' => trim($_POST['level_of_effeciency'] ?? null) ?: null,
+            'no_of_files_in_folder' => isset($_POST['no_of_files_in_folder']) ? (int) $_POST['no_of_files_in_folder'] : 0,
+            'employee_image' => $imageName,
+            'employee_file201' => $file201Name,
+            'remark' => trim($_POST['remark'] ?? null) ?: null,
+        ];
+
+        if ($employeeModel->updateEmployee($uuid, $data)) {
+            // Log audit if job was changed
+            if ($oldJobId != $newJobId) {
+                \App\Helpers\AuditHelper::logEmployeeJobChange($uuid, [
+                    'old_job_id' => $oldJobId,
+                    'new_job_id' => $newJobId,
+                    'employee_id' => $data['employee_id'],
+                    'changed_by' => $user['id']
+                ]);
+            }
+
+            $_SESSION['success'] = 'ሰራተኛው መረጃ በትክክል ተስተካከለ።';
+        } else {
+            $_SESSION['error'] = 'የሰራተኛ ማስተካከያ ሂደት አልተሳካም።';
+        }
+
+        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+        exit();
+    }
+
     public function handleRegistration() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
@@ -44,6 +187,14 @@ class EmployeeRegistrationController extends BaseController {
 
         if (!$organizationId || !$branchId || empty($user['id'])) {
             $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        // Server-side validation
+        $validationErrors = $this->validateEmployeeData($_POST);
+        if (!empty($validationErrors)) {
+            $_SESSION['error'] = implode('<br>', $validationErrors);
             header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
             exit();
         }
@@ -71,6 +222,7 @@ class EmployeeRegistrationController extends BaseController {
         $data = [
             'uuid' => Uuid::uuid4()->toString(),
             'employee_id' => trim($_POST['employee_id'] ?? ''),
+            'pension_number' => trim($_POST['pension_number'] ?? null) ?: null,
             'first_name' => trim($_POST['first_name'] ?? ''),
             'father_name' => trim($_POST['father_name'] ?? ''),
             'g_father_name' => trim($_POST['g_father_name'] ?? ''),
@@ -86,6 +238,7 @@ class EmployeeRegistrationController extends BaseController {
             'level_of_education' => trim($_POST['level_of_education'] ?? ''),
             'department' => trim($_POST['department'] ?? null) ?: null,
             'employment_situation' => trim($_POST['employment_situation'] ?? ''),
+            'immidate_boss' => trim($_POST['immidate_boss'] ?? null) ?: null,
             'experience' => trim($_POST['experience'] ?? null) ?: null,
             'annual_rest' => isset($_POST['annual_rest']) ? (int) $_POST['annual_rest'] : 0,
             'displin_situation' => trim($_POST['displin_situation'] ?? ''),
@@ -189,5 +342,120 @@ class EmployeeRegistrationController extends BaseController {
             default:
                 return 'የፋይል ስህተት ተከስቷል።';
         }
+    }
+
+    private function validateEmployeeData(array $data): array {
+        $errors = [];
+
+        // Required field validations
+        $requiredFields = [
+            'employee_id' => 'የሰራተኛ መለያ ቁጥር',
+            'first_name' => 'ስም',
+            'father_name' => 'የአባት ስም',
+            'g_father_name' => 'የአያት ስም',
+            'mother_name' => 'የእናት ሙሉ ስም',
+            'sex' => 'ጾታ',
+            'birth_date' => 'የትውልድ ቀን',
+            'phone_number' => 'ስልክ ቁጥር',
+            'yegabcha_huneta' => 'የጋብቻ ሁኔታ',
+            'job_property_id' => 'የስራ መደብ',
+            'level_of_education' => 'የትምህርት ደረጃ',
+            'employment_situation' => 'Employment Situation',
+            'immidate_boss' => 'የቅርብ ተጠሪ',
+            'displin_situation' => 'የዲሲፕሊን ሁኔታ'
+        ];
+
+        foreach ($requiredFields as $field => $label) {
+            if (empty(trim($data[$field] ?? ''))) {
+                $errors[] = "$label አስፈላጊ ነው።";
+            }
+        }
+
+        // Length validations
+        $lengthValidations = [
+            'employee_id' => ['min' => 2, 'max' => 50, 'label' => 'የሰራተኛ መለያ ቁጥር'],
+            'first_name' => ['min' => 2, 'max' => 50, 'label' => 'ስም'],
+            'father_name' => ['min' => 2, 'max' => 50, 'label' => 'የአባት ስም'],
+            'g_father_name' => ['min' => 2, 'max' => 50, 'label' => 'የአያት ስም'],
+            'mother_name' => ['min' => 2, 'max' => 100, 'label' => 'የእናት ሙሉ ስም'],
+            'yegabcha_huneta' => ['min' => 2, 'max' => 50, 'label' => 'የጋብቻ ሁኔታ'],
+            'level_of_education' => ['min' => 2, 'max' => 100, 'label' => 'የትምህርት ደረጃ'],
+            'employment_situation' => ['min' => 2, 'max' => 100, 'label' => 'Employment Situation'],
+            'displin_situation' => ['min' => 2, 'max' => 100, 'label' => 'የዲሲፕሊን ሁኔታ']
+        ];
+
+        foreach ($lengthValidations as $field => $config) {
+            $value = trim($data[$field] ?? '');
+            if (!empty($value)) {
+                $length = strlen($value);
+                if ($length < $config['min']) {
+                    $errors[] = "{$config['label']} ቢያንስ {$config['min']}  ፊደል መሆን አለበት።";
+                }
+                if ($length > $config['max']) {
+                    $errors[] = "{$config['label']} {$config['max']}  ፊደል ከመብለጫ ቀር መሆን አለበት።";
+                }
+            }
+        }
+
+        // Date validations
+        if (!empty($data['birth_date'])) {
+            if (!strtotime($data['birth_date'])) {
+                $errors[] = "የትውልድ ቀን ትክክለኛ ቀን መሆን አለበት።";
+            } else {
+                $birthDate = new DateTime($data['birth_date']);
+                $today = new DateTime();
+                $age = $today->diff($birthDate)->y;
+                if ($age < 18 || $age > 65) {
+                    $errors[] = "የሰራተኛ እድሜ ከ18 እስከ 65 አመት መሆን አለበት።";
+                }
+            }
+        }
+
+        if (!empty($data['date_of_employed'])) {
+            if (!strtotime($data['date_of_employed'])) {
+                $errors[] = "የቅጥር ቀን ትክክለኛ ቀን መሆን አለበት።";
+            }
+        }
+
+        // Phone number validation
+        if (!empty($data['phone_number'])) {
+            if (!preg_match('/^[0-9]{10}$/', $data['phone_number'])) {
+                $errors[] = "ስልክ ቁጥር ትክክለኛ 10 አሃዝ መሆን አለበት።";
+            }
+        }
+
+        // Numeric validations
+        if (isset($data['annual_rest']) && $data['annual_rest'] !== '') {
+            $annualRest = (int)$data['annual_rest'];
+            if ($annualRest < 0 || $annualRest > 365) {
+                $errors[] = "የዓመት እረፍት ከ0 እስከ 365 መሆን አለበት።";
+            }
+        }
+
+        if (isset($data['effeciency']) && $data['effeciency'] !== '') {
+            $efficiency = (float)str_replace([',', ' '], ['.', ''], $data['effeciency']);
+            if ($efficiency < 0 || $efficiency > 100) {
+                $errors[] = "Efficiency ከ0 እስከ 100 መሆን አለበት።";
+            }
+        }
+
+        if (isset($data['no_of_files_in_folder']) && $data['no_of_files_in_folder'] !== '') {
+            $filesCount = (int)$data['no_of_files_in_folder'];
+            if ($filesCount < 0) {
+                $errors[] = "የማህደር የፋይል ብዛት 0 ወይም ከዚህ በላይ መሆን አለበት።";
+            }
+        }
+
+        // Sex validation
+        if (!empty($data['sex']) && !in_array($data['sex'], ['Male', 'Female'])) {
+            $errors[] = "ጾታ ትክክለኛ መሆን አለበት።";
+        }
+
+        // Remark length validation
+        if (!empty($data['remark']) && strlen(trim($data['remark'])) > 500) {
+            $errors[] = "Remark 500  ፊደል ከመብለጫ ቀር መሆን አለበት።";
+        }
+
+        return $errors;
     }
 }
