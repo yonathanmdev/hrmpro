@@ -19,6 +19,9 @@ return [
     'register-director-process'  => ['DirectorController', 'handleDirector', true],
     'register-position'          => ['DirectorController', 'showPosition', true],
     'register-position-process'  => ['DirectorController', 'handlePositionRegistration', true],
+    //employee
+    'employee-registration'       => ['EmployeeRegistrationController', 'showForm', true],
+    'employee-registration-save'  => ['EmployeeRegistrationController', 'handleRegistration', true],
 
     // Audit Logs
     'audit-logs'                   => ['AuditController', 'showAuditLogs', true],

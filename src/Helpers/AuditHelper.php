@@ -133,6 +133,13 @@ class AuditHelper {
     }
 
     /**
+     * Log employee registration
+     */
+    public static function logEmployeeRegistration($employeeId, $employeeData) {
+        self::log('employee_registered', 'employee', $employeeId, null, $employeeData);
+    }
+
+    /**
      * Get audit logs
      */
     public static function getLogs($filters = [], $limit = 100, $offset = 0) {

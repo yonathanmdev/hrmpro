@@ -262,9 +262,9 @@ if (in_array($userRole, ['system_admin', 'org_admin', 'hr_director', 'hr_officer
         </li>
 
         <li class="nav-item">
-          <a href="pages/forms/validation.html" class="nav-link">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-registration" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
-            <p>Validation</p>
+            <p>ሰራተኛ</p>
           </a>
         </li>
       <?php endif; ?>
