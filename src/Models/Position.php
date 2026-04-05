@@ -59,32 +59,51 @@ class Position {
      * Fetch all positions for dropdowns
      */
   public function getAllPositions($branch_id) {
-    $sql = "
-        SELECT 
-            jp.id,
-            jp.director_id,
-            d.director_name,
-            jp.job_name,
-            jp.job_identifier_no,
-            jp.dereja,
-            jp.scale,
-            jp.salary,
-            jp.wastna,
-            jp.hkmna,
-            jp.status
-        FROM job_property jp
-        LEFT JOIN directors d ON jp.director_id = d.id
-        WHERE jp.branch_id = ?
-        ORDER BY jp.job_name ASC
-    ";
+        $sql = "
+            SELECT 
+                jp.id,
+                jp.director_id,
+                d.director_name,
+                jp.job_name,
+                jp.job_identifier_no,
+                jp.dereja,
+                jp.scale,
+                jp.salary,
+                jp.wastna,
+                jp.hkmna,
+                jp.status
+            FROM job_property jp
+            LEFT JOIN directors d ON jp.director_id = d.id
+            WHERE jp.branch_id = ?
+            ORDER BY jp.job_name ASC
+        ";
 
-    try {
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$branch_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (\PDOException $e) {
-        error_log("Error fetching positions: " . $e->getMessage());
-        return [];
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$branch_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log("Error fetching positions: " . $e->getMessage());
+            return [];
+        }
     }
-}
+
+    public function getActiveJobsByBranch($branch_id) {
+        $sql = "
+            SELECT id, job_name
+            FROM job_property
+            WHERE branch_id = ?
+              AND status = 'Active'
+            ORDER BY job_name ASC
+        ";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$branch_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log("Error fetching active jobs: " . $e->getMessage());
+            return [];
+        }
+    }
 }
