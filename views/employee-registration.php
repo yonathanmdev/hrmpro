@@ -29,6 +29,7 @@
               <th>Birth Date</th>
               <th>Status</th>
               <th>Registered At</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -43,11 +44,16 @@
                   <td><?= htmlspecialchars($employee['birth_date'] ?? '') ?></td>
                   <td><?= htmlspecialchars($employee['status'] ?? 'Active') ?></td>
                   <td><?= htmlspecialchars($employee['rdate'] ?? '') ?></td>
+                  <td>
+                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-edit?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" class="btn btn-sm btn-primary">
+                      <i class="fas fa-edit"></i> አስተካክል
+                    </a>
+                  </td>
                 </tr>
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="8" class="text-center">ምንም ሰራተኛ አልተመዘገበም።</td>
+                <td colspan="9" class="text-center">ምንም ሰራተኛ አልተመዘገበም።</td>
               </tr>
             <?php endif; ?>
           </tbody>
@@ -78,7 +84,7 @@
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="first_name">ስም</label>
+                <label for="father_name">ስም</label>
                 <input type="text" class="form-control" id="first_name" name="first_name" required>
               </div>
             </div>
@@ -130,16 +136,42 @@
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="yegabcha_huneta">የጋብቻ ሁኔታ</label>
-                <input type="text" class="form-control" id="yegabcha_huneta" name="yegabcha_huneta" required>
+               <label for="level_of_education">የትምህርት ደረጃ</label>
+              <select  id="level_of_education" name="level_of_education" class="form-control" required="">
+				    <option selected="" disable="" value="">-- ይምረጡ --</option>
+				    <option value="የቀለም">የቀለም</option>
+				    <option value="8ኛ_ያጠናቀቀ">8ኛ ያጠናቀቀ</option>
+				    <option value="10ኛ_ያጠናቀቀ">10ኛ ያጠናቀቀ</option>
+				    <option value="12ኛ_ያጠናቀቀ">12ኛ ያጠናቀቀ</option>
+				    <option value="ደረጃ_1">ደረጃ 1</option>
+				    <option value="ደረጃ_2">ደረጃ 2</option>
+				    <option value="ደረጃ_3">ደረጃ 3</option>
+				    <option value="ደረጃ_4">ደረጃ 4</option>
+				    <option value="ደረጃ_5">ደረጃ 5</option>
+				    <option value="የመጀመሪያ_ዲግሪ">የመጀመሪያ ዲግሪ</option>
+				    <option value="ሁለተኛ_ዲግሪ">ሁለተኛ ዲግሪ</option>
+				    <option value="ሶስተኛ_ዲግሪ">ሶስተኛ ዲግሪ</option>
+  				</select>
               </div>
             </div>
           </div>
 
           <div class="row">
-            <div class="col-md-6">
+             <div class="col-md-4">
               <div class="form-group">
-                <label for="job_property_id">የስራ መደብ</label>
+                 <label for="yegabcha_huneta">የጋብቻ ሁኔታ</label>
+              <select class="form-control" id="yegabcha_huneta" name="yegabcha_huneta" required>
+                            <option value="" selected="selected" disabled="disabled">-- ይምረጡ --</option>   
+                            <option value="ያገባ/ች">ያገባ/ች</option>
+                            <option value="ያላገባ/ች">ያላገባ/ች</option>
+                             <option value="የፈታ/ች">የፈታ/ች</option>
+                                </select>
+                
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="job_property_id">የስራ መደቡ መጠሪያ</label>
                 <select class="form-control" id="job_property_id" name="job_property_id" required>
                   <option value="">-- ይምረጡ --</option>
                   <?php if (!empty($jobs)): ?>
@@ -150,21 +182,8 @@
                 </select>
               </div>
             </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="date_of_employed">የቅጥር ቀን</label>
-                <input type="date" class="form-control" id="date_of_employed" name="date_of_employed">
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="level_of_education">የትምህርት ደረጃ</label>
-                <input type="text" class="form-control" id="level_of_education" name="level_of_education" required>
-              </div>
-            </div>
+           
+           
             <div class="col-md-4">
               <div class="form-group">
                 <label for="department">የሙያ ዘርፍ</label>
@@ -174,17 +193,93 @@
           </div>
 
           <div class="row">
-            <div class="col-md-4">
+           <div class="col-md-4">
               <div class="form-group">
-                <label for="employment_situation">Employment Situation</label>
-                <input type="text" class="form-control" id="employment_situation" name="employment_situation" required>
+                <label for="employment_situation">የቅጥር ሁኔታ </label>
+                 <select class="form-control" id="employment_situation" name="employment_situation" required>
+                     <option value="">ይምረጡ</option>
+                  <option value="ቋሚ">ቋሚ</option>
+                    <option value="ጊዜያዊ">ጊዜያዊ</option>
+                </select>
+               
+              </div>
+            </div>
+             <div class="col-md-4">
+              <div class="form-group">
+                <label for="date_of_employed">የቅጥር ቀን</label>
+                <input type="date" class="form-control" id="date_of_employed" name="date_of_employed">
               </div>
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="immidate_boss">Immediate Boss</label>
-                <input type="text" class="form-control" id="immidate_boss" name="immidate_boss">
+                <label for="immidate_boss">የቅርብ ተጠሪ</label>
+                <input type="text" class="form-control" id="immidate_boss" name="immidate_boss" required>
               </div>
+            </div>
+          </div>
+<div class="row">
+  <div class="col-md-4">
+              <div class="form-group">
+                <label for="competency_situation">የብቃት ሁኔታ</label>
+                 <select class="form-control" id="competency_situation" name="competency_situation" required>
+                     <option value="">ይምረጡ</option>
+                  <option value="የበቁ">የበቁ</option>
+                    <option value="ያልበቁ">ያልበቁ</option>
+                    <option value="ያልተመዘኑ">ያልተመዘኑ</option>
+                </select>
+              </div>
+            </div>
+             <div class="col-md-4">
+              <div class="form-group">
+                <label for="displin_situation">የዲሲፕሊን ሁኔታ</label>
+                
+             <select class="form-control"id="displin_situation" name="displin_situation" required>
+                            <option selected="" disable="" value="">-- ይምረጡ --</option>   
+                            <option value="ምንም የቅጣት ሪኮርድ የሌለባቸው">ምንም የቅጣት ሪኮርድ የሌለባቸው</option>
+                            <option value="ምንም የቅጣት ሪኮርድ የሌለባቸው">ምንም የቅጣት ሪኮርድ የሌለባቸው</option>
+                             <option value="የጽሁፍ ማስጠንቀቂያ የተሰጣቸው" >የጽሁፍ ማስጠንቀቂያ የተሰጣቸው</option>
+                             <option value="እስከ 15 ቀን የሚደርስ የደመወዝ ቅጣት የተቀጡ">እስከ 15 ቀን የሚደርስ የደመወዝ ቅጣት የተቀጡ</option>
+                             <option value="እስከ 3 ወር የሚደርስ የደመወዝ ቅጣት የተቀጡ">እስከ 3 ወር የሚደርስ የደመወዝ ቅጣት የተቀጡ</option>
+                             <option value="እስከ 2 ዓመት ለሚደርስ ጊዜ ከደረጃና ከደመወዝ ዝቅ የተደረጉ">እስከ 2 ዓመት ለሚደርስ ጊዜ ከደረጃና ከደመወዝ ዝቅ የተደረጉ</option>
+                             </select>
+              </div>
+            </div>
+          
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="experience">የስራ ልምድ</label>
+                <input type="text" class="form-control" id="experience" name="experience">
+              </div>
+            </div>
+</div>
+          <div class="row">
+                  
+             <div class="col-md-4">
+              <div class="form-group">
+                <label for="effeciency">የስራ አፈፃፀም (ለነባር) (%)</label>
+                <input type="number" step="0.01" min="0" class="form-control" id="effeciency" name="effeciency">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="level_of_effeciency">የአፈፃፀም ደረጃ</label>
+                <input type="text" class="form-control" id="level_of_effeciency" name="level_of_effeciency" readonly>
+              </div>
+            </div>
+             
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="no_of_files_in_folder">ከማህደራቸው ያለ ጠቅላላ ፋይል ብዛት</label>
+                <input type="number" step="1" min="0" class="form-control" id="no_of_files_in_folder" name="no_of_files_in_folder" value="0">
+              </div>
+                    </div>  
+                    </div>  
+                     <div class="row">
+               <div class="col-md-4">
+              <div class="form-group">
+                   <label for="pension_number">የጡረታ መለያ ቁጥር </label>
+                <input type="text" class="form-control" id="pension_number" name="pension_number">
+            </div>
             </div>
             <div class="col-md-4">
               <div class="form-group">
@@ -192,51 +287,7 @@
                 <input type="number" step="1" min="0" class="form-control" id="annual_rest" name="annual_rest" value="0">
               </div>
             </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="effeciency">Efficiency (%)</label>
-                <input type="number" step="0.01" min="0" class="form-control" id="effeciency" name="effeciency">
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="level_of_effeciency">Level of Efficiency</label>
-                <input type="text" class="form-control" id="level_of_effeciency" name="level_of_effeciency" readonly>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="no_of_files_in_folder">የማህደር የፋይል ብዛት</label>
-                <input type="number" step="1" min="0" class="form-control" id="no_of_files_in_folder" name="no_of_files_in_folder" value="0">
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="experience">የስራ ልምድ</label>
-                <input type="text" class="form-control" id="experience" name="experience">
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="displin_situation">የዲሲፕሊን ሁኔታ</label>
-                <input type="text" class="form-control" id="displin_situation" name="displin_situation" required>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="competency_situation">Competency Situation</label>
-                <input type="text" class="form-control" id="competency_situation" name="competency_situation">
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
+         
             <div class="col-md-4">
               <div class="form-group">
                 <label for="employee_image">ፎቶ</label>

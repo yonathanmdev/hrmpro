@@ -22,6 +22,8 @@ return [
     //employee
     'employee-registration'       => ['EmployeeRegistrationController', 'showForm', true],
     'employee-registration-save'  => ['EmployeeRegistrationController', 'handleRegistration', true],
+    'employee-edit'               => ['EmployeeRegistrationController', 'showEditForm', true],
+    'employee-edit-save'          => ['EmployeeRegistrationController', 'handleEdit', true],
 
     // Audit Logs
     'audit-logs'                   => ['AuditController', 'showAuditLogs', true],

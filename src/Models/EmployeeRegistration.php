@@ -18,11 +18,11 @@ class EmployeeRegistration {
                 uuid, employee_id, first_name, father_name, g_father_name, mother_name,
                 sex, birth_date, phone_number, yegabcha_huneta, organization_id,
                 branch_id, job_property_id, date_of_employed, level_of_education,
-                department, employment_situation, immidate_boss, experience, annual_rest,
+                department, employment_situation, immidate_boss, experience, pension_number, annual_rest,
                 displin_situation, competency_situation, effeciency, level_of_effeciency,
                 no_of_files_in_folder, employee_image, employee_file201, remark, reg_by
             ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )";
 
             $stmt = $this->db->prepare($sql);
@@ -46,6 +46,7 @@ class EmployeeRegistration {
                 $data['employment_situation'],
                 $data['immidate_boss'],
                 $data['experience'],
+                $data['pension_number'],
                 $data['annual_rest'],
                 $data['displin_situation'],
                 $data['competency_situation'],
@@ -111,6 +112,128 @@ class EmployeeRegistration {
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$organizationId, $branchId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getEmployeeByUuid($uuid) {
+        $sql = "
+            SELECT 
+                e.*,
+                jp.job_name,
+                jp.status as job_status
+            FROM employees_table e
+            LEFT JOIN job_property jp ON e.job_property_id = jp.id
+            WHERE e.uuid = ?
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$uuid]);
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    public function updateEmployee($uuid, array $data): bool {
+        try {
+            // Start transaction
+            $this->db->beginTransaction();
+
+            // Get current employee data for comparison
+            $currentEmployee = $this->getEmployeeByUuid($uuid);
+            if (!$currentEmployee) {
+                throw new \Exception("Employee not found");
+            }
+
+            $oldJobId = $currentEmployee['job_property_id'];
+            $newJobId = $data['job_property_id'];
+
+            // Update employee
+            $sql = "UPDATE employees_table SET
+                employee_id = ?, pension_number = ?, first_name = ?, father_name = ?, g_father_name = ?, mother_name = ?,
+                sex = ?, birth_date = ?, phone_number = ?, yegabcha_huneta = ?, job_property_id = ?,
+                date_of_employed = ?, level_of_education = ?, department = ?, employment_situation = ?,
+                immidate_boss = ?, experience = ?, annual_rest = ?, displin_situation = ?,
+                competency_situation = ?, effeciency = ?, level_of_effeciency = ?,
+                no_of_files_in_folder = ?, employee_image = ?, employee_file201 = ?, remark = ?
+                WHERE uuid = ?";
+
+            $stmt = $this->db->prepare($sql);
+            $result1 = $stmt->execute([
+                $data['employee_id'],
+                $data['pension_number'],
+                $data['first_name'],
+                $data['father_name'],
+                $data['g_father_name'],
+                $data['mother_name'],
+                $data['sex'],
+                $data['birth_date'],
+                $data['phone_number'],
+                $data['yegabcha_huneta'],
+                $data['job_property_id'],
+                $data['date_of_employed'],
+                $data['level_of_education'],
+                $data['department'],
+                $data['employment_situation'],
+                $data['immidate_boss'],
+                $data['experience'],
+                $data['annual_rest'],
+                $data['displin_situation'],
+                $data['competency_situation'],
+                $data['effeciency'],
+                $data['level_of_effeciency'],
+                $data['no_of_files_in_folder'],
+                $data['employee_image'],
+                $data['employee_file201'],
+                $data['remark'],
+                $uuid
+            ]);
+
+            if (!$result1) {
+                throw new \Exception("Failed to update employee");
+            }
+
+            // Handle job change if job was changed
+            if ($oldJobId != $newJobId) {
+                // Set old job back to active
+                $updateOldJobSql = "UPDATE job_property SET status = 'Active' WHERE id = ?";
+                $updateOldJobStmt = $this->db->prepare($updateOldJobSql);
+                $result2 = $updateOldJobStmt->execute([$oldJobId]);
+
+                if (!$result2) {
+                    throw new \Exception("Failed to update old job status");
+                }
+
+                // Set new job to reserved
+                $updateNewJobSql = "UPDATE job_property SET status = 'reserved' WHERE id = ?";
+                $updateNewJobStmt = $this->db->prepare($updateNewJobSql);
+                $result3 = $updateNewJobStmt->execute([$newJobId]);
+
+                if (!$result3) {
+                    throw new \Exception("Failed to update new job status");
+                }
+            }
+
+            // Commit transaction
+            $this->db->commit();
+            return true;
+
+        } catch (\Exception $e) {
+            // Rollback transaction on error
+            $this->db->rollBack();
+            error_log("Employee update transaction failed: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getAvailableJobsByBranch($branchId, $excludeJobId = null) {
+        $sql = "
+            SELECT id, job_name, status
+            FROM job_property
+            WHERE branch_id = ?
+              AND (status = 'Active' OR id = ?)
+            ORDER BY job_name ASC
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$branchId, $excludeJobId]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
