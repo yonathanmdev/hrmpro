@@ -88,6 +88,16 @@
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
     <script src="js/employee-edit.js"></script>
     <?php endif; ?>
+    <?php if ($_SESSION['user']['role']==='hr_director'): ?>
+    <script>const BASE_URL = "<?= '/HRM' ?>"; // or use $_ENV['BASE_URL'] if you have .env</script>
+    <script>
+    const NOTIFICATION_URLS = {
+        onboarding: BASE_URL + '/onBoardingEmployees'
+    };
+    
+</script>
+<script src="js/all-userdefined-notifications.js"></script>
+    <?php endif; ?>
 <script>
 $(function () {
   bsCustomFileInput.init();

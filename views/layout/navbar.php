@@ -97,18 +97,21 @@
         </div>
       </li>
       <!-- Notifications Dropdown Menu -->
+      
       <li class="nav-item dropdown">
         <a class="nav-link" data-toggle="dropdown" href="#">
           <i class="far fa-bell"></i>
-          <span class="badge badge-warning navbar-badge">15</span>
+          <span class="badge badge-warning navbar-badge" id="total-count">0</span>
         </a>
         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-          <span class="dropdown-item dropdown-header">15 Notifications</span>
+          <span class="dropdown-item dropdown-header" id="total-notifications"> </span>
+           <?php if ($_SESSION['user']['role']==='hr_director'): ?>
           <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <i class="fas fa-envelope mr-2"></i> 4 new messages
-            <span class="float-right text-muted text-sm">3 mins</span>
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-onboarding" class="dropdown-item" id="onboarding-item">
+             <i class="fas fa-user-plus mr-2"></i> ያልጸደቀ የሰራተኞች ምዝገባ
+            <span class="float-right badge badge-warning" id="onboarding-count">0</span>
           </a>
+            <?php endif; ?>
           <div class="dropdown-divider"></div>
           <a href="#" class="dropdown-item">
             <i class="fas fa-users mr-2"></i> 8 friend requests
@@ -128,11 +131,29 @@
           <i class="fas fa-expand-arrows-alt"></i>
         </a>
       </li>
+      <!-- User Dropdown with Logout -->
+      <li class="nav-item dropdown">
+        <a class="nav-link" data-toggle="dropdown" href="#">
+          <i class="fas fa-user-circle fa-lg"></i>
+        </a>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a href="#" class="dropdown-item dropdown-header">
+            <i class="fas fa-user mr-2"></i><?= $_SESSION['user']['first_name'] ." ". $_SESSION['user']['father_name']?? 'User' ?>
+          </a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" 
+             href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/login"
+             onclick="return confirm('እርግጠኛ ነዎት? ከስርዓቱ መውጣት ይፈልጋሉ?')">
+            <i class="fas fa-sign-out-alt mr-2"></i> ውጣ
+          </a>
+        </div>
+      </li>
       <li class="nav-item">
         <a class="nav-link" data-widget="control-sidebar" data-controlsidebar-slide="true" href="#" role="button">
           <i class="fas fa-th-large"></i>
         </a>
       </li>
+      
     </ul>
   </nav>
   <!-- /.navbar -->

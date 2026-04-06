@@ -147,6 +147,11 @@ class AuditHelper {
             'change_type' => 'job_assignment'
         ]);
     }
+     public static function logOnBoardingEmployeeApproval($employeeId, $jobChangeData) {
+        self::log('employee_hiring_approved', 'employee', $employeeId, null, $jobChangeData, [
+            'change_type' => 'hiring_approved'
+        ]);
+    }
 
     /**
      * Get audit logs

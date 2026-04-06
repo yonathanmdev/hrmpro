@@ -24,6 +24,10 @@ return [
     'employee-registration-save'  => ['EmployeeRegistrationController', 'handleRegistration', true],
     'employee-edit'               => ['EmployeeRegistrationController', 'showEditForm', true],
     'employee-edit-save'          => ['EmployeeRegistrationController', 'handleEdit', true],
+    'onBoardingEmployees'          => ['EmployeeRegistrationController', 'onboardingEmployees', true],
+    'employee-onboarding'          => ['EmployeeRegistrationController', 'listofOnboardingEmployees', true],
+    'employee-onboarding-views'    => ['EmployeeRegistrationController', 'showOnBoardingForm', true],
+    'employee-onboadring-approve'          => ['EmployeeRegistrationController', 'handleOnboardingApproval', true],
 
     // Audit Logs
     'audit-logs'                   => ['AuditController', 'showAuditLogs', true],
