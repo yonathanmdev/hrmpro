@@ -71,12 +71,17 @@
    <script src="dist/js/pages/dashboard.js"></script>
 <?php endif; ?>
 <?php if (isset($is_organization_page) && $is_organization_page === true): ?>
-    <script>const BASE_URL = "<?= '/HRM' ?>"; // Define BASE_URL for AJAX calls</script>
-    <script src="dist/js/pages/organizations-logic.js"></script>
+    
+    <script src="js/organizations-logic.js"></script>
     <?php endif; ?>
    <?php if (isset($is_register_user_page) && $is_register_user_page === true): ?>
     <script>const BASE_URL = "<?= '/HRM' ?>"; // or use $_ENV['BASE_URL'] if you have .env</script>
     <script src="js/edit-user.js"></script>
+    <script>
+    const BRANCH_NAME    = <?= json_encode($branchNameString) ?>;
+    const ORGANIZATIONS  = <?= json_encode($organizations) ?>;
+</script>
+<script src="js/register-user.js"></script>
     <?php endif; ?>
    <?php if (isset($is_employee_registration_page) && $is_employee_registration_page === true): ?>
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
@@ -87,10 +92,11 @@
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
     <script src="js/employee-edit.js"></script>
+    
     <?php endif; ?>
     <?php if ($_SESSION['user']['role']==='hr_director'): ?>
     <script>const BASE_URL = "<?= '/HRM' ?>"; // or use $_ENV['BASE_URL'] if you have .env</script>
-    <script>
+   <script>
     const NOTIFICATION_URLS = {
         onboarding: BASE_URL + '/onBoardingEmployees'
     };
