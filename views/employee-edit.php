@@ -237,8 +237,9 @@
                 <label for="employee_image">ፎቶ</label>
                 <input type="file" class="form-control-file" id="employee_image" name="employee_image" accept="image/*">
                 <?php if (!empty($employee['employee_image'])): ?>
-                  <small class="form-text text-muted">አሁን የሆነ ፎቶ: <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/storage/uploads/images/<?= htmlspecialchars($employee['employee_image']) ?>" target="_blank">ተመልክት</a></small>
-                <?php endif; ?>
+                  <small class="form-text text-muted">አሁን የሆነ ፎቶ: 
+                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>?action=serve-file&file=<?= htmlspecialchars($employee['employee_image']) ?>&type=image" target="_blank">ተመልክት</a></small>
+                  <?php endif; ?>
               </div>
             </div>
             <div class="col-md-4">
@@ -246,8 +247,10 @@
                 <label for="employee_file201">የት/ት ማስረጃ እና ሌሎች</label>
                 <input type="file" class="form-control-file" id="employee_file201" name="employee_file201">
                 <?php if (!empty($employee['employee_file201'])): ?>
-                  <small class="form-text text-muted">አሁን የሆነ ፋይል: <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/storage/uploads/documents/<?= htmlspecialchars($employee['employee_file201']) ?>" target="_blank">ተመልክት</a></small>
-                <?php endif; ?>
+          <small class="form-text text-muted"> አሁን የሆነ ፋይል:
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>?action=serve-file&file=<?= htmlspecialchars($employee['employee_file201']) ?>&type=document" target="_blank">ተመልክት</a>
+          </small>
+          <?php endif; ?>
               </div>
             </div>
           </div>
