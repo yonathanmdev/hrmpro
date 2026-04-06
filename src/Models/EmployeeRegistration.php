@@ -236,5 +236,59 @@ class EmployeeRegistration {
         $stmt->execute([$branchId, $excludeJobId]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+
+   public function countOnboardingEmployees($organizationId, $branchId) {
+    $sql = "
+        SELECT COUNT(*) as total
+        FROM employees_table 
+        WHERE organization_id = ?
+          AND branch_id = ? 
+          AND status = 'Onboarding'
+    ";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([$organizationId, $branchId]);
+    return $stmt->fetchColumn();
+}
+
+public function getOnboardingEmployees($organizationId, $branchId) {
+        $sql = "
+            SELECT 
+                e.uuid,
+                e.employee_id,
+                e.first_name,
+                e.father_name,
+                e.g_father_name,
+                e.sex,
+                e.birth_date,
+                e.phone_number,
+                e.yegabcha_huneta,
+                e.organization_id,
+                e.branch_id,
+                e.job_property_id,
+                jp.job_name,
+                jp.status as job_status,
+                e.status,
+                e.rdate
+            FROM employees_table e
+            LEFT JOIN job_property jp ON e.job_property_id = jp.id
+            WHERE e.organization_id = ?
+              AND e.branch_id = ?
+              AND  e.status = 'Onboarding'
+            ORDER BY e.rdate DESC
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$organizationId, $branchId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+   public function approveOnBoardingEmployee($uuid): bool {
+    $sql = "UPDATE employees_table SET status = 'Active' WHERE uuid = ?";
+    $stmt = $this->db->prepare($sql);
+    return $stmt->execute([$uuid]);
+}
+
 }
 

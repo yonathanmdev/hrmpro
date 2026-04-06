@@ -2,10 +2,12 @@
 namespace App\Controllers;
 use DateTime;
 use App\Models\EmployeeRegistration;
+use App\Helpers\AuthHelper;
 use Ramsey\Uuid\Uuid;
 
 class EmployeeRegistrationController extends BaseController {
     public function showForm() {
+         AuthHelper::checkRole(['hr_director', 'hr_officer']);
         $user = $_SESSION['user'] ?? [];
         $branchId = $user['branch_id'] ?? null;
         $organizationId = $user['organization_id'] ?? null;
@@ -32,7 +34,9 @@ class EmployeeRegistrationController extends BaseController {
         $this->render('employee-registration', $data);
     }
 
+
     public function showEditForm() {
+           AuthHelper::checkRole(['hr_director', 'hr_officer']);
         $uuid = $_GET['uuid'] ?? null;
         if (!$uuid) {
             header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
@@ -72,6 +76,7 @@ class EmployeeRegistrationController extends BaseController {
     }
 
     public function handleEdit() {
+           AuthHelper::checkRole(['hr_director', 'hr_officer']);
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
             exit();
@@ -176,6 +181,7 @@ class EmployeeRegistrationController extends BaseController {
     }
 
     public function handleRegistration() {
+           AuthHelper::checkRole(['hr_director', 'hr_officer']);
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
             exit();
@@ -458,4 +464,120 @@ class EmployeeRegistrationController extends BaseController {
 
         return $errors;
     }
+ public function onboardingEmployees() {
+    $user = $_SESSION['user'] ?? [];
+    $organizationId = $user['organization_id'] ?? null;
+    $branchId = $user['branch_id'] ?? null;
+    AuthHelper::checkRole(['hr_director']);
+    $employeeModel = new EmployeeRegistration($this->db);
+    $count = $employeeModel->countOnboardingEmployees($organizationId, $branchId);
+
+    header('Content-Type: application/json'); // <-- must be here
+    echo json_encode(['count' => $count]);
+    exit(); // <-- add this to stop any extra output
+}
+ public function listofOnboardingEmployees() {
+         AuthHelper::checkRole(['hr_director', 'hr_officer']);
+        $user = $_SESSION['user'] ?? [];
+        $branchId = $user['branch_id'] ?? null;
+        $organizationId = $user['organization_id'] ?? null;
+
+        $employees = [];
+        if ($organizationId && $branchId) {
+            $employeeModel = new EmployeeRegistration($this->db);
+            $employees = $employeeModel->getOnboardingEmployees($organizationId, $branchId);
+        }
+
+        $data = [
+            'title' => 'HRM - የሰራተኛ መመዝገቢያ',
+            'user'  => $user,
+            'employees' => $employees,
+        ];
+
+        $this->render('employee-onboarding', $data);
+    }
+public function showOnBoardingForm() {
+           AuthHelper::checkRole(['hr_director', 'hr_officer']);
+        $uuid = $_GET['uuid'] ?? null;
+        if (!$uuid) {
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/login");
+            exit();
+        }
+
+        $user = $_SESSION['user'] ?? [];
+        $branchId = $user['branch_id'] ?? null;
+        $organizationId = $user['organization_id'] ?? null;
+
+        if (!$organizationId || !$branchId) {
+            $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/login");
+            exit();
+        }
+
+        $employeeModel = new EmployeeRegistration($this->db);
+        $employee = $employeeModel->getEmployeeByUuid($uuid);
+
+        if (!$employee) {
+            $_SESSION['error'] = 'ሰራተኛ አልተገኘም።';
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onbording");
+            exit();
+        }
+
+        $data = [
+            'title' => 'HRM - የሰራተኛ ማስተካከያ',
+            'user'  => $user,
+            'employee' => $employee,
+        ];
+
+        $this->render('employee-onboarding-views', $data);
+    }
+    
+     public function handleOnboardingApproval() {
+           AuthHelper::checkRole(['hr_director', 'hr_officer']);
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
+            exit();
+        }
+
+        $uuid = $_POST['uuid'] ?? null;
+        if (!$uuid) {
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
+            exit();
+        }
+
+        $user = $_SESSION['user'] ?? [];
+        $organizationId = $user['organization_id'] ?? null;
+        $branchId = $user['branch_id'] ?? null;
+
+        if (!$organizationId || !$branchId || empty($user['id'])) {
+            $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
+            exit();
+        }
+
+
+        // Get current employee to check for job change
+        $employeeModel = new EmployeeRegistration($this->db);
+        $currentEmployee = $employeeModel->getEmployeeByUuid($uuid);
+
+        if (!$currentEmployee) {
+            $_SESSION['error'] = 'ሰራተኛ አልተገኘም።';
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
+            exit();
+        }
+        if ($employeeModel->approveOnBoardingEmployee($uuid)) {
+            
+               \App\Helpers\AuditHelper::logOnBoardingEmployeeApproval($uuid, [
+            ]);
+          
+
+            $_SESSION['success'] = 'ሰራተኛው መረጃ በትክክል ተስተካከለ።';
+        } else {
+            $_SESSION['error'] = 'የሰራተኛ ማስተካከያ ሂደት አልተሳካም።';
+        }
+
+        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
+        exit();
+    }
+
 }

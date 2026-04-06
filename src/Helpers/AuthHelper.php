@@ -28,7 +28,7 @@ class AuthHelper {
                 exit();
             } else {
                 $_SESSION['error'] = "Access Denied: You do not have permission to perform this action.";
-                header("Location: /HRM/login");
+                header("Location:  " . $_ENV['BASE_URL'] . "/login");
                 exit();
             }
         }
