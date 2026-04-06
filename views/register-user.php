@@ -214,29 +214,3 @@ echo htmlspecialchars($roleMap[$role] ?? 'ባለሙያ');
     </div>
   </div>
 </div>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const roleSelector = document.getElementById("roleSelector");
-    const orgSelector = document.getElementById("orgSelector");
-    const sessionOrgId = orgSelector.dataset.sessionOrg;
-
-    const branchName = <?= json_encode($branchNameString) ?>; // ONLY the name as string
-
-    function handleRoleChange() {
-        if (roleSelector.value !== "org_admin") {
-            orgSelector.innerHTML = `<option value="${sessionOrgId}" selected>${branchName}</option>`;
-            orgSelector.disabled = true;
-        } else {
-            orgSelector.disabled = false;
-            orgSelector.innerHTML = `<option value="">-- ተቁሙን ይምረጡ --</option>
-                <?php foreach ($organizations as $row): ?>
-                    <option value="<?= htmlspecialchars($row['id']) ?>"><?= htmlspecialchars($row['name']) ?></option>
-                <?php endforeach; ?>`;
-        }
-    }
-
-    handleRoleChange();
-    roleSelector.addEventListener("change", handleRoleChange);
-});
-</script>
