@@ -124,8 +124,16 @@
           <div class="row">
             <div class="col-md-4">
               <div class="form-group">
-                <label for="birth_date">የትውልድ ቀን</label>
-                <input type="date" class="form-control" id="birth_date" name="birth_date" required>
+                <label for="birth_date">የልደት ቀን</label>
+  <input type="text" 
+       class="ethiopian-date form-control" 
+       name="eth_birth_date" 
+       data-rule="past" 
+       data-gregorian="#birth_date" 
+       placeholder="ቀን/ወር/ዓ.ም ይምረጡ" 
+       readonly 
+       style="background-color: #fff; cursor: pointer;">
+                <input type="date" class="form-control" id="birth_date" name="birth_date" required readonly>
               </div>
             </div>
             <div class="col-md-4">
@@ -207,7 +215,13 @@
              <div class="col-md-4">
               <div class="form-group">
                 <label for="date_of_employed">የቅጥር ቀን</label>
-                <input type="date" class="form-control" id="date_of_employed" name="date_of_employed">
+                <input type="text" 
+               class="ethiopian-date form-control" 
+               name="eth_date_of_employed" 
+               data-rule="past"  
+               data-gregorian="#date_of_employed" 
+               placeholder="ቀን/ወር/ዓ.ም" readonly style="background-color: #fff; cursor: pointer;">
+                <input type="date" class="form-control" id="date_of_employed" name="date_of_employed" readonly>
               </div>
             </div>
             <div class="col-md-4">
