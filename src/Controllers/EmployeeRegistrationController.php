@@ -464,6 +464,41 @@ class EmployeeRegistrationController extends BaseController {
 
         return $errors;
     }
+    public function employeeDetails() {
+           AuthHelper::checkRole(['hr_director', 'hr_officer']);
+        $uuid = $_GET['uuid'] ?? null;
+        if (!$uuid) {
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        $user = $_SESSION['user'] ?? [];
+        $branchId = $user['branch_id'] ?? null;
+        $organizationId = $user['organization_id'] ?? null;
+
+        if (!$organizationId || !$branchId) {
+            $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        $employeeModel = new EmployeeRegistration($this->db);
+        $employee = $employeeModel->getEmployeeByUuid($uuid);
+
+        if (!$employee) {
+            $_SESSION['error'] = 'ሰራተኛ አልተገኘም።';
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        $data = [
+            'title' => 'HRM - የሰራተኛ ማስተካከያ',
+            'user'  => $user,
+            'employee' => $employee,
+        ];
+
+        $this->render('employee-views', $data);
+    }
  public function onboardingEmployees() {
     $user = $_SESSION['user'] ?? [];
     $organizationId = $user['organization_id'] ?? null;

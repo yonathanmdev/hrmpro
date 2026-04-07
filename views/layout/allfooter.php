@@ -95,6 +95,7 @@
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
     <script src="js/employee-edit.js"></script>
+    <script src="js/ethiopian-calendar.js"></script>
     
     <?php endif; ?>
     <?php if ($_SESSION['user']['role']==='hr_director'): ?>
