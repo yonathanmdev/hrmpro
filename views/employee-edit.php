@@ -1,4 +1,6 @@
-<?php $is_employee_edit_page = true; ?>
+<?php 
+use App\Helpers\EthiopianDateHelper; 
+$is_employee_edit_page = true; ?>
 <section class="content">
   <div class="container-fluid">
     <div class="card card-primary card-outline">
@@ -72,7 +74,21 @@
             <div class="col-md-4">
               <div class="form-group">
                 <label for="birth_date">የትውልድ ቀን</label>
-                <input type="date" class="form-control" id="birth_date" name="birth_date" value="<?= htmlspecialchars($employee['birth_date'] ?? '') ?>" required>
+                <?php
+                 // Split the database date (YYYY-MM-DD)
+$dateParts = explode('-', $employee['birth_date']);
+$ethDate = EthiopianDateHelper::toEthCalendar($dateParts[2], $dateParts[1], $dateParts[0]);
+?>
+          <input type="text" 
+       class="ethiopian-date form-control" 
+       name="eth_birth_date" 
+       data-rule="past" 
+       data-gregorian="#birth_date" 
+       placeholder="ቀን/ወር/ዓ.ም ይምረጡ" 
+       value="<?= EthiopianDateHelper::getMonthName($ethDate['month']) ?> <?= $ethDate['day'] ?> <?= $ethDate['year'] ?>"
+       readonly 
+       style="background-color: #fff; cursor: pointer;">
+      <input type="date" class="form-control" id="birth_date" name="birth_date" value="<?= htmlspecialchars($employee['birth_date'] ?? '') ?>" required readonly>
               </div>
             </div>
             <div class="col-md-4">
@@ -115,7 +131,21 @@
             <div class="col-md-4">
               <div class="form-group">
                 <label for="date_of_employed">የቅጥር ቀን</label>
-                <input type="date" class="form-control" id="date_of_employed" name="date_of_employed" value="<?= htmlspecialchars($employee['date_of_employed'] ?? '') ?>">
+                 <?php
+                 // Split the database date (YYYY-MM-DD)
+$empdateParts = explode('-', $employee['date_of_employed']);
+$empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts[1], $empdateParts[0]);
+?>
+ <input type="text" 
+       class="ethiopian-date form-control" 
+       name="eth_date_of_employed" 
+       data-rule="past" 
+       data-gregorian="#date_of_employed" 
+       placeholder="ቀን/ወር/ዓ.ም ይምረጡ" 
+       value="<?= EthiopianDateHelper::getMonthName($empethDate['month']) ?> <?= $empethDate['day'] ?> <?= $empethDate['year'] ?>"
+       readonly 
+       style="background-color: #fff; cursor: pointer;">
+                <input type="date" class="form-control" id="date_of_employed" name="date_of_employed" value="<?= htmlspecialchars($employee['date_of_employed'] ?? '') ?>" readonly>
               </div>
             </div>
           </div>

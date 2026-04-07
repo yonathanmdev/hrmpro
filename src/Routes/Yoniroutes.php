@@ -28,7 +28,8 @@ return [
     'employee-onboarding'          => ['EmployeeRegistrationController', 'listofOnboardingEmployees', true],
     'employee-onboarding-views'    => ['EmployeeRegistrationController', 'showOnBoardingForm', true],
     'employee-onboadring-approve'          => ['EmployeeRegistrationController', 'handleOnboardingApproval', true],
-
+    'employee-views'               => ['EmployeeRegistrationController', 'employeeDetails', true],
+    
     // Stored files 
     'serve-file' => ['FileController', 'serveFile', true], // true = auth required
     // Audit Logs

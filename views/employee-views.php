@@ -1,4 +1,4 @@
-<?php 
+<?php
 use App\Helpers\EthiopianDateHelper; 
 ?>
 <section class="content">
@@ -7,18 +7,13 @@ use App\Helpers\EthiopianDateHelper;
       <div class="card-header">
         <h3 class="card-title">የተመዘገበ ሰራተኛ ማጽደቂያ</h3>
         <div class="card-tools">
-          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-onboarding" class="btn btn-secondary">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-views" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> ተመለስ
           </a>
         </div>
       </div>
 
       <div class="card-body">
-        <form action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-onboadring-approve" 
-      method="POST" 
-      enctype="multipart/form-data" 
-      id="employee-edit-form"
-      onsubmit="return confirm('እርግጠኛ ነዎት? የሰራተኛውን ምዝገባ ማጽደቅ ይፈልጋሉ?');">
          <input type="hidden" name="uuid" value="<?= htmlspecialchars($employee['uuid'] ?? '') ?>">
 <div class="col-md-4">
     <div class="form-group">
@@ -88,12 +83,12 @@ use App\Helpers\EthiopianDateHelper;
             <div class="col-md-4">
               <div class="form-group">
                 <label for="birth_date">የትውልድ ቀን</label>
-                  <?php
-                 // Split the database date (YYYY-MM-DD)
+                <?php
+                // Split the database date (YYYY-MM-DD)
 $dateParts = explode('-', $employee['birth_date']);
 $ethDate = EthiopianDateHelper::toEthCalendar($dateParts[2], $dateParts[1], $dateParts[0]);
 ?>
-                <input type="text" class="form-control" id="birth_date" name="birth_date" value="<?= EthiopianDateHelper::getMonthName($ethDate['month']) ?> <?= $ethDate['day'] ?>  <?= $ethDate['year'] ?>" readonly>
+                <input type="text" class="form-control" id="birth_date" name="birth_date" value="<?= EthiopianDateHelper::getMonthName($ethDate['month']) ?> <?= $ethDate['day'] ?> <?= $ethDate['year'] ?> ዓ.ም." readonly>
               </div>
             </div>
             <div class="col-md-4">
@@ -124,12 +119,13 @@ $ethDate = EthiopianDateHelper::toEthCalendar($dateParts[2], $dateParts[1], $dat
               <div class="form-group">
                 <label for="date_of_employed">የቅጥር ቀን</label>
                   <?php
-                 // Split the database date (YYYY-MM-DD)
+                // Split the database date (YYYY-MM-DD)
 $empdateParts = explode('-', $employee['date_of_employed']);
 $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts[1], $empdateParts[0]);
 ?>
-                <input type="text" class="form-control" id="date_of_employed" name="date_of_employed"  value="<?= EthiopianDateHelper::getMonthName($empethDate['month']) ?> <?= $empethDate['day'] ?>  <?= $empethDate['year'] ?>" readonly>
-              </div>
+                <input type="text" class="form-control" id="date_of_employed" name="date_of_employed" value="<?= EthiopianDateHelper::getMonthName($empethDate['month']) ?> <?= $empethDate['day'] ?>  <?= $empethDate['year'] ?> ዓ.ም." readonly>
+           
+            </div>
             </div>
           </div>
 
@@ -244,29 +240,16 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
           </div>
 
           <div class="row">
-            <div class="col-md-4">
+            
+            <div class="col-md-6">
               <div class="form-group">
                 <label for="employee_file201">የት/ት ማስረጃ እና ሌሎች</label>
                 <?php if (!empty($employee['employee_file201'])): ?>
-                  <small class="form-text text-muted">አሁን የሆነ ፋይል: <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($employee['employee_file201']) ?>&type=document" target="_blank">ተመልክት</a>
-          </small>
+            <small class="form-text text-muted">አሁን የሆነ ፋይል: <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($employee['employee_file201']) ?>&type=document" target="_blank">ተመልክት</a></small>
                 <?php endif; ?>
               </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col-12">
-              <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary mr-2">
-                  <i class="fas fa-save"></i> አጽድቅ
-                </button>
-                <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-onboarding" class="btn btn-secondary">
-                  <i class="fas fa-times"></i> ዝጋ
-                </a>
-              </div>
-            </div>
-          </div>
-        </form>
       </div>
     </div>
   </div>

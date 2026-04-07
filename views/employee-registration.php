@@ -1,4 +1,6 @@
-<?php $is_employee_registration_page = true; ?>
+<?php
+use App\Helpers\EthiopianDateHelper; 
+ $is_employee_registration_page = true; ?>
 <section class="content">
   <div class="container-fluid">
     <div class="card card-primary card-outline">
@@ -22,31 +24,43 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Employee ID</th>
-              <th>Full Name</th>
-              <th>Job</th>
-              <th>Sex</th>
-              <th>Birth Date</th>
+              <th>መለያ ቁጥር</th>
+              <th>ስም</th>
+              <th>የስራ መደብ</th>
+              <th>ጾታ</th>
+              <th>የልደት ቀን</th>
               <th>Status</th>
-              <th>Registered At</th>
+              <th>የተመዘገቡበት ቀን</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <?php if (!empty($employees)): ?>
-              <?php foreach ($employees as $index => $employee): ?>
+              <?php foreach ($employees as $index => $employee): 
+                            
+                // Split the database date (YYYY-MM-DD)
+$dateParts = explode('-', $employee['birth_date']);
+$ethDate = EthiopianDateHelper::toEthCalendar($dateParts[2], $dateParts[1], $dateParts[0]);
+$regdateParts = explode('-', $employee['rdate']);
+$regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts[1], $regdateParts[0]);
+?>
+  
+
                 <tr>
                   <td><?= $index + 1 ?></td>
                   <td><?= htmlspecialchars($employee['employee_id'] ?? '') ?></td>
                   <td><?= htmlspecialchars(trim(($employee['first_name'] ?? '') . ' ' . ($employee['father_name'] ?? '') . ' ' . ($employee['g_father_name'] ?? ''))) ?></td>
                   <td><?= htmlspecialchars($employee['job_name'] ?? 'N/A') ?></td>
-                  <td><?= htmlspecialchars($employee['sex'] ?? '') ?></td>
-                  <td><?= htmlspecialchars($employee['birth_date'] ?? '') ?></td>
+                  <td><?= ($employee['sex'] ?? '') === 'Male' ? 'ወንድ' : 'ሴት' ?></td>
+                  <td><?= EthiopianDateHelper::getMonthName($ethDate['month']) ?> <?= $ethDate['day'] ?> <?= $ethDate['year'] ?></td>
                   <td><?= htmlspecialchars($employee['status'] ?? 'Active') ?></td>
-                  <td><?= htmlspecialchars($employee['rdate'] ?? '') ?></td>
+                  <td><?= EthiopianDateHelper::getMonthName($regethDate['month']) ?> <?= $regethDate['day'] ?> <?= $regethDate['year'] ?></td>
                   <td>
-                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-edit?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" class="btn btn-sm btn-primary">
-                      <i class="fas fa-edit"></i> አስተካክል
+                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" title="እይ" class="btn btn-sm btn-primary">
+                      <i class="fas fa-eye"></i> 
+                    </a>
+                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-edit?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" title="አስተካክል" class="btn btn-sm btn-secondary">
+                      <i class="fas fa-edit"></i> 
                     </a>
                   </td>
                 </tr>
