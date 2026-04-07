@@ -87,6 +87,9 @@
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
     <script src="js/employee-registration.js"></script>
+     <script src="js/ethiopian-calendar.js"></script>
+    
+  
     <?php endif; ?>
    <?php if (isset($is_employee_edit_page) && $is_employee_edit_page === true): ?>
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
