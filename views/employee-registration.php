@@ -146,7 +146,7 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
        data-gregorian="#birth_date" 
        placeholder="ቀን/ወር/ዓ.ም ይምረጡ" 
        readonly 
-       style="background-color: #fff; cursor: pointer;">
+       style="background-color: #fff; cursor: pointer;" required>
                 <input type="date" class="form-control" id="birth_date" name="birth_date" required readonly>
               </div>
             </div>
@@ -332,6 +332,7 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
           <div class="row">
             <div class="col-md-6">
               <div class="form-group">
+                
                 <label for="remark">Remark</label>
                 <textarea class="form-control" id="remark" name="remark" rows="2"></textarea>
               </div>
