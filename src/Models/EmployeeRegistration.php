@@ -1,6 +1,6 @@
 <?php
 namespace App\Models;
-
+use App\Helpers\AmharicNormalizer;
 class EmployeeRegistration {
     private $db;
 
@@ -10,6 +10,8 @@ class EmployeeRegistration {
 
     public function createEmployee(array $data): bool {
         try {
+            $fullNameRaw = $data['first_name'] . ' ' . $data['father_name'] . ' ' . $data['g_father_name'];
+            $normalizedFullName = AmharicNormalizer::normalize($fullNameRaw);
             // Start transaction
             $this->db->beginTransaction();
 
@@ -20,9 +22,9 @@ class EmployeeRegistration {
                 branch_id, job_property_id, date_of_employed, level_of_education,
                 department, employment_situation, immidate_boss, experience, pension_number, annual_rest,
                 displin_situation, competency_situation, effeciency, level_of_effeciency,
-                no_of_files_in_folder, employee_image, employee_file201, remark, reg_by
+                no_of_files_in_folder, employee_image, employee_file201, remark, reg_by, full_name_normalized
             ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )";
 
             $stmt = $this->db->prepare($sql);
@@ -57,6 +59,7 @@ class EmployeeRegistration {
                 $data['employee_file201'],
                 $data['remark'],
                 $data['reg_by'],
+                $normalizedFullName,
             ]);
 
             if (!$result1) {
@@ -289,6 +292,5 @@ public function getOnboardingEmployees($organizationId, $branchId) {
     $stmt = $this->db->prepare($sql);
     return $stmt->execute([$uuid]);
 }
-
 }
 

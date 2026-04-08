@@ -98,6 +98,14 @@
     <script src="js/ethiopian-calendar.js"></script>
     
     <?php endif; ?>
+     <?php if (isset($is_employee_scholarship_page) && $is_employee_scholarship_page === true): ?>
+    <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
+    <script src="plugins/jquery-validation/additional-methods.min.js"></script>
+    <script src="js/ethiopian-calendar.js"></script>
+    <script src="js/employee-scholarship.js"></script>
+    
+    <?php endif; ?>
+   
     <?php if ($_SESSION['user']['role']==='hr_director'): ?>
     <script>const BASE_URL = "<?= '/HRM' ?>"; // or use $_ENV['BASE_URL'] if you have .env</script>
    <script>

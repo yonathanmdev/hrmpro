@@ -29,7 +29,9 @@ return [
     'employee-onboarding-views'    => ['EmployeeRegistrationController', 'showOnBoardingForm', true],
     'employee-onboadring-approve'          => ['EmployeeRegistrationController', 'handleOnboardingApproval', true],
     'employee-views'               => ['EmployeeRegistrationController', 'employeeDetails', true],
-    
+    'employee-scholarship'         => ['ScholarshipController', 'showScholarshipForm', true],
+    'employee-scholarship-search'  => ['ScholarshipController', 'liveSearch', true],
+    'employee-scholarship-store'   => ['ScholarshipController', 'storeScholarship', true],
     // Stored files 
     'serve-file' => ['FileController', 'serveFile', true], // true = auth required
     // Audit Logs

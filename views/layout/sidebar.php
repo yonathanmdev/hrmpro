@@ -119,8 +119,35 @@
 
     </ul>
   </li>
+
+ <li class="nav-item">
+    <a href="#" class="nav-link">
+      <i class="nav-icon fas fa-edit"></i>
+      <p>
+        የትምህርት እድል
+        <i class="fas fa-angle-left right"></i>
+      </p>
+    </a>
+    <ul class="nav nav-treeview">
+      <?php if ($userRole === 'hr_director' || $userRole === 'hr_officer'): ?>
+              <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>የት/ት እድል የተሰጣቸው</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-position" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>መደብ መመዝገብ</p>
+          </a>
+        </li>
+      <?php endif; ?>
+
+    </ul>
+  </li>
 <?php endif; ?>
-         
 
         </ul>
       </nav>
