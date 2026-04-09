@@ -135,4 +135,43 @@ public function storeScholarship() {
         }
     }
 }
+public function onLeaveScholarshipEmployees() {
+    $user = $_SESSION['user'] ?? [];
+    $organizationId = $user['organization_id'] ?? null;
+    $branchId = $user['branch_id'] ?? null;
+    AuthHelper::checkRole(['hr_director']);
+    $employeeModel = new ScholarshipModel($this->db);
+    $count = $employeeModel->countPendingScholarshipEmployees($organizationId, $branchId);
+
+    header('Content-Type: application/json'); // <-- must be here
+    echo json_encode(['count' => $count]);
+    exit(); // <-- add this to stop any extra output
+}
+ public function showScholarshiponLeavePending() {
+         AuthHelper::checkRole(['hr_director', 'hr_officer']);
+        $user = $_SESSION['user'] ?? [];
+        $branchId = $user['branch_id'] ?? null;
+        $organizationId = $user['organization_id'] ?? null;
+
+        $jobs = [];
+        if ($branchId) {
+            $positionModel = new \App\Models\Position($this->db);
+            $jobs = $positionModel->getActiveJobsByBranch($branchId);
+        }
+
+        $employees = [];
+        if ($organizationId && $branchId) {
+            $employeeModel = new ScholarshipModel($this->db);
+            $employees = $employeeModel->onLeavePendingEmployees($organizationId, $branchId);
+        }
+
+        $data = [
+            'title' => 'HRM - የሰራተኛ የትምህርት እድል',
+            'user'  => $user,
+            'jobs'  => $jobs,
+            'employees' => $employees,
+        ];
+
+        $this->render('employee-scholarship-onleave', $data);
+    }
 }

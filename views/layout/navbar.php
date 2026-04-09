@@ -101,7 +101,7 @@
       <li class="nav-item dropdown">
         <a class="nav-link" data-toggle="dropdown" href="#">
           <i class="far fa-bell"></i>
-          <span class="badge badge-warning navbar-badge" id="total-count">0</span>
+          <span class="badge badge-danger navbar-badge" id="total-count">0</span>
         </a>
         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
           <span class="dropdown-item dropdown-header" id="total-notifications"> </span>
@@ -109,14 +109,16 @@
           <div class="dropdown-divider"></div>
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-onboarding" class="dropdown-item" id="onboarding-item">
              <i class="fas fa-user-plus mr-2"></i> ያልጸደቀ የሰራተኞች ምዝገባ
-            <span class="float-right badge badge-warning" id="onboarding-count">0</span>
+            <span class="float-right badge badge-danger" id="onboarding-count">0</span>
           </a>
             <?php endif; ?>
+          <?php if ($_SESSION['user']['role']==='hr_director'): ?>
           <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <i class="fas fa-users mr-2"></i> 8 friend requests
-            <span class="float-right text-muted text-sm">12 hours</span>
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-onleave" class="dropdown-item" id="scholarship-item">
+             <i class="fas fa-graduation-cap mr-2"></i> ያልጸደቀ የትምህርት እድል
+            <span class="float-right badge badge-danger" id="scholarship-count">0</span>
           </a>
+            <?php endif; ?>
           <div class="dropdown-divider"></div>
           <a href="#" class="dropdown-item">
             <i class="fas fa-file mr-2"></i> 3 new reports

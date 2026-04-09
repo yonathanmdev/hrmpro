@@ -32,6 +32,8 @@ return [
     'employee-scholarship'         => ['ScholarshipController', 'showScholarshipForm', true],
     'employee-scholarship-search'  => ['ScholarshipController', 'liveSearch', true],
     'employee-scholarship-store'   => ['ScholarshipController', 'storeScholarship', true],
+    'on-leave-scholarship-count'   => ['ScholarshipController', 'onLeaveScholarshipEmployees', true],
+    'employee-scholarship-onleave' => ['ScholarshipController', 'showScholarshiponLeavePending', true],
     // Stored files 
     'serve-file' => ['FileController', 'serveFile', true], // true = auth required
     // Audit Logs

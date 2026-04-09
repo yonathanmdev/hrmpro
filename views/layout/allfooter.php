@@ -110,7 +110,8 @@
     <script>const BASE_URL = "<?= '/HRM' ?>"; // or use $_ENV['BASE_URL'] if you have .env</script>
    <script>
     const NOTIFICATION_URLS = {
-        onboarding: BASE_URL + '/onBoardingEmployees'
+        onboarding: BASE_URL + '/onBoardingEmployees',
+        scholarship: BASE_URL + '/on-leave-scholarship-count'
     };
     
 </script>

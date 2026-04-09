@@ -21,6 +21,7 @@ class FileController {
         'image'    => 'uploads/images/',
         'document' => 'uploads/documents/',
         
+        
     ];
 
     if (!isset($allowedTypes[$type])) {
