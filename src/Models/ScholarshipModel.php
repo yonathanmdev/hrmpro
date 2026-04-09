@@ -91,7 +91,7 @@ public function autoSearch($term, $branchId) {
 
         // 3. የሰራተኛውን ስታተስ ወደ 'On Leave' ማዘመን (Update Employee Status)
         // ማሳሰቢያ፡ የቴብሉ ስም 'employees_table' እና መለያው 'uuid' መሆኑን አረጋግጥ
-        $sql3 = "UPDATE employees_table SET status = 'On Leave' WHERE uuid = ?";
+        $sql3 = "UPDATE employees_table SET status = 'On Leave Pending' WHERE uuid = ?";
         $stmt3 = $this->db->prepare($sql3);
         $stmt3->execute([$scholarshipData['employee_id']]);
 
@@ -104,4 +104,50 @@ public function autoSearch($term, $branchId) {
         throw new \Exception("Model Error: " . $e->getMessage()); 
     }
 }
+public function countPendingScholarshipEmployees($organizationId, $branchId) {
+    $sql = "
+        SELECT COUNT(*) as total
+        FROM employees_table 
+        WHERE organization_id = ?
+          AND branch_id = ? 
+          AND status = 'On Leave Pending'
+    ";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([$organizationId, $branchId]);
+    
+    // fetchColumn() በቀጥታ ቁጥሩን (total) ይመልስልሃል
+    return $stmt->fetchColumn();
+}
+ public function onLeavePendingEmployees($organizationId, $branchId) {
+        $sql = "
+            SELECT 
+                e.uuid,
+                e.employee_id,
+                e.first_name,
+                e.father_name,
+                e.g_father_name,
+                e.sex,
+                e.birth_date,
+                e.phone_number,
+                e.yegabcha_huneta,
+                e.organization_id,
+                e.branch_id,
+                e.job_property_id,
+                jp.job_name,
+                jp.status as job_status,
+                e.status,
+                e.rdate
+            FROM employees_table e
+            LEFT JOIN job_property jp ON e.job_property_id = jp.id
+            WHERE e.organization_id = ?
+              AND e.branch_id = ?
+              AND  e.status = 'On Leave Pending'
+            ORDER BY e.rdate DESC
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$organizationId, $branchId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }
