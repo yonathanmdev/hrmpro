@@ -1,7 +1,7 @@
 <?php
 namespace App\Controllers;
-use DateTime;
 use App\Models\ScholarshipModel;
+use App\Models\EmployeeRegistration;
 use App\Helpers\AuthHelper;
 use Ramsey\Uuid\Uuid;
 use \App\Traits\FileUploadTrait;
@@ -173,5 +173,69 @@ public function onLeaveScholarshipEmployees() {
         ];
 
         $this->render('employee-scholarship-onleave', $data);
+    }
+public function getScholarshipDetails() {
+     AuthHelper::checkRole(['hr_director', 'hr_officer']);
+     $scholarshipId = $_GET['uuid'] ?? null;
+
+    if (!$scholarshipId) {
+        die("Scholarship ID is missing.");
+    }
+    $model = new ScholarshipModel($this->db);
+    $scholarship = $model->getScholarshipDetails($scholarshipId);
+     $user = $_SESSION['user'] ?? [];
+       $employeeModel = new EmployeeRegistration($this->db);
+        $employee = $employeeModel->getEmployeeByUuid($scholarshipId);
+   
+    $data = [
+            'title' => 'HRM - የሰራተኛ የትምህርት እድል',
+            'scholarship' => $scholarship,
+            'user'  => $user,
+            'employee' => $employee,
+        ];
+
+        $this->render('employee-scholarship-onleave-views', $data);
+}
+     public function handleOnLeaveApproval() {
+           AuthHelper::checkRole(['hr_director']);
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-scholarship-onleave");
+            exit();
+        }
+
+        $uuid = $_POST['uuid'] ?? null;
+         $scholarship_uuid = $_POST['scholarship_uuid'] ?? null;
+        if (!$uuid) {
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-scholarship-onleave");
+            exit();
+        }
+
+        $user = $_SESSION['user'] ?? [];
+        $userID = $user['id'] ?? null;
+        $organizationId = $user['organization_id'] ?? null;
+        $branchId = $user['branch_id'] ?? null;
+
+        if (!$organizationId || !$branchId || empty($user['id'])) {
+            $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
+            exit();
+        }
+
+
+        // Get current employee to check for job change
+        $employeeModel = new ScholarshipModel($this->db);
+        if ($employeeModel->approveOnLeaveEmployee($uuid, $scholarship_uuid, $userID)) {
+            
+               \App\Helpers\AuditHelper::logOnLeaveEmployeeApproval($uuid, [
+            ]);
+          
+
+            $_SESSION['success'] = 'ሰራተኛው መረጃ በትክክል ተስተካከለ።';
+        } else {
+            $_SESSION['error'] = 'የሰራተኛ ማስተካከያ ሂደት አልተሳካም።';
+        }
+
+        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-scholarship-onleave");
+        exit();
     }
 }

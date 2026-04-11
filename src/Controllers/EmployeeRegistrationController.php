@@ -537,6 +537,7 @@ public function showOnBoardingForm() {
         }
 
         $user = $_SESSION['user'] ?? [];
+        $userID = $user['id'] ?? null;
         $organizationId = $user['organization_id'] ?? null;
         $branchId = $user['branch_id'] ?? null;
 
@@ -556,7 +557,7 @@ public function showOnBoardingForm() {
             header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
             exit();
         }
-        if ($employeeModel->approveOnBoardingEmployee($uuid)) {
+        if ($employeeModel->approveOnBoardingEmployee($uuid, $userID)) {
             
                \App\Helpers\AuditHelper::logOnBoardingEmployeeApproval($uuid, [
             ]);

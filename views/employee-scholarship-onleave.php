@@ -50,10 +50,10 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                    <td><?= EthiopianDateHelper::getMonthName($regethDate['month']) ?> <?= $regethDate['day'] ?> <?= $regethDate['year'] ?></td>
 
                   <td>
-                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-onboarding-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" class="btn btn-sm btn-secondary" title="እይ">
+                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-onleave-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" class="btn btn-sm btn-secondary" title="እይ">
                       <i class="fas fa-eye"></i> 
                     </a>
-                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-onboarding-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" class="btn btn-sm btn-primary" title="አጽድቅ">
+                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-onleave-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" class="btn btn-sm btn-primary" title="አጽድቅ">
                       <i class="fas fa-check"></i> 
                     </a>
                     
