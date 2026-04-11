@@ -238,4 +238,21 @@ public function getScholarshipDetails() {
         header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-scholarship-onleave");
         exit();
     }
+    public function getDocument() {
+           AuthHelper::checkRole(['hr_director', 'hr_officer']);
+           $uuid = $_GET['uuid'] ?? null;
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        $model = new ScholarshipModel($this->db);
+        $documentData = $model->getDocumentByUuid($uuid);
+        $data = [
+            'title' => 'HRM - የሰራተኛ ማህደር',
+            'documentData' => $documentData,
+        ];
+
+        $this->render('employee-archive', $data);
+}
 }

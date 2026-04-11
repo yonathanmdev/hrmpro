@@ -205,4 +205,14 @@ public function countPendingScholarshipEmployees($organizationId, $branchId) {
         return false;
     }
 }
+public function getDocumentByUuid($uuid) {
+    // Note: If you are passing a UUID string but the column is 'emp_id' (INT), 
+    // ensure you are actually filtering by the correct column.
+    $sql = "SELECT file_url, document_type FROM employee_documents WHERE emp_id = ? ORDER BY created_at ASC";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([$uuid]);
+    
+    // Change fetch to fetchAll
+    return $stmt->fetchAll(\PDO::FETCH_ASSOC); 
+}
 }

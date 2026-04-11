@@ -62,6 +62,9 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                     <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-edit?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" title="አስተካክል" class="btn btn-sm btn-secondary">
                       <i class="fas fa-edit"></i> 
                     </a>
+                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-archive?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" title="ማህደር" class="btn btn-sm btn-navy">
+                      <i class="fas fa-archive"></i> 
+                    </a>
                   </td>
                 </tr>
               <?php endforeach; ?>

@@ -292,5 +292,6 @@ public function getOnboardingEmployees($organizationId, $branchId) {
     $stmt = $this->db->prepare($sql);
     return $stmt->execute([$userID, $uuid]);
 }
+
 }
 
