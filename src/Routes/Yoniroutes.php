@@ -36,6 +36,8 @@ return [
     'employee-scholarship-onleave' => ['ScholarshipController', 'showScholarshiponLeavePending', true],
     'employee-scholarship-onleave-views' => ['ScholarshipController', 'getScholarshipDetails', true],
     'employee-scholarship-onleave-approval' => ['ScholarshipController', 'handleOnLeaveApproval', true],
+    // File Management
+    'employee-archive' => ['ScholarshipController', 'getDocument', true],
     // Stored files 
     'serve-file' => ['FileController', 'serveFile', true], // true = auth required
     // Audit Logs
