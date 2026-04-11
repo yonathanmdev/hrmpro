@@ -150,4 +150,59 @@ public function countPendingScholarshipEmployees($organizationId, $branchId) {
         $stmt->execute([$organizationId, $branchId]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+   public function getScholarshipDetails($empId) {
+    // Note: I removed s.agreement_number to prevent the "Column not found" error
+    // until you manually add it to your database.
+    $sql = "SELECT 
+                s.id, 
+                s.emp_id, 
+                s.agreement_date, 
+                s.scholarship_type, 
+                s.scholarship_duration_years, 
+                s.status,
+                d.file_url, 
+                d.document_type 
+            FROM employee_scholarships s
+            INNER JOIN employee_documents d ON s.id = d.scholarship_id
+            WHERE s.emp_id = ? 
+            AND s.status = 'pending'
+            LIMIT 1";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([$empId]);
+    
+    return $stmt->fetch(\PDO::FETCH_ASSOC);
+}
+   public function approveOnLeaveEmployee($uuid, $scholarship_uuid, $userID): bool {
+    try {
+        // Start the transaction
+        $this->db->beginTransaction();
+
+        // 1. Update the main employee table
+        $sqlEmployee = "UPDATE employees_table SET status = 'On Leave' WHERE uuid = ?";
+        $stmt1 = $this->db->prepare($sqlEmployee);
+        $stmt1->execute([$uuid]);
+
+        // 2. Update the scholarship table 
+        // Note: Ensure employee_scholarships actually has a 'uuid' column. 
+        // If it uses 'emp_id', you'll need to fetch that ID first.
+        $sqlScholarship = "UPDATE employee_scholarships 
+                           SET status = 'approved', 
+                               approved_by = ?, 
+                               approval_date = NOW() 
+                           WHERE id = ?"; 
+        
+        $stmt2 = $this->db->prepare($sqlScholarship);
+        $stmt2->execute([$userID, $scholarship_uuid]);
+
+        // If both queries succeed, commit the changes
+        return $this->db->commit();
+
+    } catch (\Exception $e) {
+        // If anything goes wrong, undo everything
+        $this->db->rollBack();
+        // You can log $e->getMessage() here for debugging on your Ubuntu server
+        return false;
+    }
+}
 }

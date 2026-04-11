@@ -152,6 +152,11 @@ class AuditHelper {
             'change_type' => 'hiring_approved'
         ]);
     }
+      public static function logOnLeaveEmployeeApproval($employeeId, $jobChangeData) {
+        self::log('employee_scholarship_approved', 'employee', $employeeId, null, $jobChangeData, [
+            'change_type' => 'Scholarship_approved'
+        ]);
+    }
 
     /**
      * Get audit logs
