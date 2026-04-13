@@ -262,7 +262,7 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
                 <label for="competency_situation">ውል የተያዘበት ቀን (ቀን/ወር/ዓመት)</label>
                 <?php
                 $aggrement_dateParts = explode('-', $scholarship['agreement_date']);
-$aggrement_ethDate = EthiopianDateHelper::toEthCalendar($aggrement_dateParts[2], $aggrement_dateParts[1], $aggrement_dateParts[0]);?>
+                $aggrement_ethDate = EthiopianDateHelper::toEthCalendar($aggrement_dateParts[2], $aggrement_dateParts[1], $aggrement_dateParts[0]);?>
                  <input type="text" class="form-control" id="scholarship_duration" name="scholarship_duration" value="<?= EthiopianDateHelper::getMonthName($aggrement_ethDate['month']) ?> <?= $aggrement_ethDate['day'] ?>  <?= $aggrement_ethDate['year'] ?>" readonly>
 
               </div>

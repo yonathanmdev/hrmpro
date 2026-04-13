@@ -38,6 +38,10 @@ return [
     'employee-scholarship-onleave-approval' => ['ScholarshipController', 'handleOnLeaveApproval', true],
     // File Management
     'employee-archive' => ['ScholarshipController', 'getDocument', true],
+    //debt suspension
+    'employee-debt-suspension' => ['DebtSuspensionController', 'showDebtSuspensionForm', true],
+    'employee-debt-search'  => ['DebtSuspensionController', 'liveSearch', true],
+    'employee-debt-suspension-store'   => ['DebtSuspensionController', 'storeDebtSuspension', true],
     // Stored files 
     'serve-file' => ['FileController', 'serveFile', true], // true = auth required
     // Audit Logs

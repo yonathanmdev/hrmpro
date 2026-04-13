@@ -104,6 +104,7 @@ public function storeScholarship() {
 
         $documentData = [
             'id' => Uuid::uuid4()->toString(), // ['id'],
+            'doc_id' => Uuid::uuid4()->toString(), // ['id'],
             'file_url' => $scholarshipFileName,
             'document_type' => 'Scholarship Agreement'
         ];
@@ -238,21 +239,27 @@ public function getScholarshipDetails() {
         header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-scholarship-onleave");
         exit();
     }
-    public function getDocument() {
-           AuthHelper::checkRole(['hr_director', 'hr_officer']);
-           $uuid = $_GET['uuid'] ?? null;
-        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
-            exit();
-        }
+   public function getDocument() {
+    AuthHelper::checkRole(['hr_director', 'hr_officer']);
+    $uuid = $_GET['uuid'] ?? null;
 
-        $model = new ScholarshipModel($this->db);
-        $documentData = $model->getDocumentByUuid($uuid);
-        $data = [
-            'title' => 'HRM - የሰራተኛ ማህደር',
-            'documentData' => $documentData,
-        ];
+    if (!$uuid) {
+        die("Missing identifier.");
+    }
 
-        $this->render('employee-archive', $data);
+    $employeeModel = new EmployeeRegistration($this->db);
+    $employee = $employeeModel->getEmployeeByUuid($uuid);
+
+    $model = new ScholarshipModel($this->db);
+    // Directly passing the UUID string
+    $documentData = $model->getDocumentByEmpId($uuid);
+
+    $data = [
+        'title' => 'HRM - የሰራተኛ ማህደር',
+        'documentData' => $documentData,
+        'employee' => $employee
+    ];
+
+    $this->render('employee-archive', $data);
 }
 }
