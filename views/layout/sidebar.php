@@ -136,17 +136,32 @@
             <p>የት/ት እድል የተሰጣቸው</p>
           </a>
         </li>
+      <?php endif; ?>
 
-        <li class="nav-item">
-          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-position" class="nav-link">
+    </ul>
+  </li>
+
+<li class="nav-item">
+    <a href="#" class="nav-link">
+      <i class="nav-icon fas fa-edit"></i>
+      <p>
+        እዳ እገዳ
+        <i class="fas fa-angle-left right"></i>
+      </p>
+    </a>
+    <ul class="nav nav-treeview">
+      <?php if ($userRole === 'hr_director' || $userRole === 'hr_officer'): ?>
+              <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
-            <p>መደብ መመዝገብ</p>
+            <p>እዳ እገዳ መመዝገብ</p>
           </a>
         </li>
       <?php endif; ?>
 
     </ul>
   </li>
+
 <?php endif; ?>
 
         </ul>

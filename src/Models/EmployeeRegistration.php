@@ -287,11 +287,10 @@ public function getOnboardingEmployees($organizationId, $branchId) {
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-   public function approveOnBoardingEmployee($uuid, $userID): bool {
-    $sql = "UPDATE employees_table SET reg_approve_by = ?,   reg_approve_date = NOW() , status = 'Active' WHERE uuid = ?";
+   public function approveOnBoardingEmployee($uuid): bool {
+    $sql = "UPDATE employees_table SET status = 'Active' WHERE uuid = ?";
     $stmt = $this->db->prepare($sql);
-    return $stmt->execute([$userID, $uuid]);
+    return $stmt->execute([$uuid]);
 }
-
 }
 

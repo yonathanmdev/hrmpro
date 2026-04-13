@@ -3,50 +3,59 @@ use App\Helpers\EthiopianDateHelper;
  $is_employee_registration_page = true; ?>
 <section class="content">
   <div class="container-fluid">
+    
     <div class="card card-primary card-outline">
       <div class="card-header">
-        <h3 class="card-title">የሰራተኛ መመዝገቢያ</h3>
-        <div class="card-tools">
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#employeeRegistrationModal">
-            <i class="fas fa-user-plus"></i> አዲስ ሰራተኛ መዝግብ
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card card-primary card-outline">
-      <div class="card-header">
-        <h3 class="card-title">የሰራተኛ ዝርዝር</h3>
+        <h3 class="card-title">የሰራተኛ ማህደር</h3>
       </div>
 
       <div class="card-body">
         <table id="example1" class="table table-bordered table-striped">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>የፋይል አይነት</th>
-              <th>የተያያዘ ፋይል</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php if (!empty($documentData)): ?>
-              <?php foreach ($documentData as $index => $document):?>
-                <tr>
-                  <td><?= $index + 1 ?></td>
-                  <td><?= htmlspecialchars($document['document_type'] ?? '') ?></td>
-                  <td>                <?php if (!empty($document['file_url'])): ?>
-                  <small class="form-text text-muted">የተያያዘ ፋይል: <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($document['file_url']) ?>&type=document" target="_blank">ተመልክት</a>
-          </small>
-                <?php endif; ?></td>
-                </tr>
-              <?php endforeach; ?>
-            <?php else: ?>
-              <tr>
-                <td colspan="9" class="text-center">ምንም ሰራተኛ አልተመዘገበም።</td>
-              </tr>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>የፋይል አይነት</th>
+      <th>የተያያዘ ፋይል</th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php 
+    $counter = 1; 
+    
+    // 1. Manually check and display the Primary Registration File (201)
+    if (!empty($employee['employee_file201'])): ?>
+      <tr>
+        <td><?= $counter++ ?></td>
+        <td>ሲመዘገቡ የተያያዘ ፋይል</td>
+        <td>
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($employee['employee_file201']) ?>&type=document" target="_blank" class="btn btn-xs btn-outline-primary">
+            <i class="fas fa-file-pdf"></i> ክፈት
+          </a>
+        </td>
+      </tr>
+    <?php endif; ?>
+    <?php if (!empty($documentData)): ?>
+      <?php foreach ($documentData as $document): ?>
+        <tr>
+          <td><?= $counter++ ?></td>
+          <td><?= htmlspecialchars($document['entity_type'] ?? 'ተጨማሪ ሰነድ') ?></td>
+          <td>
+            <?php if (!empty($document['file_url'])): ?>
+              <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($document['file_url']) ?>&type=document" target="_blank" class="btn btn-xs btn-outline-info">
+                <i class="fas fa-file-pdf"></i> ክፈት
+              </a>
             <?php endif; ?>
-          </tbody>
-        </table>
+          </td>
+        </tr>
+      <?php endforeach; ?>
+    <?php endif; ?>
+    <?php if ($counter === 1): ?>
+      <tr>
+        <td colspan="3" class="text-center text-muted">ምንም የተያያዘ ፋይል አልተገኘም።</td>
+      </tr>
+    <?php endif; ?>
+  </tbody>
+</table>
       </div>
     </div>
   </div>
