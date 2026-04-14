@@ -1,7 +1,7 @@
 # Bootstrap based HRM system
-# git checkout main   // to switch to main branch
-# git pull             // to pull the leatest
-# git checkout -b branchname    // to create branch
-# git add .     // to prepare for push
-# git commit -m"message"
-# git push    
+    git checkout main   // to switch to main branch
+    git pull             // to pull the leatest
+    git checkout -b branchname    // to create branch
+    git add .     // to prepare for push
+    git commit -m"message"
+    git push    
