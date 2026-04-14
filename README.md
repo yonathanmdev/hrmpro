@@ -1,4 +1,5 @@
 # Bootstrap based HRM system
+  Steps to pull and push to git
     git checkout main   // to switch to main branch
     git pull             // to pull the leatest
     git checkout -b branchname    // to create branch
