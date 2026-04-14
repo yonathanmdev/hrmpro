@@ -1,90 +1,513 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <base href="/HRM/">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Log in</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Log in — HRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap">
+    <link rel="stylesheet" href="public/plugins/fontawesome-free/css/all.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="public/plugins/fontawesome-free/css/all.min.css">
-  <!-- icheck bootstrap -->
-  <link rel="stylesheet" href="public/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="public/dist/css/adminlte.min.css">
+        :root {
+            --ink:       #1a1a18;
+            --ink-muted: #6b6b63;
+            --surface:   #f7f5f0;
+            --card:      #ffffff;
+            --border:    rgba(26,26,24,0.12);
+            --accent:    #2d6a4f;
+            --accent-lt: #e8f5ee;
+            --accent-dk: #1b4332;
+            --danger:    #a32d2d;
+            --danger-lt: #fcebeb;
+            --radius:    14px;
+            --shadow:    0 4px 32px rgba(26,26,24,0.10);
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--surface);
+            color: var(--ink);
+        }
+
+        /* — Background pattern — */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 20% 35%, rgba(45,106,79,0.07) 0%, transparent 55%),
+                radial-gradient(circle at 78% 68%, rgba(45,106,79,0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Subtle dot grid */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(26,26,24,0.07) 1px, transparent 1px);
+            background-size: 28px 28px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* — Layout — */
+        .page {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* — Left panel — */
+        .panel-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 4rem 5rem;
+            background: var(--accent-dk);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-left::before {
+            content: '';
+            position: absolute;
+            top: -120px; right: -120px;
+            width: 380px; height: 380px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+        }
+
+        .panel-left::after {
+            content: '';
+            position: absolute;
+            bottom: -80px; left: -80px;
+            width: 280px; height: 280px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3.5rem;
+        }
+
+        .brand-icon {
+            width: 42px; height: 42px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; color: #fff;
+        }
+
+        .brand-name {
+            font-family: 'DM Serif Display', serif;
+            font-size: 22px;
+            color: #fff;
+            letter-spacing: 0.01em;
+        }
+
+        .panel-left h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(2rem, 3.5vw, 3rem);
+            line-height: 1.2;
+            color: #fff;
+            margin-bottom: 1.25rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .panel-left h1 em {
+            font-style: italic;
+            color: rgba(255,255,255,0.65);
+        }
+
+        .panel-left p {
+            font-size: 15px;
+            color: rgba(255,255,255,0.55);
+            line-height: 1.7;
+            max-width: 340px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .divider {
+            width: 40px; height: 2px;
+            background: rgba(255,255,255,0.3);
+            margin: 2rem 0;
+            border-radius: 2px;
+        }
+
+        .stat-row {
+            display: flex;
+            gap: 2.5rem;
+            margin-top: 3.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat { }
+        .stat-num {
+            font-family: 'DM Serif Display', serif;
+            font-size: 28px;
+            color: #fff;
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 4px;
+        }
+
+        /* — Right panel — */
+        .panel-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem 5rem;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .login-eyebrow {
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .login-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2rem;
+            color: var(--ink);
+            line-height: 1.2;
+        }
+
+        .login-title span {
+            font-style: italic;
+            color: var(--ink-muted);
+        }
+
+        /* — Alert — */
+        .alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: var(--danger-lt);
+            border: 1px solid rgba(163,45,45,0.2);
+            border-left: 3px solid var(--danger);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 14px;
+            color: var(--danger);
+            margin-bottom: 1.5rem;
+            animation: slideIn 0.25s ease;
+        }
+
+        .alert i { margin-top: 2px; flex-shrink: 0; }
+
+        .alert-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--danger);
+            opacity: 0.6;
+            padding: 0;
+            font-size: 16px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .alert-close:hover { opacity: 1; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* — Form — */
+        .field {
+            margin-bottom: 1.25rem;
+        }
+
+        .field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ink-muted);
+            margin-bottom: 6px;
+            letter-spacing: 0.02em;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--ink-muted);
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .field input {
+            width: 100%;
+            height: 48px;
+            padding: 0 14px 0 40px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            color: var(--ink);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+        }
+
+        .field input::placeholder { color: rgba(26,26,24,0.3); }
+
+        .field input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(45,106,79,0.12);
+        }
+
+        .field input:focus + i,
+        .input-wrap:focus-within i {
+            color: var(--accent);
+        }
+
+        /* Reorder so icon appears after input in DOM for the sibling selector above */
+        .input-wrap i { order: 2; }
+
+        /* — Remember & submit row — */
+        .form-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.75rem;
+            gap: 12px;
+        }
+
+        .remember {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .remember input[type="checkbox"] {
+            width: 16px; height: 16px;
+            accent-color: var(--accent);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .remember span {
+            font-size: 13px;
+            color: var(--ink-muted);
+        }
+
+        .btn-signin {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 0 24px;
+            height: 48px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            letter-spacing: 0.01em;
+        }
+
+        .btn-signin:hover  { background: var(--accent-dk); }
+        .btn-signin:active { transform: scale(0.97); }
+
+        .btn-signin i {
+            font-size: 13px;
+            transition: transform 0.2s;
+        }
+
+        .btn-signin:hover i { transform: translateX(3px); }
+
+        /* — Footer note — */
+        .login-note {
+            margin-top: 2rem;
+            font-size: 12px;
+            color: var(--ink-muted);
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        /* — Amharic title badge — */
+        .amharic-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent-lt);
+            color: var(--accent-dk);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-bottom: 1.25rem;
+            border: 1px solid rgba(45,106,79,0.15);
+        }
+
+        /* — Responsive — */
+        @media (max-width: 768px) {
+            .page { grid-template-columns: 1fr; }
+            .panel-left { display: none; }
+            .panel-right { padding: 3rem 1.5rem; }
+        }
+    </style>
 </head>
-<body class="hold-transition login-page">
-<div class="login-box">
-  
-  <!-- /.login-logo -->
-  <div class="card">
-    <div class="login-logo">
-   <h1  style="text-align: center;">መግቢያ ገጽ</h1>
-  </div>
-     
-    <div class="card-body login-card-body">
-<?php 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-if (isset($_SESSION['error'])): ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="icon fas fa-ban"></i> <?php echo $_SESSION['error']; ?>
-        <button type="button" class="close" data-dismiss="dismiss" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    <?php unset($_SESSION['error']); // መልእክቱ አንዴ ከታየ በኋላ እንዲጠፋ ?>
-<?php endif; ?>
-      <form action="login_process" method="post">
-        <div class="input-group mb-3">
-          <input type="email" name="email" class="form-control" placeholder="Email" required autocomplete="email">
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-envelope"></span>
-            </div>
-          </div>
-        </div>
-        <div class="input-group mb-3">
-          <input type="password" name="password" class="form-control" placeholder="Password" required autocomplete="current-password">
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-lock"></span>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-8">
-            <div class="icheck-primary">
-              <input type="checkbox" id="remember">
-              <label for="remember">
-                Remember Me
-              </label>
-            </div>
-          </div>
-          <!-- /.col -->
-          <div class="col-4">
-            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
-          </div>
-          <!-- /.col -->
-        </div>
-      </form>
-      <!-- /.social-auth-links -->
-    </div>
-    <!-- /.login-card-body -->
-  </div>
-</div>
-<!-- /.login-box -->
+<body>
 
-<!-- jQuery -->
+<div class="page">
+
+    <!-- Left decorative panel -->
+    <div class="panel-left">
+        <div class="brand">
+            <div class="brand-icon"><i class="fas fa-users"></i></div>
+            <span class="brand-name">HRM Portal</span>
+        </div>
+
+        <h1>Manage your<br>team <em>with ease.</em></h1>
+
+        <div class="divider"></div>
+
+        <p>A unified platform for human resources — track employees, manage payroll, and streamline your organisation's workflow.</p>
+
+        <div class="stat-row">
+            <div class="stat">
+                <div class="stat-num">∞</div>
+                <div class="stat-label">Employees</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">24/7</div>
+                <div class="stat-label">Access</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">100%</div>
+                <div class="stat-label">Secure</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right login panel -->
+    <div class="panel-right">
+        <div class="login-card">
+
+            <div class="login-header">
+                <div class="amharic-badge">
+                    <i class="fas fa-door-open" style="font-size:12px;"></i>
+                    መግቢያ ገጽ
+                </div>
+                <div class="login-title">Welcome <span>back.</span></div>
+            </div>
+
+            <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert" role="alert" id="error-alert">
+                <i class="fas fa-exclamation-circle"></i>
+                <span><?php echo htmlspecialchars($_SESSION['error']); ?></span>
+                <button class="alert-close" onclick="document.getElementById('error-alert').remove()" aria-label="Close">&times;</button>
+            </div>
+            <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
+
+            <form action="login_process" method="post" novalidate>
+
+                <div class="field">
+                    <label for="email">Email address</label>
+                    <div class="input-wrap">
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="you@example.com"
+                            required
+                            autocomplete="email"
+                        >
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="password">Password</label>
+                    <div class="input-wrap">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="••••••••"
+                            required
+                            autocomplete="current-password"
+                        >
+                        <i class="fas fa-lock"></i>
+                    </div>
+                </div>
+
+                <div class="form-footer">
+                    <label class="remember">
+                        <input type="checkbox" id="remember" name="remember">
+                        <span>Remember me</span>
+                    </label>
+
+                    <button type="submit" class="btn-signin">
+                        Sign in <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+
+            </form>
+
+            <p class="login-note">Protected by secure session management. &copy; <?php echo date('Y'); ?> HRM System.</p>
+
+        </div>
+    </div>
+
+</div>
+
 <script src="public/plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
 <script src="public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-<script src="public/dist/js/adminlte.min.js"></script>
 </body>
 </html>

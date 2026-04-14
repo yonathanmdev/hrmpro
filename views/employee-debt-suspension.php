@@ -5,7 +5,7 @@ use App\Helpers\EthiopianDateHelper;
   <div class="container-fluid">
     <div class="card card-primary card-outline">
       <div class="card-header">
-        <h3 class="card-title">የትምህርት እዳ እገዳ መመዝገቢያ</h3>
+        <h3 class="card-title">እዳ እገዳ መመዝገቢያ</h3>
         <div class="card-tools">
           <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#debtSuspensionModal">
             <i class="fas fa-user-plus"></i> እዳ እገዳ መዝግብ
