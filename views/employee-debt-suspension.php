@@ -67,7 +67,7 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="9" class="text-center">ምንም ሰራተኛ አልተመዘገበም።</td>
+                <td colspan="9" class="text-center">እዳ/እገዳ ያለባቸው ምንም ሰራተኛ አልተመዘገበም።</td>
               </tr>
             <?php endif; ?>
           </tbody>
@@ -155,7 +155,14 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                             </div>
                         </div>
                     </div>
-
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="reason">የእዳ/እገዳ ምክንያት</label>
+                                <textarea name="reason" id="reason" class="form-control" rows="3" placeholder="የእዳ/እገዳ ምክንያት ያስገቡ..." required></textarea>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer justify-content-between">
                     <button type="button" class="btn btn-default" data-dismiss="modal">ዝጋ</button>

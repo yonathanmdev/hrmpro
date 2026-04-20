@@ -118,7 +118,8 @@
    <script>
     const NOTIFICATION_URLS = {
         onboarding: BASE_URL + '/onBoardingEmployees',
-        scholarship: BASE_URL + '/on-leave-scholarship-count'
+        scholarship: BASE_URL + '/on-leave-scholarship-count',
+        debtsuspension: BASE_URL + '/debt-suspension-count'
     };
     
 </script>

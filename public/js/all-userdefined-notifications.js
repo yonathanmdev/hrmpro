@@ -37,13 +37,32 @@ function fetchScholarshipCount() {
         })
         .catch(error => console.error('Scholarship notification error:', error));
 }
+function fetchDebtSuspensionCount() {
+    fetch(NOTIFICATION_URLS.debtsuspension)
+        .then(response => response.json())
+        .then(data => {
+            const count = data.count;
+            const debtSuspensionItem = document.getElementById('debt-suspension-item');
+            const debtSuspensionBadge = document.getElementById('debt-suspension-count');
 
+            if (count > 0) {
+                if (debtSuspensionItem) debtSuspensionItem.style.display = 'block';
+                if (debtSuspensionBadge) debtSuspensionBadge.textContent = count;
+            } else {
+                if (debtSuspensionItem) debtSuspensionItem.style.display = 'none';
+                if (debtSuspensionBadge) debtSuspensionBadge.textContent = 0;
+            }
+            updateTotalCount();
+        })
+        .catch(error => console.error('Debt Suspension notification error:', error));
+}
 function updateTotalCount() {
     // የሁለቱንም ድምር ለመያዝ
     const onboarding = parseInt(document.getElementById('onboarding-count')?.textContent) || 0;
     const scholarship = parseInt(document.getElementById('scholarship-count')?.textContent) || 0;
+    const debtSuspension = parseInt(document.getElementById('debt-suspension-count')?.textContent) || 0;
 
-    const total = onboarding + scholarship;
+    const total = onboarding + scholarship + debtSuspension;
     const badge = document.getElementById('total-count');
     const label = document.getElementById('total-notifications');
 
@@ -65,6 +84,7 @@ function updateTotalCount() {
 function fetchAllNotifications() {
     fetchOnboardingCount();
     fetchScholarshipCount(); // አዲሱ ጥሪ
+    fetchDebtSuspensionCount();
 }
 
 fetchAllNotifications();
