@@ -119,6 +119,13 @@
             <span class="float-right badge badge-danger" id="scholarship-count">0</span>
           </a>
             <?php endif; ?>
+            <?php if ($_SESSION['user']['role']==='hr_director'): ?>
+          <div class="dropdown-divider"></div>
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-pending" class="dropdown-item" id="debt-suspension-item">
+             <i class="fas fa-dollar-sign mr-2"></i> ያልጸደቀ እዳ/እገዳ
+            <span class="float-right badge badge-danger" id="debt-suspension-count">0</span>
+          </a>
+            <?php endif; ?>
           <div class="dropdown-divider"></div>
           <a href="#" class="dropdown-item">
             <i class="fas fa-file mr-2"></i> 3 new reports

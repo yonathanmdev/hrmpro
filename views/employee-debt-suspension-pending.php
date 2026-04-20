@@ -5,7 +5,7 @@ use App\Helpers\EthiopianDateHelper;
   <div class="container-fluid">
     <div class="card card-primary card-outline">
       <div class="card-header">
-        <h3 class="card-title">የተመዘገቡ የት/ት እድል ማጽደቂያ</h3>
+        <h3 class="card-title">የተመዘገቡ እዳ/እገዳ ማጽደቂያ</h3>
       </div>
     </div>
 
@@ -47,19 +47,21 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                    <td><?= EthiopianDateHelper::getMonthName($regethDate['month']) ?> <?= $regethDate['day'] ?> <?= $regethDate['year'] ?></td>
 
                   <td>
-                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-onleave-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" class="btn btn-sm btn-secondary" title="እይ">
+                     <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-approval-view?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>&record_id=<?= htmlspecialchars($employee['record_id'] ?? '') ?>" class="btn btn-sm btn-secondary" title="እይ">
                       <i class="fas fa-eye"></i> 
                     </a>
-                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-onleave-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" class="btn btn-sm btn-primary" title="አጽድቅ">
-                      <i class="fas fa-check"></i> 
-                    </a>
+                   <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-approval-view?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>&record_id=<?= htmlspecialchars($employee['record_id'] ?? '') ?>" 
+   class="btn btn-sm btn-primary" 
+   title="አጽድቅ">
+    <i class="fas fa-check"></i> 
+</a>
                     
                   </td>
                 </tr>
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="9" class="text-center">ምንም ያልጸደቀ የት/ት እድል የለም።</td>
+                <td colspan="9" class="text-center">ምንም ያልጸደቀ እዳ/እገዳ የለም።</td>
               </tr>
             <?php endif; ?>
           </tbody>

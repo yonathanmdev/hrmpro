@@ -42,6 +42,10 @@ return [
     'employee-debt-suspension' => ['DebtSuspensionController', 'showDebtSuspensionForm', true],
     'employee-debt-search'  => ['DebtSuspensionController', 'liveSearch', true],
     'employee-debt-suspension-store'   => ['DebtSuspensionController', 'storeDebtSuspension', true],
+    'debt-suspension-count'   => ['DebtSuspensionController', 'countPending', true],
+    'employee-debt-suspension-pending' => ['DebtSuspensionController', 'showDebtSuspensionPending', true],
+    'employee-debt-suspension-approval-view' => ['DebtSuspensionController', 'getDebtSuspensionDetails', true],
+    'employee-debt-suspension-approval' => ['DebtSuspensionController', 'handleDebtSuspensionApproval', true],
     // Stored files 
     'serve-file' => ['FileController', 'serveFile', true], // true = auth required
     // Audit Logs

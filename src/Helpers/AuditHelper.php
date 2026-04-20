@@ -157,7 +157,11 @@ class AuditHelper {
             'change_type' => 'Scholarship_approved'
         ]);
     }
-
+         public static function logDebtSuspensionApproval($employeeId, $jobChangeData) {
+          self::log('employee_debt_suspension_approved', 'employee', $employeeId, null, $jobChangeData, [
+                'change_type' => 'debt_suspension_approved'
+          ]);
+     }
     /**
      * Get audit logs
      */

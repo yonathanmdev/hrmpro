@@ -153,13 +153,6 @@ public function onLeaveScholarshipEmployees() {
         $user = $_SESSION['user'] ?? [];
         $branchId = $user['branch_id'] ?? null;
         $organizationId = $user['organization_id'] ?? null;
-
-        $jobs = [];
-        if ($branchId) {
-            $positionModel = new \App\Models\Position($this->db);
-            $jobs = $positionModel->getActiveJobsByBranch($branchId);
-        }
-
         $employees = [];
         if ($organizationId && $branchId) {
             $employeeModel = new ScholarshipModel($this->db);
@@ -169,7 +162,6 @@ public function onLeaveScholarshipEmployees() {
         $data = [
             'title' => 'HRM - የሰራተኛ የትምህርት እድል',
             'user'  => $user,
-            'jobs'  => $jobs,
             'employees' => $employees,
         ];
 

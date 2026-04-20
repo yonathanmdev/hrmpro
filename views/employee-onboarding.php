@@ -62,7 +62,7 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="9" class="text-center">ምንም ሰራተኛ አልተመዘገበም።</td>
+                <td colspan="9" class="text-center">ምንም ያልጸደቀ የሰራተኛ ምዝገባ የለምs።</td>
               </tr>
             <?php endif; ?>
           </tbody>
