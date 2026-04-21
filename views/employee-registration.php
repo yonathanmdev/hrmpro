@@ -53,7 +53,18 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                   <td><?= htmlspecialchars($employee['job_name'] ?? 'N/A') ?></td>
                   <td><?= ($employee['sex'] ?? '') === 'Male' ? 'ወንድ' : 'ሴት' ?></td>
                   <td><?= EthiopianDateHelper::getMonthName($ethDate['month']) ?> <?= $ethDate['day'] ?> <?= $ethDate['year'] ?></td>
-                  <td><?= htmlspecialchars($employee['status'] ?? 'Active') ?></td>
+                 <td>
+    <?php
+    $status = $employee['status'] ?? 'Active';
+    echo htmlspecialchars(match ($status) {
+        'Active'           => 'በስራ ላይ',
+        'On Leave'         => 'በት/ት ላይ',
+        'Onboarding'       => 'ምዝገባ ላይ',
+        'On Leave Pending' => 'የት/ት እድል ያገኙ',
+        default            => $status, // Displays the raw value if no match is found
+    });
+    ?>
+</td>
                   <td><?= EthiopianDateHelper::getMonthName($regethDate['month']) ?> <?= $regethDate['day'] ?> <?= $regethDate['year'] ?></td>
                   <td>
                     <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" title="እይ" class="btn btn-sm btn-primary">

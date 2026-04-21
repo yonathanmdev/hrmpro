@@ -16,7 +16,7 @@ use App\Helpers\EthiopianDateHelper;
 
     <div class="card card-primary card-outline">
       <div class="card-header">
-        <h3 class="card-title">የትምህርት እድል የተሰጣቸው</h3>
+        <h3 class="card-title">በት/ት ላይ ያሉ</h3>
       </div>
 
       <div class="card-body">
@@ -53,7 +53,7 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                   <td><?= htmlspecialchars($employee['job_name'] ?? 'N/A') ?></td>
                   <td><?= ($employee['sex'] ?? '') === 'Male' ? 'ወንድ' : 'ሴት' ?></td>
                   <td><?= EthiopianDateHelper::getMonthName($ethDate['month']) ?> <?= $ethDate['day'] ?> <?= $ethDate['year'] ?></td>
-                  <td><?= htmlspecialchars($employee['status'] ?? 'Active') ?></td>
+                  <td><?= 'በት/ት ላይ' ?></td>
                   <td><?= EthiopianDateHelper::getMonthName($regethDate['month']) ?> <?= $regethDate['day'] ?> <?= $regethDate['year'] ?></td>
                   <td>
                     <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" title="እይ" class="btn btn-sm btn-primary">
