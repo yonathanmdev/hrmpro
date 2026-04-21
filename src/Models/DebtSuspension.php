@@ -36,6 +36,7 @@ public function autoSearch($term, $branchId) {
     
     return $stmt->fetchAll(\PDO::FETCH_ASSOC);
 }
+
 public function saveDebtSuspensionWithDocument($debtSuspensionData, $documentData) {
     try {
         $this->db->beginTransaction();
@@ -131,8 +132,7 @@ public function getDebtSuspensionDetails($recordId) {
             FROM debt_suspension ds
             INNER JOIN document_assignments da ON ds.id = da.entity_id
             INNER JOIN employee_documents d ON da.document_id = d.id
-            WHERE ds.id = ? 
-            AND ds.status = 'pending' LIMIT 1";
+            WHERE ds.id = ? LIMIT 1";
 
     $stmt = $this->db->prepare($sql);
     $stmt->execute([$recordId]);
@@ -144,5 +144,48 @@ public function getDebtSuspensionDetails($recordId) {
     $sql = "UPDATE debt_suspension SET status = 'active', approved_by = ?, approval_date = NOW() WHERE id = ? AND emp_id = ? AND status = 'pending'";
     $stmt = $this->db->prepare($sql);
     return $stmt->execute([$userId, $recordId, $uuid]);
+}
+public function saveDebtSuspensionClearingData($clearingDebtSuspensionData) {
+    try {
+        $this->db->beginTransaction();
+
+        // 1. Insert into employee_scholarships using the manual ID provided
+        $sql1 = "Update debt_suspension SET status = 'cleared', cleared_by = ?, cleared_at = ? WHERE id = ? AND emp_id = ? AND status = 'active'";
+        $stmt1 = $this->db->prepare($sql1);
+        $stmt1->execute([
+            $clearingDebtSuspensionData['cleared_by'],
+            $clearingDebtSuspensionData['cleared_at'],
+            $clearingDebtSuspensionData['record_id'],
+            $clearingDebtSuspensionData['employee_id']
+        ]);
+
+        // 2. Insert into employee_documents using the manual ID provided
+        $sql2 = "INSERT INTO employee_documents (id, emp_id, file_url, registered_by) 
+                 VALUES (?, ?, ?, ?)";
+        $stmt2 = $this->db->prepare($sql2);
+        $stmt2->execute([
+            $clearingDebtSuspensionData['id'],               // Manual Document ID
+            $clearingDebtSuspensionData['employee_id'],    // Numeric Employee ID
+            $clearingDebtSuspensionData['file_url'],
+            $clearingDebtSuspensionData['registered_by']
+        ]);
+
+        // 3. Create the assignment using your manual bridge IDs
+        $sql3 = "INSERT INTO document_assignments (id, document_id, entity_id, entity_type) 
+                 VALUES (?, ?, ?, ?)";
+        $stmt3 = $this->db->prepare($sql3);
+        $stmt3->execute([
+            $clearingDebtSuspensionData['doc_id'],           // Manual Assignment ID
+            $clearingDebtSuspensionData['id'],               // Reference to Document ID above
+            $clearingDebtSuspensionData['record_id'],            // Reference to Scholarship ID above
+            'የተነሳ እዳ/እገዳ መረጃ', // Entity type for clearing
+        ]);
+        $this->db->commit();
+        return true;
+        
+    } catch (\Exception $e) {
+        $this->db->rollBack();
+        throw new \Exception("Model Error: " . $e->getMessage()); 
+    }
 }
 }

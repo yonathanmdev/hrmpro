@@ -55,13 +55,16 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                   <td><?= EthiopianDateHelper::getMonthName($ethDate['month']) ?> <?= $ethDate['day'] ?> <?= $ethDate['year'] ?></td>
                   <td><?= htmlspecialchars($employee['status'] ?? 'Active') ?></td>
                   <td><?= EthiopianDateHelper::getMonthName($regethDate['month']) ?> <?= $regethDate['day'] ?> <?= $regethDate['year'] ?></td>
-                  <td>
-                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" title="እይ" class="btn btn-sm btn-primary">
+                   <td>
+                     <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-clearing?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>&record_id=<?= htmlspecialchars($employee['record_id'] ?? '') ?>" class="btn btn-sm btn-secondary" title="እይ">
                       <i class="fas fa-eye"></i> 
                     </a>
-                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-edit?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" title="አስተካክል" class="btn btn-sm btn-secondary">
-                      <i class="fas fa-edit"></i> 
-                    </a>
+                   <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-clearing?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>&record_id=<?= htmlspecialchars($employee['record_id'] ?? '') ?>" 
+   class="btn btn-sm btn-info" 
+   title="እዳ/እገዳ ማንሳት">
+    <i class="fas fa-trash"></i> 
+</a>
+                    
                   </td>
                 </tr>
               <?php endforeach; ?>
@@ -125,7 +128,8 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                           <div class="col-md-4">
                             <div class="form-group">
                                 <label for="start_date">እዳ/እገዳ የተያዘበት ቀን (ቀን/ወር/ዓመት) </label>
-                                  <input type="text" 
+                                  
+                                <input type="text" 
        class="ethiopian-date form-control" 
        name="eth_start_date" 
        data-rule="past" 

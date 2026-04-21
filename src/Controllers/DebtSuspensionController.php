@@ -221,7 +221,7 @@ function countPending() {
             ]);
           
 
-            $_SESSION['success'] = 'ሰራተኛው መረጃ በትክክል ተስተካከለ።';
+            $_SESSION['success'] = 'የሰራተኛ እዳ/እገዳ መረጃ በትክክል ጽድቋል';
         } else {
             $_SESSION['error'] = 'የሰራተኛ እዳ/እገዳ ማጽደቅ አልተሳካም።';
         }
@@ -229,4 +229,88 @@ function countPending() {
         header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension-pending");
         exit();
     }
+
+   public function getDebtSuspensionClearing() {
+     AuthHelper::checkRole(['hr_director', 'hr_officer']);
+     $employee_uuid = $_GET['uuid'] ?? null;
+     $recordId = $_GET['record_id'] ?? null;
+
+    if (!$recordId) {
+        die("Debt Suspension ID is missing.");
+    }
+    $model = new DebtSuspension($this->db);
+    $scholarship = $model->getDebtSuspensionDetails($recordId);
+     $user = $_SESSION['user'] ?? [];
+       $employeeModel = new EmployeeRegistration($this->db);
+        $employee = $employeeModel->getEmployeeByUuid($employee_uuid);
+   
+    $data = [
+            'title' => 'HRM - እዳ/እገዳ',
+            'scholarship' => $scholarship,
+            'user'  => $user,
+            'employee' => $employee,
+        ];
+
+        $this->render('employee-debt-suspension-clearing', $data);
+}
+public function storeDebtSuspensionClearing() {
+    AuthHelper::checkRole(['hr_director', 'hr_officer']);
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // 1. መረጃዎችን መቀበል
+        $employee_uuid = $_POST['uuid'] ?? null;
+        $record_id = $_POST['record_id'] ?? null;
+        $cleared_date = $_POST['cleared_date'] ?? null;
+        $registered_by = $_SESSION['user']['id'] ?? null;
+
+        // 2. ፋይሉን መጫን (በከፈትከው uploadFile ፈንክሽን በመጠቀም)
+        // ማሳሰቢያ፡ በ HTML ፎርምህ ላይ የፋይሉ ስም 'scholarship_file' መሆኑን አረጋግጥ
+        $debtSuspensionFileName = $this->uploadFile('debt_suspension_file', 'documents');
+
+        if (!$debtSuspensionFileName) {
+            $fileError = $_FILES['debt_suspension_file']['error'] ?? UPLOAD_ERR_NO_FILE;
+            $_SESSION['error'] = 'የእዳ/እገዳ ማንሳት ፋይሉን መጫን አልተቻለም። ስህተት፡ ' . $this->getUploadErrorMessage($fileError);
+            header("Location: " . $_SERVER['HTTP_REFERER']); // ወደ መጣህበት ይመልሰሃል
+            exit();
+        }
+
+
+        $clearingDebtSuspensionData = [
+            'id' => Uuid::uuid4()->toString(), // ['id'],
+            'doc_id' => Uuid::uuid4()->toString(), // ['id'],
+            'record_id' => $record_id, // ['id'],
+            'employee_id' => $employee_uuid,
+            'cleared_date' => $cleared_date,
+            'file_url' => $debtSuspensionFileName,
+            'registered_by' => $registered_by
+        ];
+
+
+        // 4. ወደ ዳታቤዝ ማስገባት (Transaction)
+        try {
+            $model = new DebtSuspension($this->db);
+            $result = $model->saveDebtSuspensionClearingData($clearingDebtSuspensionData);
+
+            if ($result) {
+                $_SESSION['success'] = 'የእዳ/እገዳ መረጃው በትክክል ተመዝግቧል!';
+                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension"); // ወይም የፈለግከው ቦታ
+                exit();
+            } else {
+                throw new \Exception("ዳታቤዝ ላይ መመዝገብ አልተቻለም።");
+            }
+
+        } catch (\Exception $e) {
+            // 5. ዳታቤዝ ላይ ካልተመዘገበ የተጫነውን ፋይል ሰርቨር ላይ ማጥፋት (Cleanup)
+            $fullPath = dirname(__DIR__, 2) . '/storage/uploads/documents/' . $debtSuspensionFileName;
+            if (file_exists($fullPath)) {
+                unlink($fullPath);
+            }
+
+            $_SESSION['error'] = 'ስህተት ተፈጥሯል፡ ' . $e->getMessage();
+            die($e->getMessage());
+            header("Location: " . $_SERVER['HTTP_REFERER']);
+            exit();
+        }
+    }
+}
 }

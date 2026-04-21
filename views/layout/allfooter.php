@@ -112,6 +112,13 @@
     <script src="js/employee-debt-suspenssion.js"></script>
     
     <?php endif; ?>
+    <?php if (isset($is_employee_debt_suspension_clearing_page) && $is_employee_debt_suspension_clearing_page === true): ?>
+    <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
+    <script src="plugins/jquery-validation/additional-methods.min.js"></script>
+    <script src="js/ethiopian-calendar.js"></script>
+    <script src="js/employee-debt-suspenssion.js"></script>
+    
+    <?php endif; ?>
    
     <?php if ($_SESSION['user']['role']==='hr_director'): ?>
     <script>const BASE_URL = "<?= '/HRM' ?>"; // or use $_ENV['BASE_URL'] if you have .env</script>
@@ -129,6 +136,39 @@
 $(function () {
   bsCustomFileInput.init();
 });
+</script>
+<script>
+  $(function () {
+    function resetSubmitButtons($form) {
+      $form.data('submitting', false);
+      $form.removeData('submitButton');
+      $form.find('button[type="submit"], input[type="submit"]').prop('disabled', false);
+    }
+
+    $(document).on('click', 'form button[type="submit"], form input[type="submit"]', function() {
+      var $button = $(this);
+      var $form = $button.closest('form');
+      if ($form.data('submitting')) {
+        return;
+      }
+      $form.data('submitButton', $button);
+    });
+
+    $(document).on('submit', 'form', function(event) {
+      var $form = $(this);
+      if ($form.data('submitting')) {
+        event.preventDefault();
+        return false;
+      }
+
+      $form.data('submitting', true);
+      $form.find('button[type="submit"], input[type="submit"]').prop('disabled', true);
+    });
+
+    $(document).on('invalid-form.validate invalid', 'form', function() {
+      resetSubmitButtons($(this));
+    });
+  });
 </script>
 </body>
 </html>
