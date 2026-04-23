@@ -36,6 +36,8 @@ return [
     'employee-scholarship-onleave' => ['ScholarshipController', 'showScholarshiponLeavePending', true],
     'employee-scholarship-onleave-views' => ['ScholarshipController', 'getScholarshipDetails', true],
     'employee-scholarship-onleave-approval' => ['ScholarshipController', 'handleOnLeaveApproval', true],
+    'employee-scholarship-edit' => ['ScholarshipController', 'showScholarshipEdit', true],
+    'employee-scholarship-update' => ['ScholarshipController', 'updateScholarship', true],
     // File Management
     'employee-archive' => ['ScholarshipController', 'getDocument', true],
     //debt suspension
@@ -48,6 +50,8 @@ return [
     'employee-debt-suspension-approval' => ['DebtSuspensionController', 'handleDebtSuspensionApproval', true],
     'employee-debt-suspension-clearing' => ['DebtSuspensionController', 'getDebtSuspensionClearing', true],
     'employee-debt-suspension-clearing-approval' => ['DebtSuspensionController', 'storeDebtSuspensionClearing', true],
+    'employee-debt-suspension-edit' => ['DebtSuspensionController', 'showDebtSuspensionEdit', true],
+    'employee-debt-suspension-update' => ['DebtSuspensionController', 'updateDebtSuspension', true],
     // Stored files 
     'serve-file' => ['FileController', 'serveFile', true], // true = auth required
     // Audit Logs

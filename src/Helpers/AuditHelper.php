@@ -162,6 +162,33 @@ class AuditHelper {
                 'change_type' => 'debt_suspension_approved'
           ]);
      }
+
+    /**
+     * Log debt/suspension edit/update
+     */
+    public static function logDebtSuspensionEdit($employeeId, $oldData, $newData) {
+        self::log('employee_debt_suspension_updated', 'employee', $employeeId, $oldData, $newData, [
+            'change_type' => 'debt_suspension_updated'
+        ]);
+    }
+
+    /**
+     * Log debt/suspension clearing
+     */
+    public static function logDebtSuspensionClearing($employeeId, $oldData, $newData) {
+        self::log('employee_debt_suspension_cleared', 'employee', $employeeId, $oldData, $newData, [
+            'change_type' => 'debt_suspension_cleared'
+        ]);
+    }
+
+    /**
+     * Log scholarship edit/update
+     */
+    public static function logScholarshipEdit($employeeId, $oldData, $newData) {
+        self::log('employee_scholarship_updated', 'employee', $employeeId, $oldData, $newData, [
+            'change_type' => 'scholarship_updated'
+        ]);
+    }
     /**
      * Get audit logs
      */

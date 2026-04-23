@@ -3,6 +3,7 @@ namespace App\Models;
 use PDO;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Monolog\Level;
 
 class AuditLog {
     private $db;
@@ -13,7 +14,7 @@ class AuditLog {
 
         // Initialize Monolog logger
         $this->logger = new Logger('audit');
-        $this->logger->pushHandler(new StreamHandler(__DIR__ . '/../../storage/logs/audit.log', Logger::INFO));
+        $this->logger->pushHandler(new StreamHandler(__DIR__ . '/../../storage/logs/audit.log', Level::Info));
     }
 
     /**

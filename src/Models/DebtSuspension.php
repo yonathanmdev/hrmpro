@@ -23,12 +23,7 @@ public function autoSearch($term, $branchId) {
             AND (e.status = 'Active' OR e.status = 'On Leave')
             AND e.full_name_normalized LIKE ? 
             -- Exclude if there is any record that isn't 'cleared'
-            AND NOT EXISTS (
-                SELECT 1 
-                FROM debt_suspension ds 
-                WHERE ds.emp_id = e.uuid 
-                AND ds.status != 'cleared'
-            )
+            -- AND NOT EXISTS ( SELECT 1 FROM debt_suspension ds  WHERE ds.emp_id = e.uuid AND ds.status != 'cleared')
             LIMIT 10";
 
     $stmt = $this->db->prepare($sql);
@@ -139,6 +134,78 @@ public function getDebtSuspensionDetails($recordId) {
     
     // Use fetchAll if an employee can have multiple scholarship records
     return $stmt->fetch(\PDO::FETCH_ASSOC);
+}
+
+public function updateDebtSuspension($debtSuspensionData) {
+    try {
+        $this->db->beginTransaction();
+
+        // 1. Update debt_suspension table
+        $sql1 = "UPDATE debt_suspension 
+                 SET debt_suspension_type = ?, 
+                     reason = ?, 
+                     start_date = ?,
+                     updated_at = NOW()
+                 WHERE id = ? AND emp_id = ?";
+        $stmt1 = $this->db->prepare($sql1);
+        $stmt1->execute([
+            $debtSuspensionData['debt_suspension_type'],
+            $debtSuspensionData['reason'],
+            $debtSuspensionData['start_date'],
+            $debtSuspensionData['record_id'],
+            $debtSuspensionData['employee_id']
+        ]);
+
+        // 2. If there's a new file, update the document
+        if (!empty($debtSuspensionData['file_url'])) {
+            // Get existing document_id
+            $sqlDoc = "SELECT d.id FROM employee_documents d
+                       INNER JOIN document_assignments da ON d.id = da.document_id
+                       WHERE da.entity_id = ? AND da.entity_type = ?";
+            $stmtDoc = $this->db->prepare($sqlDoc);
+            $stmtDoc->execute([$debtSuspensionData['record_id'], $debtSuspensionData['debt_suspension_type']]);
+            $existingDoc = $stmtDoc->fetch(\PDO::FETCH_ASSOC);
+
+            if ($existingDoc) {
+                // Update existing document
+                $sql2 = "UPDATE employee_documents SET file_url = ? WHERE id = ?";
+                $stmt2 = $this->db->prepare($sql2);
+                $stmt2->execute([
+                    $debtSuspensionData['file_url'],
+                    $existingDoc['id']
+                ]);
+            } else {
+                // Insert new document if none exists
+                $sql2 = "INSERT INTO employee_documents (id, emp_id, file_url, registered_by, created_at) 
+                         VALUES (?, ?, ?, ?, NOW())";
+                $stmt2 = $this->db->prepare($sql2);
+                $stmt2->execute([
+                    $debtSuspensionData['doc_id'],
+                    $debtSuspensionData['employee_id'],
+                    $debtSuspensionData['file_url'],
+                    $debtSuspensionData['registered_by']
+                ]);
+
+                // Create new assignment
+                $sql3 = "INSERT INTO document_assignments (id, document_id, entity_id, entity_type) 
+                         VALUES (?, ?, ?, ?)";
+                $stmt3 = $this->db->prepare($sql3);
+                $stmt3->execute([
+                    $debtSuspensionData['assignment_id'],
+                    $debtSuspensionData['doc_id'],
+                    $debtSuspensionData['record_id'],
+                    $debtSuspensionData['debt_suspension_type']
+                ]);
+            }
+        }
+
+        $this->db->commit();
+        return true;
+        
+    } catch (\Exception $e) {
+        $this->db->rollBack();
+        throw new \Exception("Model Error: " . $e->getMessage()); 
+    }
 }
  public function approveDebtSuspension($uuid, $recordId, $userId): bool {
     $sql = "UPDATE debt_suspension SET status = 'active', approved_by = ?, approval_date = NOW() WHERE id = ? AND emp_id = ? AND status = 'pending'";

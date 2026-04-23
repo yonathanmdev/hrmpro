@@ -66,7 +66,7 @@
     <a href="#" class="nav-link">
       <i class="nav-icon fas fa-edit"></i>
       <p>
-        መመዝገብ
+        መመዝገቢያ
         <i class="fas fa-angle-left right"></i>
       </p>
     </a>
@@ -105,7 +105,7 @@
         <li class="nav-item">
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-position" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
-            <p>መደብ መመዝገብ</p>
+            <p>መደብ</p>
           </a>
         </li>
 
@@ -128,11 +128,19 @@
         <i class="fas fa-angle-left right"></i>
       </p>
     </a>
+     <ul class="nav nav-treeview">
+               <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-onleave" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>መመዝገቢያ</p>
+          </a>
+        </li>
+    </ul>
     <ul class="nav nav-treeview">
                <li class="nav-item">
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
-            <p>የት/ት እድል የተሰጣቸው</p>
+            <p>በት/ት ላይ ያሉ</p>
           </a>
         </li>
     
@@ -150,12 +158,18 @@
     </a>
     <ul class="nav nav-treeview">
             <li class="nav-item">
-          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension" class="nav-link">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-pending" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
-            <p>እዳ እገዳ መመዝገብ</p>
+            <p>መመዝገቢያ</p>
           </a>
         </li>
     </ul>
+    <ul class="nav nav-treeview">
+            <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>ያለባቸው</p>
+          </a>
   </li>
   <?php endif; ?>
 <?php endif; ?>

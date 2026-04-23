@@ -280,7 +280,8 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
     </div>
 </div>
           
-          <div class="row">
+ <?php if (isset($userRole) && $userRole === 'hr_director'): ?>
+   <div class="row">
             <div class="col-12">
               <div class="d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary mr-2">
@@ -292,6 +293,8 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
               </div>
             </div>
           </div>
+<?php endif; ?>
+          
         </form>
       </div>
     </div>
