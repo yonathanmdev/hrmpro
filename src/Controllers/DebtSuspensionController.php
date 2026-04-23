@@ -253,6 +253,107 @@ function countPending() {
 
         $this->render('employee-debt-suspension-clearing', $data);
 }
+
+    public function showDebtSuspensionEdit() {
+        AuthHelper::checkRole(['hr_director', 'hr_officer']);
+        
+        $employee_uuid = $_GET['uuid'] ?? null;
+        $recordId = $_GET['record_id'] ?? null;
+
+        if (!$recordId) {
+            die("Debt Suspension ID is missing.");
+        }
+
+        $model = new DebtSuspension($this->db);
+        $debtSuspension = $model->getDebtSuspensionDetails($recordId);
+        
+        $user = $_SESSION['user'] ?? [];
+        $employeeModel = new EmployeeRegistration($this->db);
+        $employee = $employeeModel->getEmployeeByUuid($employee_uuid);
+
+        $data = [
+            'title' => 'HRM - እዳ/እገዳ ማስተካከያ',
+            'debtSuspension' => $debtSuspension,
+            'user'  => $user,
+            'employee' => $employee,
+        ];
+
+        $this->render('employee-debt-suspension-edit', $data);
+    }
+
+    public function updateDebtSuspension() {
+        AuthHelper::checkRole(['hr_director', 'hr_officer']);
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $employee_uuid = $_POST['employee_id'] ?? null;
+            $record_id = $_POST['record_id'] ?? null;
+            $debt_type = $_POST['debt_suspension_type'] ?? null;
+            $start_date = $_POST['start_date'] ?? null;
+            $registered_by = $_SESSION['user']['id'] ?? null;
+
+            $file_url = null;
+            $newFileUploaded = false;
+
+            // Get old data for audit log before updating
+            $model = new DebtSuspension($this->db);
+            $oldData = $model->getDebtSuspensionDetails($record_id);
+
+            // Check if a new file is being uploaded
+            if (isset($_FILES['debt_suspension_file']) && $_FILES['debt_suspension_file']['error'] === UPLOAD_ERR_OK) {
+                $debtSuspensionFileName = $this->uploadFile('debt_suspension_file', 'documents');
+                if ($debtSuspensionFileName) {
+                    $file_url = $debtSuspensionFileName;
+                    $newFileUploaded = true;
+                }
+            }
+
+            $debtSuspensionData = [
+                'record_id' => $record_id,
+                'employee_id' => $employee_uuid,
+                'debt_suspension_type' => $debt_type,
+                'reason' => $_POST['reason'] ?? '',
+                'start_date' => $start_date,
+                'registered_by' => $registered_by,
+                'file_url' => $file_url,
+                'doc_id' => Uuid::uuid4()->toString(),
+                'assignment_id' => Uuid::uuid4()->toString(),
+            ];
+
+            try {
+                $result = $model->updateDebtSuspension($debtSuspensionData);
+
+                if ($result) {
+                    // Log audit for the update
+                    $newData = [
+                        'debt_suspension_type' => $debt_type,
+                        'reason' => $_POST['reason'] ?? '',
+                        'start_date' => $start_date,
+                        'file_url' => $file_url ?? $oldData['file_url'] ?? null
+                    ];
+                    \App\Helpers\AuditHelper::logDebtSuspensionEdit($employee_uuid, $oldData, $newData);
+
+                    $_SESSION['success'] = 'የእዳ/እገዳ መረጃው በትክክል ተስተካክሏል!';
+                    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension");
+                    exit();
+                } else {
+                    throw new \Exception("ዳታቤዝ ላይ መስተካከል አልተቻለም።");
+                }
+
+            } catch (\Exception $e) {
+                // Cleanup if new file was uploaded
+                if ($newFileUploaded && $file_url) {
+                    $fullPath = dirname(__DIR__, 2) . '/storage/uploads/documents/' . $file_url;
+                    if (file_exists($fullPath)) {
+                        unlink($fullPath);
+                    }
+                }
+
+                $_SESSION['error'] = 'ስህተት ተፈጥሯል፡ ' . $e->getMessage();
+                header("Location: " . $_SERVER['HTTP_REFERER']);
+                exit();
+            }
+        }
+    }
 public function storeDebtSuspensionClearing() {
     AuthHelper::checkRole(['hr_director', 'hr_officer']);
 
@@ -262,6 +363,10 @@ public function storeDebtSuspensionClearing() {
         $record_id = $_POST['record_id'] ?? null;
         $cleared_date = $_POST['cleared_date'] ?? null;
         $registered_by = $_SESSION['user']['id'] ?? null;
+
+        // Get old data for audit log before updating
+        $model = new DebtSuspension($this->db);
+        $oldData = $model->getDebtSuspensionDetails($record_id);
 
         // 2. ፋይሉን መጫን (በከፈትከው uploadFile ፈንክሽን በመጠቀም)
         // ማሳሰቢያ፡ በ HTML ፎርምህ ላይ የፋይሉ ስም 'scholarship_file' መሆኑን አረጋግጥ
@@ -288,10 +393,17 @@ public function storeDebtSuspensionClearing() {
 
         // 4. ወደ ዳታቤዝ ማስገባት (Transaction)
         try {
-            $model = new DebtSuspension($this->db);
             $result = $model->saveDebtSuspensionClearingData($clearingDebtSuspensionData);
 
             if ($result) {
+                // Log audit for the clearing
+                $newData = [
+                    'status' => 'cleared',
+                    'cleared_date' => $cleared_date,
+                    'file_url' => $debtSuspensionFileName
+                ];
+                \App\Helpers\AuditHelper::logDebtSuspensionClearing($employee_uuid, $oldData, $newData);
+
                 $_SESSION['success'] = 'የእዳ/እገዳ መረጃው በትክክል ተመዝግቧል!';
                 header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension"); // ወይም የፈለግከው ቦታ
                 exit();

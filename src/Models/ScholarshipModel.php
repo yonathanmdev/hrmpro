@@ -145,9 +145,11 @@ public function countPendingScholarshipEmployees($organizationId, $branchId) {
                 jp.job_name,
                 jp.status as job_status,
                 e.status,
-                e.rdate
+                e.rdate,
+                s.id as record_id
             FROM employees_table e
             LEFT JOIN job_property jp ON e.job_property_id = jp.id
+            LEFT JOIN employee_scholarships s ON e.uuid = s.emp_id AND s.status = 'pending'
             WHERE e.organization_id = ?
               AND e.branch_id = ?
               AND  e.status = 'On Leave Pending'
@@ -156,6 +158,35 @@ public function countPendingScholarshipEmployees($organizationId, $branchId) {
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$organizationId, $branchId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getActiveScholarships($organizationId, $branchId, $status) {
+        $sql = "SELECT 
+                    e.uuid, 
+                    e.employee_id, 
+                    e.first_name, 
+                    e.father_name, 
+                    e.g_father_name,
+                    e.birth_date,
+                    e.rdate,
+                    jp.job_name, 
+                    s.id as record_id,
+                    s.status as scholarship_status,
+                    s.scholarship_type,
+                    s.agreement_date,
+                    s.scholarship_duration_years
+                FROM employees_table e
+                INNER JOIN employee_scholarships s ON e.uuid = s.emp_id
+                INNER JOIN job_property jp ON e.job_property_id = jp.id
+                WHERE e.organization_id = ? 
+                  AND e.branch_id = ? 
+                  AND s.status = ?
+                ORDER BY s.created_at DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$organizationId, $branchId, $status]);
+        
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
    public function getScholarshipDetails($empId) {
@@ -229,5 +260,97 @@ public function getDocumentByEmpId($uuid) {
     $stmt->execute([$uuid]);
     
     return $stmt->fetchAll(\PDO::FETCH_ASSOC); 
+}
+
+public function getScholarshipDetailsById($recordId) {
+    $sql = "SELECT 
+                s.*, 
+                s.id AS record_id,
+                d.file_url, 
+                da.entity_type,
+                s.agreement_date
+            FROM employee_scholarships s
+            INNER JOIN document_assignments da ON s.id = da.entity_id
+            INNER JOIN employee_documents d ON da.document_id = d.id
+            WHERE s.id = ? 
+            AND da.entity_type = 'የት/ት ውል'
+            LIMIT 1";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([$recordId]);
+    
+    return $stmt->fetch(\PDO::FETCH_ASSOC);
+}
+
+public function updateScholarship($scholarshipData) {
+    try {
+        $this->db->beginTransaction();
+
+        // 1. Update employee_scholarships table
+        $sql1 = "UPDATE employee_scholarships 
+                 SET scholarship_type = ?, 
+                     agreement_date = ?, 
+                     scholarship_duration_years = ?,
+                     updated_at = NOW()
+                 WHERE id = ? AND emp_id = ?";
+        $stmt1 = $this->db->prepare($sql1);
+        $stmt1->execute([
+            $scholarshipData['scholarship_type'],
+            $scholarshipData['agreement_date'],
+            $scholarshipData['duration'],
+            $scholarshipData['record_id'],
+            $scholarshipData['employee_id']
+        ]);
+
+        // 2. If there's a new file, update the document
+        if (!empty($scholarshipData['file_url'])) {
+            // Get existing document_id
+            $sqlDoc = "SELECT d.id FROM employee_documents d
+                       INNER JOIN document_assignments da ON d.id = da.document_id
+                       WHERE da.entity_id = ? AND da.entity_type = 'የት/ት ውል'";
+            $stmtDoc = $this->db->prepare($sqlDoc);
+            $stmtDoc->execute([$scholarshipData['record_id']]);
+            $existingDoc = $stmtDoc->fetch(\PDO::FETCH_ASSOC);
+
+            if ($existingDoc) {
+                // Update existing document
+                $sql2 = "UPDATE employee_documents SET file_url = ?, updated_at = NOW() WHERE id = ?";
+                $stmt2 = $this->db->prepare($sql2);
+                $stmt2->execute([
+                    $scholarshipData['file_url'],
+                    $existingDoc['id']
+                ]);
+            } else {
+                // Insert new document if none exists
+                $sql2 = "INSERT INTO employee_documents (id, emp_id, file_url, registered_by, created_at) 
+                         VALUES (?, ?, ?, ?, NOW())";
+                $stmt2 = $this->db->prepare($sql2);
+                $stmt2->execute([
+                    $scholarshipData['doc_id'],
+                    $scholarshipData['employee_id'],
+                    $scholarshipData['file_url'],
+                    $scholarshipData['registered_by']
+                ]);
+
+                // Create new assignment
+                $sql3 = "INSERT INTO document_assignments (id, document_id, entity_id, entity_type) 
+                         VALUES (?, ?, ?, ?)";
+                $stmt3 = $this->db->prepare($sql3);
+                $stmt3->execute([
+                    $scholarshipData['assignment_id'],
+                    $scholarshipData['doc_id'],
+                    $scholarshipData['record_id'],
+                    'የት/ት ውል'
+                ]);
+            }
+        }
+
+        $this->db->commit();
+        return true;
+        
+    } catch (\Exception $e) {
+        $this->db->rollBack();
+        throw new \Exception("Model Error: " . $e->getMessage()); 
+    }
 }
 }
