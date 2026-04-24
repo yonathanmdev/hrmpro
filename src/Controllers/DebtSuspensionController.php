@@ -110,7 +110,7 @@ public function storeDebtSuspension() {
 
             if ($result) {
                 $_SESSION['success'] = 'የእዳ/እገዳ መረጃው በትክክል ተመዝግቧል!';
-                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension"); // ወይም የፈለግከው ቦታ
+                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension-pending"); // ወይም የፈለግከው ቦታ
                 exit();
             } else {
                 throw new \Exception("ዳታቤዝ ላይ መመዝገብ አልተቻለም።");
@@ -333,7 +333,7 @@ function countPending() {
                     \App\Helpers\AuditHelper::logDebtSuspensionEdit($employee_uuid, $oldData, $newData);
 
                     $_SESSION['success'] = 'የእዳ/እገዳ መረጃው በትክክል ተስተካክሏል!';
-                    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension");
+                    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension-pending"); // ወይም የፈለግከው ቦታ
                     exit();
                 } else {
                     throw new \Exception("ዳታቤዝ ላይ መስተካከል አልተቻለም።");
@@ -405,7 +405,7 @@ public function storeDebtSuspensionClearing() {
                 \App\Helpers\AuditHelper::logDebtSuspensionClearing($employee_uuid, $oldData, $newData);
 
                 $_SESSION['success'] = 'የእዳ/እገዳ መረጃው በትክክል ተመዝግቧል!';
-                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension"); // ወይም የፈለግከው ቦታ
+                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension-pending"); // ወይም የፈለግከው ቦታ
                 exit();
             } else {
                 throw new \Exception("ዳታቤዝ ላይ መመዝገብ አልተቻለም።");

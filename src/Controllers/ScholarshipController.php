@@ -116,7 +116,7 @@ public function storeScholarship() {
 
             if ($result) {
                 $_SESSION['success'] = 'የስኮላርሺፕ መረጃው በትክክል ተመዝግቧል!';
-                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-scholarship"); // ወይም የፈለግከው ቦታ
+                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-scholarship-onleave"); // ወይም የፈለግከው ቦታ
                 exit();
             } else {
                 throw new \Exception("ዳታቤዝ ላይ መመዝገብ አልተቻለም።");
@@ -124,7 +124,7 @@ public function storeScholarship() {
 
         } catch (\Exception $e) {
             // 5. ዳታቤዝ ላይ ካልተመዘገበ የተጫነውን ፋይል ሰርቨር ላይ ማጥፋት (Cleanup)
-            $fullPath = dirname(__DIR__, 2) . '/storage/uploads/scholarships/' . $scholarshipFileName;
+            $fullPath = dirname(__DIR__, 2) . '/storage/uploads/documents/' . $scholarshipFileName;
             if (file_exists($fullPath)) {
                 unlink($fullPath);
             }
@@ -210,7 +210,7 @@ public function getScholarshipDetails() {
 
         if (!$organizationId || !$branchId || empty($user['id'])) {
             $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-scholarship-onleave");
             exit();
         }
 
