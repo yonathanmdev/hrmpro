@@ -20,63 +20,68 @@ use App\Helpers\EthiopianDateHelper;
       id="employee-edit-form"
       onsubmit="return confirm('እርግጠኛ ነዎት? የሰራተኛውን ምዝገባ ማጽደቅ ይፈልጋሉ?');">
          <input type="hidden" name="uuid" value="<?= htmlspecialchars($employee['uuid'] ?? '') ?>">
-<div class="col-md-4">
-    <div class="form-group">
-        <label for="employee_image">ፎቶ</label>
-        <?php if (!empty($employee['employee_image'])): ?>
-            <div class="mt-2">
+<div class="row border-bottom pb-3 mb-4">
+    
+    <div class="col-md-2 text-center">
+        <div class="form-group">
+            <label class="d-block">ፎቶ</label>
+            <?php if (!empty($employee['employee_image'])): ?>
                 <img src="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($employee['employee_image']) ?>&type=image" 
                      alt="Employee Photo" 
-                     class="img-thumbnail" 
-                     style="max-width: 100px; height: 100; display: block;">
+                     class="img-thumbnail rounded shadow-sm" 
+                     style="width: 140px; height: 160px; object-fit: cover; border: 2px solid #dee2e6;">
+            <?php else: ?>
+                <div class="img-thumbnail d-flex align-items-center justify-content-center bg-light" style="width: 140px; height: 160px; margin: 0 auto;">
+                    <i class="fas fa-user-circle fa-5x text-muted"></i>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="col-md-10">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="employee_id" class="text-primary">የሰራተኛው መለያ ቁጥር</label>
+                    <input type="text" class="form-control bg-light" id="employee_id" name="employee_id" value="<?= htmlspecialchars($employee['employee_id'] ?? '') ?>" readonly>
+                </div>
             </div>
-        <?php else: ?>
-            <p class="text-muted">ምንም ፎቶ የለም</p>
-        <?php endif; ?>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="pension_number" class="text-primary">የጡረታ መለያ ቁጥር</label>
+                    <input type="text" class="form-control bg-light" id="pension_number" name="pension_number" value="<?= htmlspecialchars($employee['pension_number'] ?? '') ?>" readonly>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="first_name" class="text-primary">ስም</label>
+                    <input type="text" class="form-control bg-light font-weight-bold" id="first_name" name="first_name" value="<?= htmlspecialchars($employee['first_name'] ?? '') ?>" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="father_name">የአባት ስም</label>
+                    <input type="text" class="form-control bg-light" id="father_name" name="father_name" value="<?= htmlspecialchars($employee['father_name'] ?? '') ?>" readonly>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="g_father_name">የአያት ስም</label>
+                    <input type="text" class="form-control bg-light" id="g_father_name" name="g_father_name" value="<?= htmlspecialchars($employee['g_father_name'] ?? '') ?>" readonly>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="mother_name">የእናት ሙሉ ስም</label>
+                    <input type="text" class="form-control bg-light" id="mother_name" name="mother_name" value="<?= htmlspecialchars($employee['mother_name'] ?? '') ?>" readonly>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="employee_id">የሰራተኛው መለያ ቁጥር</label>
-                <input type="text" class="form-control" id="employee_id" name="employee_id" value="<?= htmlspecialchars($employee['employee_id'] ?? '') ?>" readonly>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="pension_number">የጡረታ መለያ ቁጥር</label>
-                <input type="text" class="form-control" id="pension_number" name="pension_number" value="<?= htmlspecialchars($employee['pension_number'] ?? '') ?>" readonly>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="first_name">ስም</label>
-                <input type="text" class="form-control" id="first_name" name="first_name" value="<?= htmlspecialchars($employee['first_name'] ?? '') ?>" readonly>
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="father_name">የአባት ስም</label>
-                <input type="text" class="form-control" id="father_name" name="father_name" value="<?= htmlspecialchars($employee['father_name'] ?? '') ?>" readonly>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="g_father_name">የአያት ስም</label>
-                <input type="text" class="form-control" id="g_father_name" name="g_father_name" value="<?= htmlspecialchars($employee['g_father_name'] ?? '') ?>" readonly>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="mother_name">የእናት ሙሉ ስም</label>
-                <input type="text" class="form-control" id="mother_name" name="mother_name" value="<?= htmlspecialchars($employee['mother_name'] ?? '') ?>" readonly>
-              </div>
-            </div>
-          </div>
 
           <div class="row">
             <div class="col-md-4">

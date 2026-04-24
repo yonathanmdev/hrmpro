@@ -290,8 +290,7 @@ public function updateScholarship($scholarshipData) {
         $sql1 = "UPDATE employee_scholarships 
                  SET scholarship_type = ?, 
                      agreement_date = ?, 
-                     scholarship_duration_years = ?,
-                     updated_at = NOW()
+                     scholarship_duration_years = ?
                  WHERE id = ? AND emp_id = ?";
         $stmt1 = $this->db->prepare($sql1);
         $stmt1->execute([
