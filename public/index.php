@@ -1,52 +1,69 @@
 <?php
+
 session_start();
 
-// Composer autoload
 require_once __DIR__ . '/../vendor/autoload.php';
 
-// Load .env
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..'); // project root
-$dotenv->safeLoad(); // safeLoad avoids fatal error if .env missing
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->safeLoad();
 
-// Display errors for development only
-if ($_ENV['APP_ENV'] === 'local') {
+if (($_ENV['APP_ENV'] ?? '') === 'local') {
     ini_set('display_errors', 1);
     error_reporting(E_ALL);
 }
 
-// Database connection
 $db = \App\Config\Database::getConnection();
 
-// Route map
+/* ---------------- ROUTES ---------------- */
 $baseRoutes = [
-    'login'                         => ['AuthController', 'showLoginForm', false],
-    'login_process'                 => ['AuthController', 'handleLogin', false],
-    'dashboard'                     => ['DashboardController', 'index', true],
-   ];
+    'login' => ['AuthController', 'showLoginForm', false],
+    'login_process' => ['AuthController', 'handleLogin', false],
+    'dashboard' => ['DashboardController', 'index', true],
+];
 
-// Include extra routes if needed
-$teddyRoutes = require_once __DIR__ . '/../src/Routes/Teddyroutes.php';
-$yoniRoutes  = require_once __DIR__ . '/../src/Routes/Yoniroutes.php';
+$teddyRoutes = require __DIR__ . '/../src/Routes/Teddyroutes.php';
+$yoniRoutes  = require __DIR__ . '/../src/Routes/Yoniroutes.php';
 
 $routes = array_merge($baseRoutes, $teddyRoutes, $yoniRoutes);
 
-// Get action from query string
-$action = $_GET['action'] ?? 'login';
+/* ---------------- ROUTING FIX ---------------- */
 
-// Check route exists
+// Get full action string
+$rawAction = $_GET['action'] ?? 'login';
+
+// Normalize
+$rawAction = trim($rawAction, '/');
+
+// Split into segments
+$segments = explode('/', $rawAction);
+
+// Route name
+$action = $segments[0] ?? 'login';
+
+/* ---------------- DEBUG (temporary if needed) */
+// var_dump($segments); die();
+
+/* ---------------- PARAMS ---------------- */
+$params = [
+    'uuid' => $segments[1] ?? null,
+    'record_id' => $segments[2] ?? null,
+    'extra' => array_slice($segments, 3)
+];
+
+/* ---------------- ROUTE CHECK ---------------- */
 if (!isset($routes[$action])) {
-    header("Location: " . $_ENV['BASE_URL'] . "/login");
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/login");
     exit();
 }
 
 [$controllerName, $method, $requiresAuth] = $routes[$action];
 
-// Check authentication if required
+/* ---------------- AUTH ---------------- */
 if ($requiresAuth) {
     \App\Controllers\AuthController::checkAuth();
 }
 
-// Dynamic controller
+/* ---------------- CONTROLLER ---------------- */
 $controllerClass = "\\App\\Controllers\\$controllerName";
 
 if (!class_exists($controllerClass)) {
@@ -55,8 +72,15 @@ if (!class_exists($controllerClass)) {
 
 $controller = new $controllerClass($db);
 
+/* ---------------- METHOD CALL ---------------- */
 if (!method_exists($controller, $method)) {
-    die("Method '$method' not found in controller '$controllerName'");
+    die("Method '$method' not found in $controllerClass");
 }
 
-$controller->$method();
+$ref = new ReflectionMethod($controller, $method);
+
+if ($ref->getNumberOfParameters() > 0) {
+    $controller->$method($params);
+} else {
+    $controller->$method();
+}

@@ -10,8 +10,8 @@ use App\Helpers\EthiopianDateHelper;
       </div>
 
       <div class="card-body">
-        <table id="example1" class="table table-bordered table-striped">
-  <thead>
+        <table id="example1" data-empty-msg="ምንም የተያያዘ ፋይል አልተገኘም።" class="table table-bordered table-striped">
+  <thead class="thead-light">
     <tr>
       <th>#</th>
       <th>የፋይል አይነት</th>
@@ -38,7 +38,15 @@ use App\Helpers\EthiopianDateHelper;
       <?php foreach ($documentData as $document): ?>
         <tr>
           <td><?= $counter++ ?></td>
-          <td><?= htmlspecialchars($document['entity_type'] ?? 'ተጨማሪ ሰነድ') ?></td>
+         <?php
+$type = $document['entity_type'];
+
+if ($type === 'REMOVAL') {
+    $type = 'ዋስትና የተነሳበት';
+}
+?>
+<td><?= htmlspecialchars($type) ?></td>
+          
           <td>
             <?php if (!empty($document['file_url'])): ?>
               <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($document['file_url']) ?>&type=document" target="_blank" class="btn btn-xs btn-outline-info">
@@ -50,9 +58,7 @@ use App\Helpers\EthiopianDateHelper;
       <?php endforeach; ?>
     <?php endif; ?>
     <?php if ($counter === 1): ?>
-      <tr>
-        <td colspan="3" class="text-center text-muted">ምንም የተያያዘ ፋይል አልተገኘም።</td>
-      </tr>
+      
     <?php endif; ?>
   </tbody>
 </table>

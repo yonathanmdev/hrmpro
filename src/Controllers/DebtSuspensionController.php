@@ -2,6 +2,7 @@
 namespace App\Controllers;
 use App\Models\DebtSuspension;
 use App\Models\EmployeeRegistration;
+use App\Models\User;
 use App\Helpers\AuthHelper;
 use Ramsey\Uuid\Uuid;
 use \App\Traits\FileUploadTrait;
@@ -164,10 +165,17 @@ function countPending() {
         $this->render('employee-debt-suspension-pending', $data);
     }
 
-    public function getDebtSuspensionDetails() {
+    public function getDebtSuspensionDetails($params = []){ 
      AuthHelper::checkRole(['hr_director', 'hr_officer']);
-     $employee_uuid = $_GET['uuid'] ?? null;
-     $recordId = $_GET['record_id'] ?? null;
+     $employee_uuid = $params['uuid']?? $_GET['uuid'] ?? null;
+    $recordId = $params['record_id'] ?? $_GET['record_id'] ?? null;
+
+    // DEBUG (temporary)
+    // var_dump($params); die();
+
+    if (!$employee_uuid) {
+        die("Employee UUID is missing.");
+    }
 
     if (!$recordId) {
         die("Debt Suspension ID is missing.");
@@ -208,7 +216,7 @@ function countPending() {
 
         if (!$organizationId || !$branchId || empty($user['id'])) {
             $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension-pending");
             exit();
         }
 
@@ -217,8 +225,7 @@ function countPending() {
         $employeeModel = new DebtSuspension($this->db);
         if ($employeeModel->approveDebtSuspension($uuid, $recordId, $userID)) {
             
-               \App\Helpers\AuditHelper::logDebtSuspensionApproval($uuid, [
-            ]);
+               \App\Helpers\AuditHelper::log('employee_debt_suspension_approved', 'employee', $uuid, null, [], ['change_type' => 'debt_suspension_approved']);
           
 
             $_SESSION['success'] = 'የሰራተኛ እዳ/እገዳ መረጃ በትክክል ጽድቋል';
@@ -230,10 +237,10 @@ function countPending() {
         exit();
     }
 
-   public function getDebtSuspensionClearing() {
+   public function getDebtSuspensionClearing($params = []){ 
      AuthHelper::checkRole(['hr_director', 'hr_officer']);
-     $employee_uuid = $_GET['uuid'] ?? null;
-     $recordId = $_GET['record_id'] ?? null;
+     $employee_uuid = $params['uuid'] ?? $_GET['uuid'] ?? null;
+     $recordId = $params['record_id'] ?? $_GET['record_id'] ?? null;
 
     if (!$recordId) {
         die("Debt Suspension ID is missing.");
@@ -254,11 +261,11 @@ function countPending() {
         $this->render('employee-debt-suspension-clearing', $data);
 }
 
-    public function showDebtSuspensionEdit() {
+    public function showDebtSuspensionEdit($params=[]) {
         AuthHelper::checkRole(['hr_director', 'hr_officer']);
         
-        $employee_uuid = $_GET['uuid'] ?? null;
-        $recordId = $_GET['record_id'] ?? null;
+        $employee_uuid = $params['uuid'] ?? null;
+        $recordId = $params['record_id'] ?? null;
 
         if (!$recordId) {
             die("Debt Suspension ID is missing.");
@@ -280,6 +287,7 @@ function countPending() {
 
         $this->render('employee-debt-suspension-edit', $data);
     }
+
 
     public function updateDebtSuspension() {
         AuthHelper::checkRole(['hr_director', 'hr_officer']);
@@ -330,7 +338,7 @@ function countPending() {
                         'start_date' => $start_date,
                         'file_url' => $file_url ?? $oldData['file_url'] ?? null
                     ];
-                    \App\Helpers\AuditHelper::logDebtSuspensionEdit($employee_uuid, $oldData, $newData);
+                    \App\Helpers\AuditHelper::log('employee_debt_suspension_updated', 'employee', $employee_uuid, $oldData, $newData, ['change_type' => 'debt_suspension_updated']);
 
                     $_SESSION['success'] = 'የእዳ/እገዳ መረጃው በትክክል ተስተካክሏል!';
                     header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension-pending"); // ወይም የፈለግከው ቦታ
@@ -382,7 +390,6 @@ public function storeDebtSuspensionClearing() {
 
         $clearingDebtSuspensionData = [
             'id' => Uuid::uuid4()->toString(), // ['id'],
-            'doc_id' => Uuid::uuid4()->toString(), // ['id'],
             'record_id' => $record_id, // ['id'],
             'employee_id' => $employee_uuid,
             'cleared_date' => $cleared_date,
@@ -402,10 +409,10 @@ public function storeDebtSuspensionClearing() {
                     'cleared_date' => $cleared_date,
                     'file_url' => $debtSuspensionFileName
                 ];
-                \App\Helpers\AuditHelper::logDebtSuspensionClearing($employee_uuid, $oldData, $newData);
+                \App\Helpers\AuditHelper::log('employee_debt_suspension_cleared', 'employee', $employee_uuid, $oldData, $newData, ['change_type' => 'debt_suspension_cleared']);
 
                 $_SESSION['success'] = 'የእዳ/እገዳ መረጃው በትክክል ተመዝግቧል!';
-                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension-pending"); // ወይም የፈለግከው ቦታ
+                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension"); // ወይም የፈለግከው ቦታ
                 exit();
             } else {
                 throw new \Exception("ዳታቤዝ ላይ መመዝገብ አልተቻለም።");
@@ -423,6 +430,80 @@ public function storeDebtSuspensionClearing() {
             header("Location: " . $_SERVER['HTTP_REFERER']);
             exit();
         }
+    }
+}
+public function delete(): void
+{
+    AuthHelper::checkRole(['hr_director', 'hr_officer']);
+    header('Content-Type: application/json');
+
+    $data    = json_decode(file_get_contents('php://input'), true);
+    $id      = trim((string) ($data['id'] ?? ''));
+    $adminId = (string) ($_SESSION['user']['id'] ?? '');
+    $reason = trim($data['reason']  ?? '');
+    $password = $data['confirm_password'] ?? '';
+    $source = 'INDIVIDUAL';
+
+     // Validate input
+        if (!$id || !$reason || !$password || !$source) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ሁሉም መስኮች አስፈላጊ ናቸው።'
+            ]);
+            return;
+        }
+
+        $user           = $_SESSION['user'] ?? [];
+        $organizationId = $user['organization_id'] ?? null;
+        $branchId = $user['branch_id'] ?? null;
+
+        if (!$organizationId || !$branchId) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ያልተፈቀደ ድርጊት።'
+            ]);
+            return;
+        }
+
+        // Verify password
+        $userModel = new User($this->db);
+        if (!$userModel->verifyPassword($user['id'], $password)) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ፓስዋርዱ ትክክል አይደለም።'
+            ]);
+            return;
+        }
+
+
+    try {
+        $model  = new DebtSuspension($this->db);
+        $result = $model->deleteRecord($id, $adminId, $reason, $source);
+
+        if ($result['status'] === 'success') {
+            \App\Helpers\AuditHelper::log(
+                action:     'debt_suspension_deleted',
+                entityType: 'debt_suspension',
+                entityId:   $id,
+                oldValues:  $result['oldRecord'],   // snapshot of deleted record
+                newValues:  null,                   // nothing after delete
+                metadata:   [
+                    'deleted_type'          => 'soft',
+                    'deleted_documents'     => $result['deletedDocumentCount'] ?? 0,
+                    'deletion_source'       => 'INDIVIDUAL_ACTION',
+                    'performed_by'          => $adminId,
+                ]
+            );
+
+            // strip internal fields before sending to client
+            unset($result['oldRecord'], $result['deletedDocumentCount']);
+        }
+
+        echo json_encode($result);
+
+    } catch (\Exception $e) {
+        error_log('DebtSuspensionController::delete - ' . $e->getMessage());
+        echo json_encode(['status' => 'error', 'message' => 'ስህተት ተፈጥሯል፤ እባክዎ በድጋሚ ይሞክሩ።']);
     }
 }
 }

@@ -1,213 +1,144 @@
 <?php
 namespace App\Helpers;
 
-class AuditHelper {
-    private static $auditLogModel = null;
+use App\Models\AuditLog;
+
+/**
+ * AuditHelper — thin static facade over AuditLog model.
+ *
+ * Keeps the existing call signatures used throughout your codebase:
+ *
+ *   AuditHelper::log($action, $entityType, $entityId, $oldValues, $newValues, $metadata)
+ *   AuditHelper::getLogs($filters, $limit, $offset)
+ *   AuditHelper::getStats($dateFrom)
+ *
+ * The DB connection is set once at bootstrap via AuditHelper::init($db).
+ */
+class AuditHelper
+{
+    private static ?\PDO      $db    = null;
+    private static ?AuditLog  $model = null;
 
     /**
-     * Initialize the audit log model
+     * Call this once in your bootstrap / DI setup.
+     *
+     * Example in index.php:
+     *   AuditHelper::init($db);
      */
-    public static function init($db) {
-        if (self::$auditLogModel === null) {
-            self::$auditLogModel = new \App\Models\AuditLog($db);
+    public static function init(\PDO $db): void
+    {
+        self::$db    = $db;
+        self::$model = new AuditLog($db);
+    }
+
+    // =========================================================================
+    //  WRITE — matches existing call signature in your codebase
+    // =========================================================================
+
+    /**
+     * Named-parameter version (new pattern — used in AuditLogController):
+     *
+     *   AuditHelper::log(
+     *       action:     'debt_suspension_deleted',
+     *       entityType: 'debt_suspension',
+     *       entityId:   $id,
+     *       oldValues:  $row,
+     *   );
+     *
+     * Positional version (old pattern — existing call sites keep working):
+     *
+     *   AuditHelper::log('login_success', 'auth', $userId)
+     */
+    public static function log(
+        string  $action,
+        string  $entityType,
+        ?string $entityId  = null,
+        mixed   $oldValues = null,
+        mixed   $newValues = null,
+        array   $metadata  = []
+    ): bool {
+        $userId = $_SESSION['user']['id'] ?? null;   // adjust to your session key
+        return self::model()->log($userId, $action, $entityType, $entityId, $oldValues, $newValues, $metadata);
+    }
+
+    /**
+     * Convenience for actions that already know the user ID
+     * (e.g. login events, where the session may not be set yet).
+     */
+    public static function logAs(
+        ?string $userId,
+        string  $action,
+        string  $entityType,
+        ?string $entityId  = null,
+        mixed   $oldValues = null,
+        mixed   $newValues = null,
+        array   $metadata  = []
+    ): bool {
+        return self::model()->log($userId, $action, $entityType, $entityId, $oldValues, $newValues, $metadata);
+    }
+
+    // =========================================================================
+    //  READ — matches existing AuditHelper::getLogs() used in AuditController
+    // =========================================================================
+
+    /**
+     * Returns ['data' => [...rows...], 'total' => int]
+     */
+    public static function getLogs(array $filters = [], int $limit = 25, int $offset = 0): array
+    {
+        return self::model()->getLogs($filters, $limit, $offset);
+    }
+
+    public static function getStats(?string $dateFrom = null): array
+    {
+        return self::model()->getStats($dateFrom);
+    }
+
+    public static function getFilterOptions(): array
+    {
+        return self::model()->getFilterOptions();
+    }
+
+    public static function findById(string $id): ?array
+    {
+        return self::model()->findById($id);
+    }
+
+    // =========================================================================
+    //  Diff helper — build old/new slices automatically on model update
+    // =========================================================================
+
+    /**
+     * Example:
+     *   $old = $employee;                         // array before update
+     *   // ... run UPDATE ...
+     *   $new = fetchEmployeeById($id);            // array after update
+     *   [$oldSlice, $newSlice] = AuditHelper::diff($old, $new);
+     *   AuditHelper::log('employee_updated', 'employee', $id, $oldSlice, $newSlice);
+     */
+    public static function diff(array $before, array $after): array
+    {
+        $changed = array_keys(
+            array_filter($after, fn($v, $k) => ($before[$k] ?? null) !== $v, ARRAY_FILTER_USE_BOTH)
+        );
+
+        $oldSlice = array_intersect_key($before, array_flip($changed));
+        $newSlice = array_intersect_key($after,  array_flip($changed));
+
+        return [$oldSlice, $newSlice];
+    }
+
+    // =========================================================================
+    //  Private
+    // =========================================================================
+
+    private static function model(): AuditLog
+    {
+        if (self::$model === null) {
+            throw new \RuntimeException(
+                'AuditHelper not initialised. Call AuditHelper::init($db) in your bootstrap.'
+            );
         }
-    }
-
-    /**
-     * Log a user action
-     */
-    public static function log($action, $entityType, $entityId = null, $oldValues = null, $newValues = null, $metadata = []) {
-        if (self::$auditLogModel === null) {
-            throw new \Exception("AuditHelper not initialized. Call AuditHelper::init(\$db) first.");
-        }
-
-        $userId = $_SESSION['user']['id'] ?? null;
-
-        self::$auditLogModel->log($userId, $action, $entityType, $entityId, $oldValues, $newValues, $metadata);
-    }
-
-    /**
-     * Log user creation
-     */
-    public static function logUserCreation($userId, $userData) {
-        self::log('user_created', 'user', $userId, null, $userData);
-    }
-
-    /**
-     * Log user update
-     */
-    public static function logUserUpdate($userId, $oldData, $newData) {
-        self::log('user_updated', 'user', $userId, $oldData, $newData);
-    }
-
-    /**
-     * Log user deletion
-     */
-    public static function logUserDeletion($userId, $userData) {
-        self::log('user_deleted', 'user', $userId, $userData, null);
-    }
-
-    /**
-     * Log login
-     */
-    public static function logLogin($userId, $success = true) {
-        $action = $success ? 'login_success' : 'login_failed';
-        self::log($action, 'auth', $userId);
-    }
-
-    /**
-     * Log logout
-     */
-    public static function logLogout($userId) {
-        self::log('logout', 'auth', $userId);
-    }
-
-    /**
-     * Log organization creation
-     */
-    public static function logOrgCreation($orgId, $orgData) {
-        self::log('organization_created', 'organization', $orgId, null, $orgData);
-    }
-
-    /**
-     * Log organization update
-     */
-    public static function logOrgUpdate($orgId, $oldData, $newData) {
-        self::log('organization_updated', 'organization', $orgId, $oldData, $newData);
-    }
-
-    /**
-     * Log branch creation
-     */
-    public static function logBranchCreation($branchId, $branchData) {
-        self::log('branch_created', 'branch', $branchId, null, $branchData);
-    }
-
-    /**
-     * Log branch update
-     */
-    public static function logBranchUpdate($branchId, $oldData, $newData) {
-        self::log('branch_updated', 'branch', $branchId, $oldData, $newData);
-    }
-
-    /**
-     * Log director creation
-     */
-    public static function logDirectorCreation($directorId, $directorData) {
-        self::log('director_created', 'director', $directorId, null, $directorData);
-    }
-
-    /**
-     * Log director update
-     */
-    public static function logDirectorUpdate($directorId, $oldData, $newData) {
-        self::log('director_updated', 'director', $directorId, $oldData, $newData);
-    }
-
-    /**
-     * Log position creation
-     */
-    public static function logPositionCreation($positionId, $positionData) {
-        self::log('position_created', 'position', $positionId, null, $positionData);
-    }
-
-    /**
-     * Log position update
-     */
-    public static function logPositionUpdate($positionId, $oldData, $newData) {
-        self::log('position_updated', 'position', $positionId, $oldData, $newData);
-    }
-
-    /**
-     * Log developer creation
-     */
-    public static function logDeveloperCreation($developerId, $developerData) {
-        self::log('developer_created', 'developer', $developerId, null, $developerData);
-    }
-
-    /**
-     * Log developer update
-     */
-    public static function logDeveloperUpdate($developerId, $oldData, $newData) {
-        self::log('developer_updated', 'developer', $developerId, $oldData, $newData);
-    }
-
-    /**
-     * Log employee registration
-     */
-    public static function logEmployeeRegistration($employeeId, $employeeData) {
-        self::log('employee_registered', 'employee', $employeeId, null, $employeeData);
-    }
-
-    /**
-     * Log employee job change
-     */
-    public static function logEmployeeJobChange($employeeId, $jobChangeData) {
-        self::log('employee_job_changed', 'employee', $employeeId, null, $jobChangeData, [
-            'change_type' => 'job_assignment'
-        ]);
-    }
-     public static function logOnBoardingEmployeeApproval($employeeId, $jobChangeData) {
-        self::log('employee_hiring_approved', 'employee', $employeeId, null, $jobChangeData, [
-            'change_type' => 'hiring_approved'
-        ]);
-    }
-      public static function logOnLeaveEmployeeApproval($employeeId, $jobChangeData) {
-        self::log('employee_scholarship_approved', 'employee', $employeeId, null, $jobChangeData, [
-            'change_type' => 'Scholarship_approved'
-        ]);
-    }
-         public static function logDebtSuspensionApproval($employeeId, $jobChangeData) {
-          self::log('employee_debt_suspension_approved', 'employee', $employeeId, null, $jobChangeData, [
-                'change_type' => 'debt_suspension_approved'
-          ]);
-     }
-
-    /**
-     * Log debt/suspension edit/update
-     */
-    public static function logDebtSuspensionEdit($employeeId, $oldData, $newData) {
-        self::log('employee_debt_suspension_updated', 'employee', $employeeId, $oldData, $newData, [
-            'change_type' => 'debt_suspension_updated'
-        ]);
-    }
-
-    /**
-     * Log debt/suspension clearing
-     */
-    public static function logDebtSuspensionClearing($employeeId, $oldData, $newData) {
-        self::log('employee_debt_suspension_cleared', 'employee', $employeeId, $oldData, $newData, [
-            'change_type' => 'debt_suspension_cleared'
-        ]);
-    }
-
-    /**
-     * Log scholarship edit/update
-     */
-    public static function logScholarshipEdit($employeeId, $oldData, $newData) {
-        self::log('employee_scholarship_updated', 'employee', $employeeId, $oldData, $newData, [
-            'change_type' => 'scholarship_updated'
-        ]);
-    }
-    /**
-     * Get audit logs
-     */
-    public static function getLogs($filters = [], $limit = 100, $offset = 0) {
-        if (self::$auditLogModel === null) {
-            throw new \Exception("AuditHelper not initialized.");
-        }
-
-        return self::$auditLogModel->getLogs($filters, $limit, $offset);
-    }
-
-    /**
-     * Get audit statistics
-     */
-    public static function getStats($dateFrom = null, $dateTo = null) {
-        if (self::$auditLogModel === null) {
-            throw new \Exception("AuditHelper not initialized.");
-        }
-
-        return self::$auditLogModel->getStats($dateFrom, $dateTo);
+        return self::$model;
     }
 }

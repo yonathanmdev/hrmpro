@@ -1,9 +1,9 @@
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="index3.html" class="brand-link">
+    <a href="javascript:void(0)" class="brand-link">
       <img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-      <span class="brand-text font-weight-light">HRMS</span>
+      <span class="brand-text font-weight-light small">HRMS</span>
     </a>
 
     <!-- Sidebar -->
@@ -13,8 +13,13 @@
         <div class="image">
           <img src="dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
         </div>
-        <div class="info">
-          <a href="#" class="d-block"><?php echo $_SESSION['user']['first_name'].' '. $_SESSION['user']['father_name'] ?? 'Guest'; ?></a>
+        <div class="info ml-2">
+          <a href="javascript:void(0)" class="d-block"><?php 
+  $full_name = ($_SESSION['user']['first_name'] ?? '') . ' ' . ($_SESSION['user']['father_name'] ?? '');
+  $display_name = trim($full_name) ?: 'Guest';
+
+  echo mb_convert_case($display_name, MB_CASE_TITLE, "UTF-8"); 
+?></a>
         </div>
       </div>
 
@@ -35,7 +40,7 @@
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
-          <li class="nav-item menu-open">
+          <li class="nav-item menu-open small">
             <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/dashboard" class="nav-link active">
               <i class="nav-icon fas fa-tachometer-alt"></i>
               <p>
@@ -62,16 +67,17 @@
         // 1. Only show the "Registration" menu if the user has one of these three roles
           if (in_array($userRole, ['system_admin', 'org_admin', 'hr_director', 'hr_officer'])): 
           ?>
-     <li class="nav-item">
-    <a href="#" class="nav-link">
+           <?php if ($userRole === 'system_admin' || $userRole === 'org_admin'): ?>
+     <li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link">
       <i class="nav-icon fas fa-edit"></i>
       <p>
-        መመዝገቢያ
+        መመዝገብ
         <i class="fas fa-angle-left right"></i>
       </p>
     </a>
     <ul class="nav nav-treeview">
-       <?php if ($userRole === 'system_admin' || $userRole === 'org_admin'): ?>
+      
       <?php if ($userRole === 'system_admin'): ?>
         <li class="nav-item">
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-organization" class="nav-link">
@@ -93,8 +99,22 @@
             <p>ተቆጣጣሪ</p>
           </a>
         </li>
-        <?php endif; ?>
-      <?php if ($userRole === 'hr_director' || $userRole === 'hr_officer'): ?>
+        
+
+    </ul>
+  </li>
+  <?php endif; ?>
+ <?php if ($userRole === 'hr_director' || $userRole === 'hr_officer'): ?>
+
+  <li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link">
+      <i class="nav-icon fas fa-edit"></i>
+      <p>
+        ዳይሬክተር እና መደብ
+        <i class="fas fa-angle-left right"></i>
+      </p>
+    </a>
+    <ul class="nav nav-treeview">
               <li class="nav-item">
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-director" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
@@ -108,20 +128,56 @@
             <p>መደብ</p>
           </a>
         </li>
+    </ul>
+  </li>
+<li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link">
+      <i class="nav-icon fas fa-edit"></i>
+      <p>
+       ሰራተኛ
+        <i class="fas fa-angle-left right"></i>
+      </p>
+    </a>
+    <ul class="nav nav-treeview">
 
         <li class="nav-item">
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-registration" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
-            <p>ሰራተኛ</p>
+            <p>መመዝገብ</p>
           </a>
         </li>
-      <?php endif; ?>
+
+        <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-active" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>ዝርዝር</p>
+          </a>
+        </li>
 
     </ul>
   </li>
- <?php if ($userRole === 'hr_director' || $userRole === 'hr_officer'): ?>
- <li class="nav-item">
-    <a href="#" class="nav-link">
+
+  <li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link">
+        <i class="nav-icon fas fa-edit"></i>
+        <p>
+            ስራ ልምድ
+            <i class="fas fa-angle-left right"></i>
+        </p>
+    </a>
+    <ul class="nav nav-treeview">
+        <li class="nav-item">
+            <!-- This link triggers the modal by ID -->
+            <a href="javascript:void(0)" class="nav-link" data-toggle="modal" data-target="#employeeSearchModal">
+                <i class="far fa-circle nav-icon"></i>
+                <p>መመዝገብ/መረጃ</p>
+            </a>
+        </li>
+    </ul>
+</li>
+
+  <li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link">
       <i class="nav-icon fas fa-edit"></i>
       <p>
         የትምህርት እድል
@@ -148,8 +204,37 @@
     </ul>
   </li>
 
-<li class="nav-item">
-    <a href="#" class="nav-link">
+<li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link">
+      <i class="nav-icon fas fa-edit"></i>
+      <p>
+        ዋስትና
+        <i class="fas fa-angle-left right"></i>
+      </p>
+    </a>
+     <ul class="nav nav-treeview">
+               <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-warranty" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>መመዝገቢያ</p>
+          </a>
+        </li>
+    </ul>
+    <ul class="nav nav-treeview">
+               <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-has-warranty" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>ዋስትና ያለባቸው</p>
+          </a>
+        </li>
+    
+
+    </ul>
+  </li>
+
+
+<li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link">
       <i class="nav-icon fas fa-edit"></i>
       <p>
         እዳ እገዳ
@@ -171,10 +256,87 @@
             <p>ያለባቸው</p>
           </a>
   </li>
+   </ul>
+  </li>
   <?php endif; ?>
 <?php endif; ?>
+     
+<li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link text-warning">
+      <i class="nav-icon fas fa-trash-restore"></i>
+      <p>
+        የተሰረዙ
+        <i class="fas fa-angle-left right"></i>
+      </p>
+    </a>
+    <ul class="nav nav-treeview">
+       <?php if ($userRole === 'system_admin'): ?>
+        <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/organization-deleted-lists" class="nav-link">
+            <i class="far fa-building nav-icon text-warning"></i>
+            <p>ድርጅቶች</p>
+          </a>
+        </li>
+        <?php endif; ?>
+      <?php if ($userRole === 'org_admin'): ?>
+         <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/deleted-branches" class="nav-link">
+            <i class="fas fa-code-branch nav-icon text-warning"></i>
+            <p>ቅርንጫፎች</p>
+          </a>
+        </li>
+      <?php endif; ?>
+       <?php if ($userRole === 'org_admin' || $userRole === 'system_admin'): ?>
+         <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/deleted-users" class="nav-link">
+            <i class="fas fa-users nav-icon text-warning"></i>
+            <p>ተቆጣጣሪዎች</p>
+          </a>
+        </li>
+        <?php elseif ($userRole === 'hr_director' || $userRole === 'hr_officer'): ?>
+         <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/deleted-directors" class="nav-link">
+            <i class="fas fa-building nav-icon text-warning"></i>
+            <p>ዳይሬክተር</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/deleted-positions" class="nav-link">
+            <i class="fas fa-building nav-icon text-warning"></i>
+            <p>መደብ</p>
+          </a>
+        </li>
+       <?php endif; ?>
+    </ul>
+</li>
 
-        </ul>
+<?php if ($userRole === 'system_admin'): ?>
+    <li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link text-info">
+      <i class="nav-icon fas fa-archive"></i>
+      <p>
+        Archived
+        <i class="fas fa-angle-left right"></i>
+      </p>
+    </a>
+    <ul class="nav nav-treeview">
+
+        <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/archived-organizations" class="nav-link">
+            <i class="far fa-building nav-icon text-info"></i>
+            <p>Organizations</p>
+          </a>
+        </li>
+    <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/archived-branches" class="nav-link">
+             <i class="fas fa-code-branch nav-icon text-info"></i>
+            <p>Branches</p>
+          </a>
+        </li>
+        
+    </ul>
+</li>   
+     <?php endif; ?>    
       </nav>
       <!-- /.sidebar-menu -->
     </div>

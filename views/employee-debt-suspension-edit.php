@@ -16,7 +16,7 @@ if (!empty($debtSuspension['start_date'])) {
         <h3 class="card-title font-weight-bold">እዳ/እገዳ ማስተካከያ </h3>
         <div class="card-tools">
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension" class="btn btn-secondary text-white">
-            <i class="fas fa-arrow-left"></i> ተመለስ
+           <i class="fas fa-times fa-lg"></i>
           </a>
         </div>
       </div>
@@ -142,7 +142,7 @@ if (!empty($debtSuspension['start_date'])) {
                 <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension" class="btn btn-default mr-2 px-4">
                     ዝጋ
                 </a>
-                <button type="submit" class="btn btn-primary px-4">
+                <button type="submit" class="btn btn-warning px-4">
                     <i class="fas fa-save"></i> መረጃውን አስተካክል
                 </button>
             </div>

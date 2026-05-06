@@ -2,6 +2,7 @@
 namespace App\Controllers;
 use App\Models\ScholarshipModel;
 use App\Models\EmployeeRegistration;
+use App\Models\User;
 use App\Helpers\AuthHelper;
 use Ramsey\Uuid\Uuid;
 use \App\Traits\FileUploadTrait;
@@ -167,9 +168,10 @@ public function onLeaveScholarshipEmployees() {
 
         $this->render('employee-scholarship-onleave', $data);
     }
-public function getScholarshipDetails() {
+public function getScholarshipDetails($params = []) {
      AuthHelper::checkRole(['hr_director', 'hr_officer']);
-     $scholarshipId = $_GET['uuid'] ?? null;
+     $uuId = $params['uuid'] ?? $_GET['uuid'] ?? null;
+     $scholarshipId = $params['record_id'] ?? $_GET['record_id'] ?? null;
 
     if (!$scholarshipId) {
         die("Scholarship ID is missing.");
@@ -178,7 +180,7 @@ public function getScholarshipDetails() {
     $scholarship = $model->getScholarshipDetails($scholarshipId);
      $user = $_SESSION['user'] ?? [];
        $employeeModel = new EmployeeRegistration($this->db);
-        $employee = $employeeModel->getEmployeeByUuid($scholarshipId);
+        $employee = $employeeModel->getEmployeeByUuid($uuId);
    
     $data = [
             'title' => 'HRM - የሰራተኛ የትምህርት እድል',
@@ -219,8 +221,7 @@ public function getScholarshipDetails() {
         $employeeModel = new ScholarshipModel($this->db);
         if ($employeeModel->approveOnLeaveEmployee($uuid, $scholarship_uuid, $userID)) {
             
-               \App\Helpers\AuditHelper::logOnLeaveEmployeeApproval($uuid, [
-            ]);
+               \App\Helpers\AuditHelper::log('employee_scholarship_approved', 'employee', $uuid, null, [], ['change_type' => 'Scholarship_approved']);
           
 
             $_SESSION['success'] = 'ሰራተኛው መረጃ በትክክል ተስተካከለ።';
@@ -231,9 +232,9 @@ public function getScholarshipDetails() {
         header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-scholarship-onleave");
         exit();
     }
-   public function getDocument() {
+   public function getDocument($params = []) {
     AuthHelper::checkRole(['hr_director', 'hr_officer']);
-    $uuid = $_GET['uuid'] ?? null;
+    $uuid = $params['uuid'] ?? $_GET['uuid'] ?? null;
 
     if (!$uuid) {
         die("Missing identifier.");
@@ -255,11 +256,11 @@ public function getScholarshipDetails() {
     $this->render('employee-archive', $data);
 }
 
-    public function showScholarshipEdit() {
+    public function showScholarshipEdit($params = []) {
         AuthHelper::checkRole(['hr_director', 'hr_officer']);
         
-        $employee_uuid = $_GET['uuid'] ?? null;
-        $recordId = $_GET['record_id'] ?? null;
+        $employee_uuid = $params['uuid'] ?? $_GET['uuid'] ?? null;
+        $recordId = $params['record_id'] ?? $_GET['record_id'] ?? null;
 
         if (!$recordId) {
             die("Scholarship ID is missing.");
@@ -332,7 +333,7 @@ public function getScholarshipDetails() {
                         'duration' => $duration,
                         'file_url' => $file_url ?? $oldData['file_url'] ?? null
                     ];
-                    \App\Helpers\AuditHelper::logScholarshipEdit($employee_uuid, $oldData, $newData);
+                    \App\Helpers\AuditHelper::log('employee_scholarship_updated', 'employee', $employee_uuid, $oldData, $newData, ['change_type' => 'scholarship_updated']);
 
                     $_SESSION['success'] = 'የት/ት መረጃው በትክክል ተስተካክሏል!';
                     header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-scholarship-onleave");
@@ -356,4 +357,79 @@ public function getScholarshipDetails() {
             }
         }
     }
+
+    public function delete(): void
+{
+    AuthHelper::checkRole(['hr_director', 'hr_officer']);
+    header('Content-Type: application/json');
+
+    $data    = json_decode(file_get_contents('php://input'), true);
+    $id      = trim((string) ($data['id'] ?? ''));
+    $reason = trim($data['reason']      ?? '');
+    $password = $data['confirm_password'] ?? '';
+    $source = 'INDIVIDUAL';
+    $adminId = (string) ($_SESSION['user']['id'] ?? '');
+
+     // Validate input
+        if (!$id || !$reason || !$password || !$source) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ሁሉም መስኮች አስፈላጊ ናቸው።'
+            ]);
+            return;
+        }
+
+        $user           = $_SESSION['user'] ?? [];
+        $organizationId = $user['organization_id'] ?? null;
+        $branchId = $user['branch_id'] ?? null;
+
+        if (!$organizationId || !$branchId) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ያልተፈቀደ ድርጊት።'
+            ]);
+            return;
+        }
+
+        // Verify password
+        $userModel = new User($this->db);
+        if (!$userModel->verifyPassword($user['id'], $password)) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ፓስዋርዱ ትክክል አይደለም።'
+            ]);
+            return;
+        }
+
+    try {
+        $model  = new ScholarshipModel($this->db);
+        $result = $model->deleteRecord($id, $adminId, $reason, $source);
+
+        if ($result['status'] === 'success') {
+            \App\Helpers\AuditHelper::log(
+                action:     'scholarship_deleted',
+                entityType: 'scholarship',
+                entityId:   $id,
+                oldValues:  $result['oldRecord'],   // snapshot of deleted record
+                newValues:  null,                   // nothing after delete
+                metadata:   [
+                    'deleted_type'          => 'soft',
+                    'deleted_documents'     => $result['deletedDocumentCount'] ?? 0,
+                    'deletion_source'       => 'INDIVIDUAL_ACTION',
+                    'reason'          => $reason,
+                    'performed_by'          => $adminId,
+                ]
+            );
+
+            // strip internal fields before sending to client
+            unset($result['oldRecord'], $result['deletedDocumentCount']);
+        }
+
+        echo json_encode($result);
+
+    } catch (\Exception $e) {
+        error_log('ScholarshipController::delete - ' . $e->getMessage());
+        echo json_encode(['status' => 'error', 'message' => 'ስህተት ተፈጥሯል፤ እባክዎ በድጋሚ ይሞክሩ።']);
+    }
+}
 }

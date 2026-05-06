@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Models\User;
+use App\Models\Branch;
 
 // 1. BaseControllerን እንዲወርስ (Extends) እናደርጋለን
 class AuthController extends BaseController {
@@ -41,15 +42,17 @@ class AuthController extends BaseController {
                     'email'              => $user['email'],
                     'role'               => $user['role']
                 ];
-
+$branchModel = new Branch($this->db);
+$branchName = $branchModel->getBranchById($user['branch_id']);
+$_SESSION['user']['branch_name'] = $branchName ? $branchName['name'] : 'Unknown Branch';
                 // Log successful login
-                \App\Helpers\AuditHelper::logLogin($user['id'], true);
+                \App\Helpers\AuditHelper::logAs($user['id'], 'login_success', 'auth', $user['id']);
 
                 header("Location:" . $_ENV['BASE_URL'] . "/dashboard");
                 exit();
             } else {
                 // Log failed login attempt
-                \App\Helpers\AuditHelper::logLogin(null, false);
+                \App\Helpers\AuditHelper::logAs(null, 'login_failed', 'auth', null);
 
                 $_SESSION['error'] = "ኢሜይል ወይም ፓስወርድ አልተዛመደም። እባክዎ እንደገና ይሞክሩ!";
                 header("Location: " . $_ENV['BASE_URL'] . "/login");
@@ -94,7 +97,7 @@ class AuthController extends BaseController {
         
         // Log logout before destroying session
         if ($userId) {
-            \App\Helpers\AuditHelper::logLogout($userId);
+            \App\Helpers\AuditHelper::logAs($userId, 'logout', 'auth', $userId);
         }
         
         session_destroy();

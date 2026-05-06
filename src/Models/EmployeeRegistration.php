@@ -7,15 +7,65 @@ class EmployeeRegistration {
     public function __construct($db) {
         $this->db = $db;
     }
+public function assignJob(string $newJobId, string $branchId, ?string $oldJobId = null): void
+{
+    // 🔒 lock new job
+    $stmt = $this->db->prepare("
+        SELECT id, allow_multiple, vacancy_count, current_filled
+        FROM job_property
+        WHERE id = ?
+        AND branch_id = ?
+        AND is_deleted = 0
+        AND status = 'active'
+        FOR UPDATE
+    ");
+    $stmt->execute([$newJobId, $branchId]);
+    $newJob = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-    public function createEmployee(array $data): bool {
+    if (!$newJob) {
+        throw new \Exception("Invalid job");
+    }
+
+    // 🔁 if changing job → release old job
+    if ($oldJobId && $oldJobId !== $newJobId) {
+
+        $stmt = $this->db->prepare("
+            UPDATE job_property
+            SET current_filled = current_filled - 1
+            WHERE id = ?
+        ");
+        $stmt->execute([$oldJobId]);
+    }
+
+    // 🚨 enforce rules BEFORE increment
+    if ((int)$newJob['allow_multiple'] === 0) {
+        if ($newJob['current_filled'] > 0) {
+            throw new \Exception("Job already taken");
+        }
+    }
+
+    if ((int)$newJob['allow_multiple'] === 1 && $newJob['vacancy_count'] !== null) {
+        if ($newJob['current_filled'] >= (int)$newJob['vacancy_count']) {
+            throw new \Exception("Job is full");
+        }
+    }
+
+    // ➕ increment new job
+    $stmt = $this->db->prepare("
+        UPDATE job_property
+        SET current_filled = current_filled + 1
+        WHERE id = ?
+    ");
+    $stmt->execute([$newJobId]);
+}
+ public function createEmployee(array $data): bool {
         try {
             $fullNameRaw = $data['first_name'] . ' ' . $data['father_name'] . ' ' . $data['g_father_name'];
             $normalizedFullName = AmharicNormalizer::normalize($fullNameRaw);
             // Start transaction
             $this->db->beginTransaction();
 
-            // Insert employee
+$this->assignJob($data['job_property_id'], $data['branch_id']);            // Insert employee
             $sql = "INSERT INTO employees_table (
                 uuid, employee_id, first_name, father_name, g_father_name, mother_name,
                 sex, birth_date, phone_number, yegabcha_huneta, organization_id,
@@ -66,7 +116,7 @@ class EmployeeRegistration {
                 throw new \Exception("Failed to insert employee");
             }
 
-            // Update job_property status to 'reserved'
+            /* Update job_property status to 'reserved'
             $updateSql = "UPDATE job_property SET status = 'reserved' WHERE id = ?";
             $updateStmt = $this->db->prepare($updateSql);
             $result2 = $updateStmt->execute([$data['job_property_id']]);
@@ -74,7 +124,7 @@ class EmployeeRegistration {
             if (!$result2) {
                 throw new \Exception("Failed to update job status");
             }
-
+*/
             // Commit transaction
             $this->db->commit();
             return true;
@@ -85,9 +135,9 @@ class EmployeeRegistration {
             error_log("Employee registration transaction failed: " . $e->getMessage());
             return false;
         }
-    }
+    } 
 
-    public function getEmployeesByBranch($organizationId, $branchId) {
+    public function getEmployeesByBranch(string $organizationId, string $branchId) {
         $sql = "
             SELECT 
                 e.uuid,
@@ -105,11 +155,14 @@ class EmployeeRegistration {
                 jp.job_name,
                 jp.status as job_status,
                 e.status,
-                e.rdate
+                e.rdate,
+                e.is_deleted
             FROM employees_table e
             LEFT JOIN job_property jp ON e.job_property_id = jp.id
             WHERE e.organization_id = ?
               AND e.branch_id = ?
+              AND e.status != 'Onboarding' 
+            AND e.is_deleted != 2 
             ORDER BY e.rdate DESC
         ";
 
@@ -118,14 +171,14 @@ class EmployeeRegistration {
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getEmployeeByUuid($uuid) {
+    public function getEmployeeByUuid(string $uuid) {
         $sql = "
             SELECT 
                 e.*,
                 jp.job_name,
                 jp.status as job_status
             FROM employees_table e
-            LEFT JOIN job_property jp ON e.job_property_id = jp.id
+            INNER JOIN job_property jp ON e.job_property_id = jp.id
             WHERE e.uuid = ?
         ";
 
@@ -134,7 +187,7 @@ class EmployeeRegistration {
         return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function updateEmployee($uuid, array $data): bool {
+    public function updateEmployee(string $uuid, array $data): bool {
         try {
             // Start transaction
             $this->db->beginTransaction();
@@ -144,9 +197,12 @@ class EmployeeRegistration {
             if (!$currentEmployee) {
                 throw new \Exception("Employee not found");
             }
-
+            $fullNameRaw = $data['first_name'] . ' ' . $data['father_name'] . ' ' . $data['g_father_name'];
+            $normalizedFullName = AmharicNormalizer::normalize($fullNameRaw);
             $oldJobId = $currentEmployee['job_property_id'];
             $newJobId = $data['job_property_id'];
+// 🔥 handle job safely
+$this->assignJob($newJobId, $currentEmployee['branch_id'], $oldJobId);
 
             // Update employee
             $sql = "UPDATE employees_table SET
@@ -155,7 +211,7 @@ class EmployeeRegistration {
                 date_of_employed = ?, level_of_education = ?, department = ?, employment_situation = ?,
                 immidate_boss = ?, experience = ?, annual_rest = ?, displin_situation = ?,
                 competency_situation = ?, effeciency = ?, level_of_effeciency = ?,
-                no_of_files_in_folder = ?, employee_image = ?, employee_file201 = ?, remark = ?
+                no_of_files_in_folder = ?, employee_image = ?, employee_file201 = ?, remark = ?, full_name_normalized = ?
                 WHERE uuid = ?";
 
             $stmt = $this->db->prepare($sql);
@@ -186,13 +242,14 @@ class EmployeeRegistration {
                 $data['employee_image'],
                 $data['employee_file201'],
                 $data['remark'],
+                $normalizedFullName,
                 $uuid
             ]);
 
             if (!$result1) {
                 throw new \Exception("Failed to update employee");
             }
-
+/*
             // Handle job change if job was changed
             if ($oldJobId != $newJobId) {
                 // Set old job back to active
@@ -213,7 +270,7 @@ class EmployeeRegistration {
                     throw new \Exception("Failed to update new job status");
                 }
             }
-
+*/
             // Commit transaction
             $this->db->commit();
             return true;
@@ -226,22 +283,9 @@ class EmployeeRegistration {
         }
     }
 
-    public function getAvailableJobsByBranch($branchId, $excludeJobId = null) {
-        $sql = "
-            SELECT id, job_name, status
-            FROM job_property
-            WHERE branch_id = ?
-              AND (status = 'Active' OR id = ?)
-            ORDER BY job_name ASC
-        ";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$branchId, $excludeJobId]);
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-    }
 
 
-   public function countOnboardingEmployees($organizationId, $branchId) {
+   public function countOnboardingEmployees(string $organizationId, string $branchId) {
     $sql = "
         SELECT COUNT(*) as total
         FROM employees_table 
@@ -255,7 +299,7 @@ class EmployeeRegistration {
     return $stmt->fetchColumn();
 }
 
-public function getOnboardingEmployees($organizationId, $branchId) {
+public function getOnboardingEmployees(string $organizationId, string $branchId) {
         $sql = "
             SELECT 
                 e.uuid,
@@ -287,10 +331,199 @@ public function getOnboardingEmployees($organizationId, $branchId) {
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-   public function approveOnBoardingEmployee($uuid): bool {
+   public function approveOnBoardingEmployee(string $uuid): bool {
     $sql = "UPDATE employees_table SET status = 'Active' WHERE uuid = ?";
     $stmt = $this->db->prepare($sql);
     return $stmt->execute([$uuid]);
 }
+public function autoSearch(string $term, string $branchId) {
+    $cleanTerm = AmharicNormalizer::normalize($term);
+
+    $sql = "SELECT 
+                e.uuid, 
+                e.first_name, 
+                e.father_name, 
+                e.g_father_name, 
+                e.employee_id, 
+                e.employee_image, 
+                e.deletion_source
+            FROM employees_table e
+            WHERE e.branch_id = ? 
+            AND e.is_deleted != 2
+            AND e.status != 'Onboarding'
+            AND e.full_name_normalized LIKE ? 
+           LIMIT 10";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([$branchId, "%$cleanTerm%"]);
+    
+    return $stmt->fetchAll(\PDO::FETCH_ASSOC);
 }
+
+// ================================================================
+    // STAGE 1 — Officer requests deletion
+    // ================================================================
+    public function requestDeletion(string $uuid, array $data): bool
+    {
+        $sql = "UPDATE employees_table SET
+                    is_deleted       = 1,
+                    deleted_at       = NOW(),
+                    deleted_by       = :deleted_by,
+                    deletion_reason  = :deletion_reason,
+                    deletion_source  = :deletion_source
+                WHERE uuid = :uuid
+                AND is_deleted != 2";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'uuid'             => $uuid,
+            'deleted_by'       => $data['deleted_by'],
+            'deletion_reason'  => $data['deletion_reason'],
+            'deletion_source'  => $data['deletion_source'],
+        ]);
+    }
+  // Count pending deletions (for navbar badge)
+    public function countPendingDeletions(string $branch_id): int
+    {
+        $stmt = $this->db->prepare(
+            "SELECT COUNT(*) FROM employees_table
+             WHERE is_deleted      = 1
+             AND   branch_id = :branch_id"
+        );
+        $stmt->execute(['branch_id' => $branch_id]);
+        return (int) $stmt->fetchColumn();
+    }
+
+     // Get all pending deletion requests for director
+    public function getPendingDeletions(string $branch_id): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT e.*,
+                    CONCAT(u.first_name, ' ', u.father_name)  as deleted_by_name,
+                    u.role  as deleted_by_role
+             FROM employees_table e
+             JOIN users u ON u.id = e.deleted_by
+             WHERE e.is_deleted      = 1
+             AND   e.branch_id = :branch_id
+             ORDER BY e.deleted_at DESC"
+        );
+        $stmt->execute(['branch_id' => $branch_id]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+// ================================================================
+    // STAGE 2 — Director approves deletion
+    // ================================================================
+    public function approveDeletion(string $uuid, array $data): bool
+{
+    try {
+        $this->db->beginTransaction();
+
+        // 🔒 1. Lock employee row
+        $stmt = $this->db->prepare("
+            SELECT job_property_id, branch_id
+            FROM employees_table
+            WHERE uuid = ?
+            FOR UPDATE
+        ");
+        $stmt->execute([$uuid]);
+        $employee = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$employee) {
+            throw new \Exception("Employee not found");
+        }
+
+        // 🔒 2. Mark as deleted
+        $sql = "UPDATE employees_table SET
+                    is_deleted           = 2,
+                    deletion_approved_by = :approved_by,
+                    deletion_approved_at = NOW()
+                WHERE uuid = :uuid
+                AND is_deleted = 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'uuid' => $uuid,
+            'approved_by' => $data['approved_by'],
+        ]);
+
+        if ($stmt->rowCount() === 0) {
+            throw new \Exception("Delete approval failed");
+        }
+
+        // ➖ 3. Decrease job counter
+       $stmt = $this->db->prepare("
+    UPDATE job_property
+    SET current_filled = GREATEST(current_filled - 1, 0)
+    WHERE id = ?
+");
+$stmt->execute([$employee['job_property_id']]);
+
+        // ✅ 4. Commit
+        $this->db->commit();
+        return true;
+
+    } catch (\Exception $e) {
+        $this->db->rollBack();
+        error_log("Deletion approval failed: " . $e->getMessage());
+        return false;
+    }
+}
+
+    // ================================================================
+    // STAGE 3 — Director rejects deletion
+    // ================================================================
+    public function rejectDeletion(string $uuid, array $data): bool
+    {
+        $sql = "UPDATE employees_table SET
+                    is_deleted                = 3,
+                    deletion_approved_by      = :approved_by,
+                    deletion_approved_at      = NOW(),
+                    deletion_rejection_reason = :rejection_reason
+                WHERE uuid = :uuid
+                AND is_deleted = 1";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'uuid'             => $uuid,
+            'approved_by'      => $data['approved_by'],
+            'rejection_reason' => $data['rejection_reason'],
+        ]);
+    }
+// Get approved deletions archive
+    public function getApprovedDeletions(string $branchId): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT e.*,
+                    CONCAT(u1.first_name, ' ', u1.father_name) as deleted_by_name,
+                    CONCAT(u2.first_name, ' ', u2.father_name) as approved_by_name
+             FROM employees_table e
+             LEFT JOIN users u1 ON u1.id = e.deleted_by
+             LEFT JOIN users u2 ON u2.id = e.deletion_approved_by
+             WHERE e.is_deleted      = 2
+             AND   e.branch_id = :branch_id
+             ORDER BY e.deletion_approved_at DESC"
+        );
+        $stmt->execute(['branch_id' => $branchId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    // Get rejected deletions log
+    public function getRejectedDeletions(string $branchId): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT e.*,
+                    CONCAT(u1.first_name, ' ', u1.father_name) as deleted_by_name,
+                    CONCAT(u2.first_name, ' ', u2.father_name) as approved_by_name
+             FROM employees_table e
+             LEFT JOIN users u1 ON u1.id = e.deleted_by
+             LEFT JOIN users u2 ON u2.id = e.deletion_approved_by
+             WHERE e.is_deleted      = 3
+             AND   e.branch_id = :branch_id
+             ORDER BY e.deletion_approved_at DESC"
+        );
+        $stmt->execute(['branch_id' => $branchId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    }
 
