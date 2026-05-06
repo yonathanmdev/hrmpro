@@ -1,9 +1,29 @@
 <?php
-session_start();
-
-// Composer autoload
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// 1. .env ፋይሉን መጫን
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->safeLoad();
+
+// 2. ኮንዲሽኑን (Condition) እዚህ ጋር እንጠቀማለን
+// 'SESSION_PATH' በ .env ውስጥ ተጽፎ ከሆነ እና ባዶ ካልሆነ
+if (!empty($_ENV['SESSION_PATH'])) {
+    
+    // የፎልደሩን መንገድ ለ PHP ንገረው
+    $path = $_ENV['SESSION_PATH'];
+
+    // ፎልደሩ መኖሩን ቼክ አድርግ፣ ከሌለ ፍጠርለት
+    if (!is_dir($path)) {
+        mkdir($path, 0700, true);
+    }
+
+    // የሴሽን መቀመጫውን ቀይር
+    session_save_path($path);
+}
+
+// 3. በመጨረሻ ሴሽኑን አስጀምር
+session_start();
+// Composer autoload
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..'); // project root
 $dotenv->safeLoad(); // safeLoad avoids fatal error if .env missing
