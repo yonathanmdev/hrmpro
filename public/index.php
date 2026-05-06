@@ -23,10 +23,6 @@ if (!empty($_ENV['SESSION_PATH'])) {
 
 // 3. በመጨረሻ ሴሽኑን አስጀምር
 session_start();
-// Composer autoload
-// Load .env
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..'); // project root
-$dotenv->safeLoad(); // safeLoad avoids fatal error if .env missing
 
 // Display errors for development only
 if ($_ENV['APP_ENV'] === 'local') {
