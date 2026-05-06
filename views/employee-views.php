@@ -1,260 +1,155 @@
-<?php
+<?php 
 use App\Helpers\EthiopianDateHelper; 
 ?>
+
 <section class="content">
   <div class="container-fluid">
-    <div class="card card-primary card-outline">
-      <div class="card-header">
-        <h3 class="card-title">የተመዘገበ ሰራተኛ መረጃ</h3>
-        <div class="card-tools">
-          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-views" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> ተመለስ
-          </a>
+    <div class="card card-outline card-primary shadow-sm">
+      
+      <!-- Professional Header -->
+      <div class="card-header bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <h3 class="card-title font-weight-bold text-uppercase">
+            <i class="fas fa-id-card mr-2 text-primary"></i> የተመዘገበ ሰራተኛ መረጃ
+          </h3>
+          <div class="card-tools">
+            <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-active" class="btn btn-sm btn-outline-secondary">
+             <i class="fas fa-times fa-lg"></i>
+            </a>
+          </div>
         </div>
       </div>
 
       <div class="card-body">
-         <input type="hidden" name="uuid" value="<?= htmlspecialchars($employee['uuid'] ?? '') ?>">
-<div class="row border-bottom pb-3 mb-4">
-    
-    <div class="col-md-2 text-center">
-        <div class="form-group">
-            <label class="d-block">ፎቶ</label>
-            <?php if (!empty($employee['employee_image'])): ?>
-                <img src="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($employee['employee_image']) ?>&type=image" 
-                     alt="Employee Photo" 
-                     class="img-thumbnail rounded shadow-sm" 
-                     style="width: 140px; height: 160px; object-fit: cover; border: 2px solid #dee2e6;">
-            <?php else: ?>
-                <div class="img-thumbnail d-flex align-items-center justify-content-center bg-light" style="width: 140px; height: 160px; margin: 0 auto;">
-                    <i class="fas fa-user-circle fa-5x text-muted"></i>
-                </div>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <div class="col-md-10">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="employee_id" class="text-primary">የሰራተኛው መለያ ቁጥር</label>
-                    <input type="text" class="form-control bg-light" id="employee_id" name="employee_id" value="<?= htmlspecialchars($employee['employee_id'] ?? '') ?>" readonly>
-                </div>
+          <!-- Profile Header: Image and Primary Stats -->
+          <div class="row align-items-center border-bottom pb-4 mb-4">
+            <div class="col-md-2 text-center">
+              <?php if (!empty($employee['employee_image'])): ?>
+                  <img src="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($employee['employee_image']) ?>&type=image" 
+                       class="img-fluid rounded shadow-sm border" style="max-height: 180px; width: auto;">
+              <?php else: ?>
+                  <div class="bg-light d-flex align-items-center justify-content-center rounded border" style="height: 160px;">
+                      <i class="fas fa-user-tie fa-4x text-muted"></i>
+                  </div>
+              <?php endif; ?>
             </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="pension_number" class="text-primary">የጡረታ መለያ ቁጥር</label>
-                    <input type="text" class="form-control bg-light" id="pension_number" name="pension_number" value="<?= htmlspecialchars($employee['pension_number'] ?? '') ?>" readonly>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="first_name" class="text-primary">ስም</label>
-                    <input type="text" class="form-control bg-light font-weight-bold" id="first_name" name="first_name" value="<?= htmlspecialchars($employee['first_name'] ?? '') ?>" readonly>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="father_name">የአባት ስም</label>
-                    <input type="text" class="form-control bg-light" id="father_name" name="father_name" value="<?= htmlspecialchars($employee['father_name'] ?? '') ?>" readonly>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="g_father_name">የአያት ስም</label>
-                    <input type="text" class="form-control bg-light" id="g_father_name" name="g_father_name" value="<?= htmlspecialchars($employee['g_father_name'] ?? '') ?>" readonly>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="mother_name">የእናት ሙሉ ስም</label>
-                    <input type="text" class="form-control bg-light" id="mother_name" name="mother_name" value="<?= htmlspecialchars($employee['mother_name'] ?? '') ?>" readonly>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="sex">ጾታ</label>
-                <input type="text" class="form-control" id="sex" name="sex" readonly" value="<?= htmlspecialchars($employee['sex'] ?? '') ?>" readonly>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="birth_date">የትውልድ ቀን</label>
-                <?php
-                // Split the database date (YYYY-MM-DD)
-$dateParts = explode('-', $employee['birth_date']);
-$ethDate = EthiopianDateHelper::toEthCalendar($dateParts[2], $dateParts[1], $dateParts[0]);
-?>
-                <input type="text" class="form-control" id="birth_date" name="birth_date" value="<?= EthiopianDateHelper::getMonthName($ethDate['month']) ?> <?= $ethDate['day'] ?> <?= $ethDate['year'] ?> ዓ.ም." readonly>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="phone_number">ስቁ.</label>
-                <input type="text" class="form-control" id="phone_number" name="phone_number" value="<?= htmlspecialchars($employee['phone_number'] ?? '') ?>" readonly>
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="yegabcha_huneta">የጋብቻ ሁኔታ</label>
-              <input type="text" class="form-control" id="yegabcha_huneta" name="yegabcha_huneta"   value="<?= htmlspecialchars($employee['yegabcha_huneta'] ?? '') ?>" readonly>
-                   
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="job_property_id">የስራ መደብ</label>
-                 <input type="text" class="form-control" id="job_property_id" name="job_property_id"  value="<?= htmlspecialchars($employee['job_name'] ?? '') ?>" readonly>
-               
-                </div>
-            </div>
-          
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="date_of_employed">የቅጥር ቀን</label>
-                  <?php
-                // Split the database date (YYYY-MM-DD)
-$empdateParts = explode('-', $employee['date_of_employed']);
-$empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts[1], $empdateParts[0]);
-?>
-                <input type="text" class="form-control" id="date_of_employed" name="date_of_employed" value="<?= EthiopianDateHelper::getMonthName($empethDate['month']) ?> <?= $empethDate['day'] ?>  <?= $empethDate['year'] ?> ዓ.ም." readonly>
-           
-            </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="level_of_education">የትምህርት ደረጃ</label>
-                <select id="level_of_education" name="level_of_education" class="form-control" required="" disabled>
-                  <option selected="" disable="" value="">-- ይምረጡ --</option>
-                  <option value="የቀለም" <?= ($employee['level_of_education'] ?? '') === 'የቀለም' ? 'selected' : '' ?>>የቀለም</option>
-                  <option value="8ኛ_ያጠናቀቀ" <?= ($employee['level_of_education'] ?? '') === '8ኛ_ያጠናቀቀ' ? 'selected' : '' ?>>8ኛ ያጠናቀቀ</option>
-                  <option value="10ኛ_ያጠናቀቀ" <?= ($employee['level_of_education'] ?? '') === '10ኛ_ያጠናቀቀ' ? 'selected' : '' ?>>10ኛ ያጠናቀቀ</option>
-                  <option value="12ኛ_ያጠናቀቀ" <?= ($employee['level_of_education'] ?? '') === '12ኛ_ያጠናቀቀ' ? 'selected' : '' ?>>12ኛ ያጠናቀቀ</option>
-                  <option value="ደረጃ_1" <?= ($employee['level_of_education'] ?? '') === 'ደረጃ_1' ? 'selected' : '' ?>>ደረጃ 1</option>
-                  <option value="ደረጃ_2" <?= ($employee['level_of_education'] ?? '') === 'ደረጃ_2' ? 'selected' : '' ?>>ደረጃ 2</option>
-                  <option value="ደረጃ_3" <?= ($employee['level_of_education'] ?? '') === 'ደረጃ_3' ? 'selected' : '' ?>>ደረጃ 3</option>
-                  <option value="ደረጃ_4" <?= ($employee['level_of_education'] ?? '') === 'ደረጃ_4' ? 'selected' : '' ?>>ደረጃ 4</option>
-                  <option value="ደረጃ_5" <?= ($employee['level_of_education'] ?? '') === 'ደረጃ_5' ? 'selected' : '' ?>>ደረጃ 5</option>
-                  <option value="የመጀመሪያ_ዲግሪ" <?= ($employee['level_of_education'] ?? '') === 'የመጀመሪያ_ዲግሪ' ? 'selected' : '' ?>>የመጀመሪያ ዲግሪ</option>
-                  <option value="ሁለተኛ_ዲግሪ" <?= ($employee['level_of_education'] ?? '') === 'ሁለተኛ_ዲግሪ' ? 'selected' : '' ?>>ሁለተኛ ዲግሪ</option>
-                  <option value="ሶስተኛ_ዲግሪ" <?= ($employee['level_of_education'] ?? '') === 'ሶስተኛ_ዲግሪ' ? 'selected' : '' ?>>ሶስተኛ ዲግሪ</option>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="department">የሙያ ዘርፍ</label>
-                <input type="text" class="form-control" id="department" name="department" value="<?= htmlspecialchars($employee['department'] ?? '') ?>" readonly>
-              </div>
-            </div>
-          
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="employment_situation">የቅጥር ሁኔታ </label>
-                 <select class="form-control" id="employment_situation" name="employment_situation" required disabled>
-                     <option value="">ይምረጡ</option>
-                  <option <?= ($employee['employment_situation'] ?? '') === 'ቋሚ' ? 'selected' : '' ?>>ቋሚ</option>
-                    <option <?= ($employee['employment_situation'] ?? '') === 'ጊዜያዊ' ? 'selected' : '' ?>>ጊዜያዊ</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="immidate_boss">የቅርብ ተጠሪ</label>
-                <input type="text" class="form-control" id="immidate_boss" name="immidate_boss" value="<?= htmlspecialchars($employee['immidate_boss'] ?? '') ?>" required readonly>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="annual_rest">የዓመት እረፍት</label>
-                <input type="number" step="1" min="0" class="form-control" id="annual_rest" name="annual_rest" value="<?= htmlspecialchars($employee['annual_rest'] ?? '0') ?>" readonly>
-              </div>
-            </div>
-          
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="effeciency">Efficiency (%)</label>
-                <input type="number" step="0.01" min="0" class="form-control" id="effeciency" name="effeciency" value="<?= htmlspecialchars($employee['effeciency'] ?? '') ?>" readonly>
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="level_of_effeciency">Level of Efficiency</label>
-                <input type="text" class="form-control" id="level_of_effeciency" name="level_of_effeciency" value="<?= htmlspecialchars($employee['level_of_effeciency'] ?? '') ?>" readonly >
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="no_of_files_in_folder">የማህደር የፋይል ብዛት</label>
-                <input type="number" step="1" min="0" class="form-control" id="no_of_files_in_folder" name="no_of_files_in_folder" value="<?= htmlspecialchars($employee['no_of_files_in_folder'] ?? '0') ?>" readonly>
-              </div>
-            </div>
-          
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="experience">የስራ ልምድ</label>
-                <input type="text" class="form-control" id="experience" name="experience" value="<?= htmlspecialchars($employee['experience'] ?? '') ?>" readonly>
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="displin_situation">የዲሲፕሊን ሁኔታ</label>
-                 <select class="form-control" id="displin_situation" name="displin_situation" required disabled>
-                     <option value="" <?= empty($employee['displin_situation']) ? 'selected' : '' ?>>-- ይምረጡ --</option>   
-                     <option value="ምንም የቅጣት ሪኮርድ የሌለባቸው" <?= ($employee['displin_situation'] ?? '') === 'ምንም የቅጣት ሪኮርድ የሌለባቸው' ? 'selected' : '' ?>>ምንም የቅጣት ሪኮርድ የሌለባቸው</option>
-                     <option value="የጽሁፍ ማስጠንቀቂያ የተሰጣቸው" <?= ($employee['displin_situation'] ?? '') === 'የጽሁፍ ማስጠንቀቂያ የተሰጣቸው' ? 'selected' : '' ?>>የጽሁፍ ማስጠንቀቂያ የተሰጣቸው</option>
-                     <option value="እስከ 15 ቀን የሚደርስ የደመወዝ ቅጣት የተቀጡ" <?= ($employee['displin_situation'] ?? '') === 'እስከ 15 ቀን የሚደርስ የደመወዝ ቅጣት የተቀጡ' ? 'selected' : '' ?>>እስከ 15 ቀን የሚደርስ የደመወዝ ቅጣት የተቀጡ</option>
-                     <option value="እስከ 3 ወር የሚደርስ የደመወዝ ቅጣት የተቀጡ" <?= ($employee['displin_situation'] ?? '') === 'እስከ 3 ወር የሚደርስ የደመወዝ ቅጣት የተቀጡ' ? 'selected' : '' ?>>እስከ 3 ወር የሚደርስ የደመወዝ ቅጣት የተቀጡ</option>
-                     <option value="እስከ 2 ዓመት ለሚደርስ ጊዜ ከደረጃና ከደመወዝ ዝቅ የተደረጉ" <?= ($employee['displin_situation'] ?? '') === 'እስከ 2 ዓመት ለሚደርስ ጊዜ ከደረጃና ከደመወዝ ዝቅ የተደረጉ' ? 'selected' : '' ?>>እስከ 2 ዓመት ለሚደርስ ጊዜ ከደረጃና ከደመወዝ ዝቅ የተደረጉ</option>
-                 </select>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="competency_situation">የብቃት ሁኔታ</label>
-                 <select class="form-control" id="competency_situation" name="competency_situation" disabled>
-                     <option value="የበቁ" <?= ($employee['competency_situation'] ?? '') === 'የበቁ' ? 'selected' : '' ?>>የበቁ</option>
-                     <option value="ያልበቁ" <?= ($employee['competency_situation'] ?? '') === 'ያልበቁ' ? 'selected' : '' ?>>ያልበቁ</option>
-                     <option value="ያልተመዘኑ" <?= ($employee['competency_situation'] ?? '') === 'ያልተመዘኑ' ? 'selected' : '' ?>>ያልተመዘኑ</option>
-                 </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
             
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="employee_file201">የት/ት ማስረጃ እና ሌሎች</label>
-                <?php if (!empty($employee['employee_file201'])): ?>
-            <small class="form-text text-muted">አሁን የሆነ ፋይል: <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($employee['employee_file201']) ?>&type=document" target="_blank">ተመልክት</a></small>
-                <?php endif; ?>
+            <div class="col-md-10 mt-3 mt-md-0">
+              <div class="row">
+                <div class="col-md-12">
+                  <h2 class="font-weight-bold mb-1 text-dark">
+                    <?= htmlspecialchars($employee['first_name'] ?? '') ?> <?= htmlspecialchars($employee['father_name'] ?? '') ?> <?= htmlspecialchars($employee['g_father_name'] ?? '') ?>
+                  </h2>
+                  <p class="text-muted mb-3"><i class="fas fa-hashtag mr-1"></i> ID: <strong><?= htmlspecialchars($employee['employee_id'] ?? '') ?></strong></p>
+                </div>
+                <div class="col-md-4">
+                  <small class="text-muted text-uppercase d-block font-weight-bold">የስራ መደብ</small>
+                  <p class="lead mb-0 text-primary font-weight-normal"><?= htmlspecialchars($employee['job_name'] ?? '---') ?></p>
+                </div>
+                <div class="col-md-4">
+                  <small class="text-muted text-uppercase d-block font-weight-bold">የሙያ ዘርፍ</small>
+                  <p class="lead mb-0 text-dark"><?= htmlspecialchars($employee['department'] ?? '---') ?></p>
+                </div>
+                <div class="col-md-4">
+                  <small class="text-muted text-uppercase d-block font-weight-bold">የጡረታ መለያ ቁጥር</small>
+                  <p class="lead mb-0"><?= htmlspecialchars($employee['pension_number'] ?? '---') ?></p>
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- Secondary Information Grid -->
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <label class="text-muted small d-block">ጾታ</label>
+              <div class="border-bottom py-1"><?= htmlspecialchars($employee['sex'] ?? '---') ?></div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <label class="text-muted small d-block">የትውልድ ቀን</label>
+              <?php
+                $dateParts = explode('-', $employee['birth_date']);
+                $ethDate = EthiopianDateHelper::toEthCalendar($dateParts[2] ?? 1, $dateParts[1] ?? 1, $dateParts[0] ?? 2000);
+              ?>
+              <div class="border-bottom py-1"><?= EthiopianDateHelper::getMonthName($ethDate['month']) ?> <?= $ethDate['day'] ?> <?= $ethDate['year'] ?></div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <label class="text-muted small d-block">ስልክ ቁጥር</label>
+              <div class="border-bottom py-1 text-success"><i class="fas fa-phone mr-1"></i> <?= htmlspecialchars($employee['phone_number'] ?? '---') ?></div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <label class="text-muted small d-block">የጋብቻ ሁኔታ</label>
+              <div class="border-bottom py-1"><?= htmlspecialchars($employee['yegabcha_huneta'] ?? '---') ?></div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <label class="text-muted small d-block">የቅጥር ቀን</label>
+              <?php
+                $empdateParts = explode('-', $employee['date_of_employed']);
+                $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2] ?? 1, $empdateParts[1] ?? 1, $empdateParts[0] ?? 2000);
+              ?>
+              <div class="border-bottom py-1 font-weight-bold"><?= EthiopianDateHelper::getMonthName($empethDate['month']) ?> <?= $empethDate['day'] ?> <?= $empethDate['year'] ?></div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <label class="text-muted small d-block">የቅጥር ሁኔታ</label>
+              <div class="border-bottom py-1"><span class="badge badge-info"><?= htmlspecialchars($employee['employment_situation'] ?? '---') ?></span></div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <label class="text-muted small d-block">የትምህርት ደረጃ</label>
+              <div class="border-bottom py-1"><?= str_replace('_', ' ', htmlspecialchars($employee['level_of_education'] ?? '---')) ?></div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <label class="text-muted small d-block">የቅርብ ተጠሪ</label>
+              <div class="border-bottom py-1"><?= htmlspecialchars($employee['immidate_boss'] ?? '---') ?></div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <label class="text-muted small d-block">የስራ ልምድ</label>
+              <div class="border-bottom py-1"><?= htmlspecialchars($employee['experience'] ?? '---') ?></div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <label class="text-muted small d-block">Efficiency (%)</label>
+              <div class="border-bottom py-1"><?= htmlspecialchars($employee['effeciency'] ?? '0') ?>%</div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <label class="text-muted small d-block">Efficiency Level</label>
+              <div class="border-bottom py-1"><?= htmlspecialchars($employee['level_of_effeciency'] ?? '---') ?></div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <label class="text-muted small d-block">የዓመት እረፍት</label>
+              <div class="border-bottom py-1"><?= htmlspecialchars($employee['annual_rest'] ?? '0') ?> ቀናት</div>
+            </div>
+          </div>
+
+          <!-- Final Status Checks -->
+          <div class="row mt-3 bg-light p-3 rounded">
+            <div class="col-md-6 mb-3 mb-md-0">
+              <label class="text-muted small d-block">የዲሲፕሊን ሁኔታ</label>
+              <p class="mb-0 <?= ($employee['displin_situation'] != 'ምንም የቅጣት ሪኮርድ የሌለባቸው') ? 'text-danger' : 'text-success' ?>">
+                <i class="fas fa-info-circle mr-1"></i> <strong><?= htmlspecialchars($employee['displin_situation'] ?? '---') ?></strong>
+              </p>
+            </div>
+            <div class="col-md-6 text-md-right">
+              <label class="text-muted small d-block">ተያያዥ ፋይሎች</label>
+              <?php if (!empty($employee['employee_file201'])): ?>
+                <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($employee['employee_file201']) ?>&type=document" 
+                   target="_blank" class="btn btn-sm btn-danger shadow-sm mt-1">
+                  <i class="fas fa-file-pdf"></i> ሰነዱን ተመልከት
+                </a>
+              <?php else: ?>
+                <span class="text-muted italic small">ምንም ፋይል የለም</span>
+              <?php endif; ?>
+            </div>
+          </div>
+
       </div>
     </div>
   </div>

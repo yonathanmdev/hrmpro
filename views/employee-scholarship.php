@@ -4,13 +4,16 @@ use App\Helpers\EthiopianDateHelper;
 <section class="content">
   <div class="container-fluid">
       <div class="card card-primary card-outline">
-      <div class="card-header">
-        <h3 class="card-title">በት/ት ላይ ያሉ</h3>
-      </div>
-
+      
       <div class="card-body">
-        <table id="example1" class="table table-bordered table-striped">
-          <thead>
+           <!-- Header -->
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 font-weight-bold text-dark">
+     በት/ት ላይ ያሉ
+    </h6>
+  </div>
+        <table id="example1" data-empty-msg="ምንም በት/ት ያሉ የተመዘገበ ሰራተኛ የለም።" class="table table-bordered table-striped small" style="color: #000;" aria-describedby="example2_info">
+          <thead class="thead-light">
             <tr>
               <th>#</th>
               <th>መለያ ቁጥር</th>
@@ -45,19 +48,16 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                   <td><?= 'በት/ት ላይ' ?></td>
                   <td><?= EthiopianDateHelper::getMonthName($regethDate['month']) ?> <?= $regethDate['day'] ?> <?= $regethDate['year'] ?></td>
                   <td>
-                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" title="እይ" class="btn btn-sm btn-primary">
+                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" title="እይ" class="btn btn-sm btn-outline-primary">
                       <i class="fas fa-eye"></i> 
                     </a>
-                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-edit?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" title="አስተካክል" class="btn btn-sm btn-secondary">
+                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-edit?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" title="አስተካክል" class="btn btn-sm btn-outline-secondary">
                       <i class="fas fa-edit"></i> 
                     </a>
                   </td>
                 </tr>
               <?php endforeach; ?>
-            <?php else: ?>
-              <tr>
-                <td colspan="9" class="text-center">ምንም ሰራተኛ አልተመዘገበም።</td>
-              </tr>
+            
             <?php endif; ?>
           </tbody>
         </table>

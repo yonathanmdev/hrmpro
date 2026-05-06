@@ -2,6 +2,8 @@
 namespace App\Controllers;
 use DateTime;
 use App\Models\EmployeeRegistration;
+use App\Models\User;
+
 use App\Helpers\AuthHelper;
 use Ramsey\Uuid\Uuid;
 use \App\Traits\FileUploadTrait;
@@ -32,15 +34,26 @@ class EmployeeRegistrationController extends BaseController {
             'employees' => $employees,
         ];
 
-        $this->render('employee-registration', $data);
+        $this->render('employee-active', $data);
     }
 
 
-    public function showEditForm() {
+    public function showEditForm($params = []){
+   
            AuthHelper::checkRole(['hr_director', 'hr_officer']);
-        $uuid = $_GET['uuid'] ?? null;
+         $uuid = $params['uuid'] ?? ($_GET['uuid'] ?? null);
+
+    // Get source from URL segment (record_id holds it)
+    $source = $params['record_id'] ?? 'employee-registration';
+    $allowedSources = ['employee-registration', 'employee-active'];
+    if (!in_array($source, $allowedSources)) {
+        $source = 'employee-registration';
+    }
+
+    $redirectUrl = rtrim($_ENV['BASE_URL'], '/') . '/' . $source;
         if (!$uuid) {
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+           header("Location: " . $redirectUrl);
+        exit();
             exit();
         }
 
@@ -50,7 +63,8 @@ class EmployeeRegistrationController extends BaseController {
 
         if (!$organizationId || !$branchId) {
             $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+           header("Location: " . $redirectUrl);
+        exit();
             exit();
         }
 
@@ -59,35 +73,46 @@ class EmployeeRegistrationController extends BaseController {
 
         if (!$employee) {
             $_SESSION['error'] = 'ሰራተኛ አልተገኘም።';
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+          header("Location: " . $redirectUrl);
+        exit();
             exit();
         }
-
+        $positionModel = new \App\Models\Position($this->db);
         // Get available jobs (active + current job)
-        $availableJobs = $employeeModel->getAvailableJobsByBranch($branchId, $employee['job_property_id']);
+        $availableJobs = $positionModel->getActiveJobsByBranch($branchId, $employee['job_property_id']);
 
-        $data = [
-            'title' => 'HRM - የሰራተኛ ማስተካከያ',
-            'user'  => $user,
-            'employee' => $employee,
-            'availableJobs' => $availableJobs,
-        ];
+          $data = [
+        'title'         => 'HRM - የሰራተኛ ማስተካከያ',
+        'user'          => $user,
+        'employee'      => $employee,
+        'availableJobs' => $availableJobs,
+        'params'        => $params,   // ← add this
+        'source'        => $source,   // ← add this for convenience
+    ];
 
         $this->render('employee-edit', $data);
     }
 
-    public function handleEdit() {
-           AuthHelper::checkRole(['hr_director', 'hr_officer']);
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
-            exit();
-        }
+   public function handleEdit($params = []) {
+    AuthHelper::checkRole(['hr_director', 'hr_officer']);
 
+    // Get source — from URL segment first, then POST hidden input, then default
+    $source = $_POST['source']?? '';  
         $uuid = $_POST['uuid'] ?? null;
-        if (!$uuid) {
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
-            exit();
-        }
+    
+    // Whitelist allowed sources for security
+    $allowedSources = ['employee-registration', 'employee-active'];
+    if (!in_array($source, $allowedSources)) {
+        $source = 'employee-registration';
+    }
+    
+    $redirectUrl = rtrim($_ENV['BASE_URL'], '/') . '/' . $source;
+
+    if (!$uuid) {
+        header("Location: " . $redirectUrl);
+        exit();
+    }
+
 
         $user = $_SESSION['user'] ?? [];
         $organizationId = $user['organization_id'] ?? null;
@@ -95,7 +120,7 @@ class EmployeeRegistrationController extends BaseController {
 
         if (!$organizationId || !$branchId || empty($user['id'])) {
             $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            header("Location: " . $redirectUrl);
             exit();
         }
 
@@ -103,7 +128,7 @@ class EmployeeRegistrationController extends BaseController {
         $validationErrors = $this->validateEmployeeData($_POST);
         if (!empty($validationErrors)) {
             $_SESSION['error'] = implode('<br>', $validationErrors);
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            header("Location: " . $redirectUrl);
             exit();
         }
 
@@ -113,7 +138,7 @@ class EmployeeRegistrationController extends BaseController {
 
         if (!$currentEmployee) {
             $_SESSION['error'] = 'ሰራተኛ አልተገኘም።';
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+           header("Location: " . $redirectUrl);
             exit();
         }
 
@@ -164,12 +189,12 @@ class EmployeeRegistrationController extends BaseController {
         if ($employeeModel->updateEmployee($uuid, $data)) {
             // Log audit if job was changed
             if ($oldJobId != $newJobId) {
-                \App\Helpers\AuditHelper::logEmployeeJobChange($uuid, [
+                \App\Helpers\AuditHelper::log('employee_job_changed', 'employee', $uuid, null, [
                     'old_job_id' => $oldJobId,
                     'new_job_id' => $newJobId,
                     'employee_id' => $data['employee_id'],
                     'changed_by' => $user['id']
-                ]);
+                ], ['change_type' => 'job_assignment']);
             }
 
             $_SESSION['success'] = 'ሰራተኛው መረጃ በትክክል ተስተካከለ።';
@@ -177,7 +202,7 @@ class EmployeeRegistrationController extends BaseController {
             $_SESSION['error'] = 'የሰራተኛ ማስተካከያ ሂደት አልተሳካም።';
         }
 
-        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+        header("Location: " . $redirectUrl);
         exit();
     }
 
@@ -261,7 +286,7 @@ class EmployeeRegistrationController extends BaseController {
 
         $employeeModel = new EmployeeRegistration($this->db);
         if ($employeeModel->createEmployee($data)) {
-            \App\Helpers\AuditHelper::logEmployeeRegistration($data['uuid'], [
+            \App\Helpers\AuditHelper::log('employee_registered', 'employee', $data['uuid'], null, [
                 'employee_id' => $data['employee_id'],
                 'first_name' => $data['first_name'],
                 'father_name' => $data['father_name'],
@@ -296,6 +321,7 @@ class EmployeeRegistrationController extends BaseController {
 
     
 
+
     private function normalizeDecimal($value): ?string {
         if ($value === null || trim($value) === '') {
             return null;
@@ -318,13 +344,16 @@ class EmployeeRegistrationController extends BaseController {
             'mother_name' => 'የእናት ሙሉ ስም',
             'sex' => 'ጾታ',
             'birth_date' => 'የትውልድ ቀን',
+            'eth_birth_date'=> 'የትውልድ ቀን',
             'phone_number' => 'ስልክ ቁጥር',
             'yegabcha_huneta' => 'የጋብቻ ሁኔታ',
             'job_property_id' => 'የስራ መደብ',
             'level_of_education' => 'የትምህርት ደረጃ',
-            'employment_situation' => 'Employment Situation',
+            'employment_situation' => 'የቅጥር ሁኔታ',
             'immidate_boss' => 'የቅርብ ተጠሪ',
-            'displin_situation' => 'የዲሲፕሊን ሁኔታ'
+            'displin_situation' => 'የዲሲፕሊን ሁኔታ',
+            'date_of_employed' => 'የቅጥር ቀን',
+            'eth_date_of_employed' => 'የቅጥር ቀን',
         ];
 
         foreach ($requiredFields as $field => $label) {
@@ -373,11 +402,17 @@ class EmployeeRegistrationController extends BaseController {
             }
         }
 
-        if (!empty($data['date_of_employed'])) {
-            if (!strtotime($data['date_of_employed'])) {
-                $errors[] = "የቅጥር ቀን ትክክለኛ ቀን መሆን አለበት።";
-            }
-        }
+      if (!empty($data['date_of_employed']) && !empty($data['birth_date'])) {
+    if (!strtotime($data['date_of_employed'])) {
+        $errors[] = "የቅጥር ቀን ትክክለኛ ቀን መሆን አለበት።";
+    } elseif (strtotime($data['date_of_employed']) > strtotime('today')) {
+        $errors[] = "የቅጥር ቀን ወደፊት ሊሆን አይችልም።";
+    } elseif (strtotime($data['date_of_employed']) <= strtotime($data['birth_date'])) {
+        $errors[] = "የቅጥር ቀን ከልደት ቀን በኋላ መሆን አለበት።";
+    } elseif (strtotime($data['date_of_employed']) < strtotime('+18 years', strtotime($data['birth_date']))) {
+        $errors[] = "ሰራተኛው ሲቀጠር ቢያንስ 18 ዓመት መሆን አለበት።";
+    }
+}
 
         // Phone number validation
         if (!empty($data['phone_number'])) {
@@ -420,9 +455,9 @@ class EmployeeRegistrationController extends BaseController {
 
         return $errors;
     }
-    public function employeeDetails() {
+    public function employeeDetails($params = []) {
            AuthHelper::checkRole(['hr_director', 'hr_officer']);
-        $uuid = $_GET['uuid'] ?? null;
+        $uuid = $params['uuid'] ?? $_GET['uuid'] ?? null;
         if (!$uuid) {
             header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
             exit();
@@ -478,18 +513,23 @@ class EmployeeRegistrationController extends BaseController {
             $employeeModel = new EmployeeRegistration($this->db);
             $employees = $employeeModel->getOnboardingEmployees($organizationId, $branchId);
         }
-
+$jobs = [];
+        if ($branchId) {
+            $positionModel = new \App\Models\Position($this->db);
+            $jobs = $positionModel->getActiveJobsByBranch($branchId);
+        }
         $data = [
             'title' => 'HRM - የሰራተኛ መመዝገቢያ',
             'user'  => $user,
+            'jobs'  => $jobs,
             'employees' => $employees,
         ];
 
-        $this->render('employee-onboarding', $data);
+        $this->render('employee-registration', $data);
     }
-public function showOnBoardingForm() {
+public function showOnBoardingForm($params = []) {
            AuthHelper::checkRole(['hr_director', 'hr_officer']);
-        $uuid = $_GET['uuid'] ?? null;
+        $uuid = $params['uuid'] ?? $_GET['uuid'] ?? null;
         if (!$uuid) {
             header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/login");
             exit();
@@ -510,7 +550,7 @@ public function showOnBoardingForm() {
 
         if (!$employee) {
             $_SESSION['error'] = 'ሰራተኛ አልተገኘም።';
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onbording");
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
             exit();
         }
 
@@ -524,7 +564,7 @@ public function showOnBoardingForm() {
     }
     
      public function handleOnboardingApproval() {
-           AuthHelper::checkRole(['hr_director', 'hr_officer']);
+           AuthHelper::checkRole(['hr_director']);
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
             exit();
@@ -543,7 +583,7 @@ public function showOnBoardingForm() {
 
         if (!$organizationId || !$branchId || empty($user['id'])) {
             $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
             exit();
         }
 
@@ -554,13 +594,12 @@ public function showOnBoardingForm() {
 
         if (!$currentEmployee) {
             $_SESSION['error'] = 'ሰራተኛ አልተገኘም።';
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
             exit();
         }
         if ($employeeModel->approveOnBoardingEmployee($uuid, $userID)) {
             
-               \App\Helpers\AuditHelper::logOnBoardingEmployeeApproval($uuid, [
-            ]);
+               \App\Helpers\AuditHelper::log('employee_hiring_approved', 'employee', $uuid, null, [], ['change_type' => 'hiring_approved']);
           
 
             $_SESSION['success'] = 'ሰራተኛው መረጃ በትክክል ተስተካከለ።';
@@ -568,8 +607,352 @@ public function showOnBoardingForm() {
             $_SESSION['error'] = 'የሰራተኛ ማስተካከያ ሂደት አልተሳካም።';
         }
 
-        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-onboarding");
+        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
         exit();
     }
+// ================================================================
+    // STAGE 1 — Officer requests deletion
+    // ================================================================
+    public function requestDeletion($params = []): void
+    {
+        AuthHelper::checkRole(['hr_officer', 'hr_director']);
+
+        header('Content-Type: application/json');
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $uuid   = $input['id']               ?? null;
+        $reason = trim($input['reason']      ?? '');
+        $source = 'INDIVIDUAL';
+        $password = $input['confirm_password'] ?? '';
+
+        // Validate input
+        if (!$uuid || !$reason || !$password || !$source) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ሁሉም መስኮች አስፈላጊ ናቸው።'
+            ]);
+            return;
+        }
+
+        $user           = $_SESSION['user'] ?? [];
+        $organizationId = $user['organization_id'] ?? null;
+        $branchId = $user['branch_id'] ?? null;
+
+        if (!$organizationId || !$branchId) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ያልተፈቀደ ድርጊት።'
+            ]);
+            return;
+        }
+
+        // Verify password
+        $userModel = new User($this->db);
+        if (!$userModel->verifyPassword($user['id'], $password)) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ፓስዋርዱ ትክክል አይደለም።'
+            ]);
+            return;
+        }
+
+        $model           = new EmployeeRegistration($this->db);
+        $currentEmployee = $model->getEmployeeByUuid($uuid);
+
+        if (!$currentEmployee) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ሰራተኛ አልተገኘም።'
+            ]);
+            return;
+        }
+
+        if ($currentEmployee['is_deleted'] !== 0) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ሰራተኛው አስቀድሞ ለመሰረዝ ቀርቧል።'
+            ]);
+            return;
+        }
+
+        // Begin transaction
+        $this->db->beginTransaction();
+
+        try {
+            $success = $model->requestDeletion($uuid, [
+                'deleted_by'       => $user['id'],
+                'deletion_reason'  => $reason,
+                'deletion_source'  => $source,
+            ]);
+
+            if (!$success) {
+                throw new \Exception('የመሰረዝ ጥያቄ አልተሳካም።');
+            }
+
+            // Audit log — full employee data in oldValues
+            $oldValues = $currentEmployee;
+            unset($oldValues['password']); // never log passwords
+
+            \App\Helpers\AuditHelper::log(
+                action:     'deletion_requested',
+                entityType: 'employee',
+                entityId:   $uuid,
+                oldValues:  $oldValues,
+                newValues:  [
+                    'is_deleted'      => 1,
+                    'deleted_by'      => $user['id'],
+                    'deletion_reason' => $reason,
+                    'deletion_source' => $source,
+                    'deleted_at'      => date('Y-m-d H:i:s'),
+                ],
+                metadata: [
+                    'requested_by_name' => $user['first_name'] . ' ' . $user['grand_father_name'],
+                    'requested_by_role' => $user['role'],
+                    'ip_address'        => $_SERVER['REMOTE_ADDR'] ?? null,
+                ]
+            );
+
+            $this->db->commit();
+
+            echo json_encode([
+                'status'  => 'success',
+                'message' => 'የመሰረዝ ጥያቄ ለዳይሬክተር ተልኳል።'
+            ]);
+
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            echo json_encode([
+                'status'  => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+function countPendingDeletions() {
+    AuthHelper::checkRole(['hr_director']);
+    $user = $_SESSION['user'] ?? [];
+    $branchId = $user['branch_id'] ?? null;
+    $employeeModel = new EmployeeRegistration($this->db);
+    $count = $employeeModel->countPendingDeletions($branchId);
+
+    header('Content-Type: application/json'); // <-- must be here
+    echo json_encode(['count' => $count]);
+    exit(); // <-- add this to stop any extra output
+}
+  // ================================================================
+    // Show pending deletions page (Director)
+    // ================================================================
+    public function showPendingDeletions($params = []): void
+    {
+        AuthHelper::checkRole(['hr_director']);
+
+        $user           = $_SESSION['user'] ?? [];
+        $branchId = $user['branch_id'] ?? null;
+
+        $model    = new EmployeeRegistration($this->db);
+        $pending  = $model->getPendingDeletions($branchId);
+        $approved = $model->getApprovedDeletions($branchId);
+        $rejected = $model->getRejectedDeletions($branchId);
+
+        $this->render('employee-deletion-requests', [
+            'title'    => 'HRM - የመሰረዝ ጥያቄዎች',
+            'user'     => $user,
+            'pending'  => $pending,
+            'approved' => $approved,
+            'rejected' => $rejected,
+        ]);
+    }
+
+ // ================================================================
+    // STAGE 2 — Director approves deletion
+    // ================================================================
+    public function approveDeletion($params = []): void
+    {
+        AuthHelper::checkRole(['hr_director']);
+
+        header('Content-Type: application/json');
+
+        $input    = json_decode(file_get_contents('php://input'), true);
+        $uuid     = $input['id']               ?? null;
+        $password = $input['confirm_password'] ?? '';
+        $reason   = trim($input['reason']      ?? '');
+
+        if (!$uuid || !$password) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ሁሉም መስኮች አስፈላጊ ናቸው።'
+            ]);
+            return;
+        }
+
+        $user = $_SESSION['user'] ?? [];
+
+        // Verify director password
+        $userModel = new User($this->db);
+        if (!$userModel->verifyPassword($user['id'], $password)) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ፓስዋርዱ ትክክል አይደለም።'
+            ]);
+            return;
+        }
+
+        $model           = new EmployeeRegistration($this->db);
+        $currentEmployee = $model->getEmployeeByUuid($uuid);
+
+        if (!$currentEmployee || $currentEmployee['is_deleted'] !== 1) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ሰራተኛ አልተገኘም ወይም ጥያቄው ትክክል አይደለም።'
+            ]);
+            return;
+        }
+
+        $this->db->beginTransaction();
+
+        try {
+            $success = $model->approveDeletion($uuid, [
+                'approved_by' => $user['id'],
+            ]);
+
+            if (!$success) {
+                throw new \Exception('ማፅደቅ አልተሳካም።');
+            }
+
+            // Audit log
+            $oldValues = $currentEmployee;
+            unset($oldValues['password']);
+
+            \App\Helpers\AuditHelper::log(
+                action:     'deletion_approved',
+                entityType: 'employee',
+                entityId:   $uuid,
+                oldValues:  $oldValues,
+                newValues:  [
+                    'is_deleted'             => 2,
+                    'deletion_approved_by'   => $user['id'],
+                    'deletion_approved_at'   => date('Y-m-d H:i:s'),
+                ],
+                metadata: [
+                    'approved_by_name'    => $user['first_name'] . ' ' . $user['father_name'],
+                    'approved_by_role'    => $user['role'],
+                    'original_deleted_by' => $currentEmployee['deleted_by'],
+                    'original_reason'     => $currentEmployee['deletion_reason'],
+                    'ip_address'          => $_SERVER['REMOTE_ADDR'] ?? null,
+                ]
+            );
+
+            $this->db->commit();
+
+            echo json_encode([
+                'status'  => 'success',
+                'message' => 'ሰራተኛው በቋሚነት ተሰርዟል።'
+            ]);
+
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            echo json_encode([
+                'status'  => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    // ================================================================
+    // STAGE 3 — Director rejects deletion
+    // ================================================================
+    public function rejectDeletion($params = []): void
+    {
+        AuthHelper::checkRole(['hr_director']);
+
+        header('Content-Type: application/json');
+
+        $input            = json_decode(file_get_contents('php://input'), true);
+        $uuid             = $input['id']               ?? null;
+        $password         = $input['confirm_password'] ?? '';
+        $rejectionReason  = trim($input['reason']      ?? '');
+
+        if (!$uuid || !$password || !$rejectionReason) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ሁሉም መስኮች አስፈላጊ ናቸው።'
+            ]);
+            return;
+        }
+
+        $user = $_SESSION['user'] ?? [];
+
+        // Verify director password
+        $userModel = new User($this->db);
+        if (!$userModel->verifyPassword($user['id'], $password)) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ፓስዋርዱ ትክክል አይደለም።'
+            ]);
+            return;
+        }
+
+        $model           = new EmployeeRegistration($this->db);
+        $currentEmployee = $model->getEmployeeByUuid($uuid);
+
+        if (!$currentEmployee || $currentEmployee['is_deleted'] !== 1) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ሰራተኛ አልተገኘም ወይም ጥያቄው ትክክል አይደለም።'
+            ]);
+            return;
+        }
+
+        $this->db->beginTransaction();
+
+        try {
+            $success = $model->rejectDeletion($uuid, [
+                'approved_by'      => $user['id'],
+                'rejection_reason' => $rejectionReason,
+            ]);
+
+            if (!$success) {
+                throw new \Exception('መቃወም አልተሳካም።');
+            }
+
+            // Audit log
+            \App\Helpers\AuditHelper::log(
+                action:     'deletion_rejected',
+                entityType: 'employee',
+                entityId:   $uuid,
+                oldValues:  [
+                    'is_deleted' => 1,
+                ],
+                newValues:  [
+                    'is_deleted'                => 3,
+                    'deletion_approved_by'      => $user['id'],
+                    'deletion_approved_at'      => date('Y-m-d H:i:s'),
+                    'deletion_rejection_reason' => $rejectionReason,
+                ],
+                metadata: [
+                    'rejected_by_name'    => $user['first_name'] . ' ' . $user['father_name'],
+                    'rejected_by_role'    => $user['role'],
+                    'original_deleted_by' => $currentEmployee['deleted_by'],
+                    'original_reason'     => $currentEmployee['deletion_reason'],
+                    'ip_address'          => $_SERVER['REMOTE_ADDR'] ?? null,
+                ]
+            );
+
+            $this->db->commit();
+
+            echo json_encode([
+                'status'  => 'success',
+                'message' => 'የመሰረዝ ጥያቄው ውድቅ ተደርጓል። ሰራተኛው ወደ ስርዓቱ ተመልሷል።'
+            ]);
+
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            echo json_encode([
+                'status'  => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
 
 }

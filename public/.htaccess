@@ -1,6 +1,8 @@
 RewriteEngine On
+RewriteBase /HRM/public/
 
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
 
-RewriteRule ^ index.php [L,QSA]
+RewriteRule ^(.*)$ index.php?action=$1 [L,QSA]

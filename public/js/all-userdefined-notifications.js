@@ -56,13 +56,33 @@ function fetchDebtSuspensionCount() {
         })
         .catch(error => console.error('Debt Suspension notification error:', error));
 }
+
+function fetchEmployeeDeletionRequestCount() {
+    fetch(NOTIFICATION_URLS.employee_deleteion_request)
+        .then(response => response.json())
+        .then(data => {
+            const count = data.count;
+            const employeeDeletionRequestItem = document.getElementById('employee-deletion-request-item');
+            const employeeDeletionRequestBadge = document.getElementById('employee-deletion-request-count');
+
+            if (count > 0) {
+                if (employeeDeletionRequestItem) employeeDeletionRequestItem.style.display = 'block';
+                if (employeeDeletionRequestBadge) employeeDeletionRequestBadge.textContent = count;
+            } else {
+                if (employeeDeletionRequestItem) employeeDeletionRequestItem.style.display = 'none';
+                if (employeeDeletionRequestBadge) employeeDeletionRequestBadge.textContent = 0;
+            }
+            updateTotalCount();
+        })
+        .catch(error => console.error('Employee Deletion Request notification error:', error));
+}
 function updateTotalCount() {
     // የሁለቱንም ድምር ለመያዝ
     const onboarding = parseInt(document.getElementById('onboarding-count')?.textContent) || 0;
     const scholarship = parseInt(document.getElementById('scholarship-count')?.textContent) || 0;
     const debtSuspension = parseInt(document.getElementById('debt-suspension-count')?.textContent) || 0;
-
-    const total = onboarding + scholarship + debtSuspension;
+    const employeeDeletionRequest = parseInt(document.getElementById('employee-deletion-request-count')?.textContent) || 0;
+    const total = onboarding + scholarship + debtSuspension + employeeDeletionRequest;
     const badge = document.getElementById('total-count');
     const label = document.getElementById('total-notifications');
 
@@ -85,6 +105,7 @@ function fetchAllNotifications() {
     fetchOnboardingCount();
     fetchScholarshipCount(); // አዲሱ ጥሪ
     fetchDebtSuspensionCount();
+    fetchEmployeeDeletionRequestCount();
 }
 
 fetchAllNotifications();
