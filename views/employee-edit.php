@@ -4,11 +4,11 @@ $is_employee_edit_page = true; ?>
 <section class="content">
   <div class="container-fluid">
     <div class="card card-primary card-outline">
-      <div class="card-header">
-        <h3 class="card-title">የሰራተኛ ማስተካከያ</h3>
+      <div class="card-header bg-white">
+        <h3 class="card-title font-weight-bold"><i class="fas fa-user-edit mr-2"></i>የሰራተኛ ማስተካከያ መረጃ ማስተካከያ)</h3>
         <div class="card-tools">
-          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-registration" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> ተመለስ
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/<?= htmlspecialchars($source) ?>" class="btn btn-tool text-secondary">
+            <i class="fas fa-times fa-lg"></i>
           </a>
         </div>
       </div>
@@ -16,8 +16,7 @@ $is_employee_edit_page = true; ?>
       <div class="card-body">
         <form action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-edit-save" method="POST" enctype="multipart/form-data" id="employee-edit-form">
           <input type="hidden" name="uuid" value="<?= htmlspecialchars($employee['uuid'] ?? '') ?>">
-
-          <div class="row">
+<input type="hidden" name="source" value="<?= htmlspecialchars($source) ?>">         <div class="row">
             <div class="col-md-4">
               <div class="form-group">
                 <label for="employee_id">የሰራተኛው መለያ ቁጥር</label>
@@ -88,7 +87,7 @@ $ethDate = EthiopianDateHelper::toEthCalendar($dateParts[2], $dateParts[1], $dat
        value="<?= EthiopianDateHelper::getMonthName($ethDate['month']) ?> <?= $ethDate['day'] ?> <?= $ethDate['year'] ?>"
        readonly 
        style="background-color: #fff; cursor: pointer;">
-      <input type="date" class="form-control" id="birth_date" name="birth_date" value="<?= htmlspecialchars($employee['birth_date'] ?? '') ?>" required readonly>
+      <input type="date" class="d-none" id="birth_date" name="birth_date" value="<?= htmlspecialchars($employee['birth_date'] ?? '') ?>" required>
               </div>
             </div>
             <div class="col-md-4">
@@ -119,19 +118,18 @@ $ethDate = EthiopianDateHelper::toEthCalendar($dateParts[2], $dateParts[1], $dat
                       <option value="<?= htmlspecialchars($job['id']) ?>"
                               <?= ($employee['job_property_id'] ?? '') == $job['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($job['job_name']) ?>
-                        <?= $job['status'] === 'reserved' ? '(የተያዘ)' : '' ?>
                       </option>
                     <?php endforeach; ?>
                   <?php endif; ?>
                 </select>
-                <small class="form-text text-muted">አሁን የሆነ ሥራ: <strong><?= htmlspecialchars($employee['job_name'] ?? 'N/A') ?></strong></small>
               </div>
             </div>
           
             <div class="col-md-4">
               <div class="form-group">
                 <label for="date_of_employed">የቅጥር ቀን</label>
-                 <?php
+             <?php
+                 
                  // Split the database date (YYYY-MM-DD)
 $empdateParts = explode('-', $employee['date_of_employed']);
 $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts[1], $empdateParts[0]);
@@ -145,7 +143,7 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
        value="<?= EthiopianDateHelper::getMonthName($empethDate['month']) ?> <?= $empethDate['day'] ?> <?= $empethDate['year'] ?>"
        readonly 
        style="background-color: #fff; cursor: pointer;">
-                <input type="date" class="form-control" id="date_of_employed" name="date_of_employed" value="<?= htmlspecialchars($employee['date_of_employed'] ?? '') ?>" readonly>
+                <input type="date" class="d-none"  id="date_of_employed" name="date_of_employed" value="<?= htmlspecialchars($employee['date_of_employed'] ?? '') ?>">
               </div>
             </div>
           </div>
@@ -295,10 +293,10 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
           <div class="row">
             <div class="col-12">
               <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary mr-2">
+                <button type="submit" class="btn btn-warning mr-2">
                   <i class="fas fa-save"></i> አስተካክል
                 </button>
-                <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-registration" class="btn btn-secondary">
+                <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/<?= htmlspecialchars($source) ?>" class="btn btn-secondary">
                   <i class="fas fa-times"></i> ዝጋ
                 </a>
               </div>
@@ -309,3 +307,22 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
     </div>
   </div>
 </section>
+<div class="modal fade" id="jobChangeConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title">እርግጠኛ ነዎት?</h6>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body py-2">
+                <p class="mb-1">የስራ መደቡን መቀየር ይፈልጋሉ?</p>
+                <p class="mb-1">ከ: <strong id="job-confirm-from"></strong></p>
+                <p class="mb-0">ወደ: <strong id="job-confirm-to"></strong></p>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">ይቅር</button>
+                <button type="button" class="btn btn-sm btn-primary" id="jobConfirmYes">አዎ፣ ቀይር</button>
+            </div>
+        </div>
+    </div>
+</div>

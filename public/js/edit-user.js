@@ -1,10 +1,9 @@
 $(document).ready(function () {
 
-    $(document).on("click", ".edit-org", function () {
+    $(document).on("click", ".edit-user", function () {
 
         const id = $(this).data("id");
 
-        console.log("User ID:", id);
 
        fetch(`${BASE_URL}/edit-user?id=${id}`)
             .then(res => res.json())
@@ -35,4 +34,26 @@ $(document).ready(function () {
 
     });
 
+   document.addEventListener('click', function (e) {
+
+    // ── Delete User
+        const deleteButton = e.target.closest('.delete-user');
+        if (deleteButton) {
+            confirmDelete({
+                endpoint:    'delete-user-process',
+                id:          deleteButton.dataset.id,
+                name:        deleteButton.dataset.name,
+                task:        'delete',
+                title:       `"${deleteButton.dataset.name}" ይሰረዝ?`,
+                warning:     `<strong>"${deleteButton.dataset.name}ን"</strong> ከተቆጣጣሪ ዝርዝር ለማስወገድ ነው።`,
+                confirmText: '<i class="fas fa-user-times"></i> አዎ፣ ሰርዝ!',
+                successText: 'ተቆጣጣሪ ተሰርዟል።',
+                requireReason:   true,
+                requirePassword: true,
+                onSuccess: () => document.getElementById(`row-${deleteButton.dataset.id}`)?.remove()
+            });
+            return;
+        }
+  });
+   
 });

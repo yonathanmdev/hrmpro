@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HRMS | የተቋም መመዝገቢያ</title>
+  <title>HRMS</title>
 <base href="/HRM/public/">
 <!-- Font Awesome -->
   <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
@@ -33,6 +33,11 @@
   <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="dist/css/adminlte.min.css">
+   <link rel="stylesheet" href="css/delete.css">
+   <link rel="stylesheet" href="css/position-toggles.css">
+   <script>
+    window.BASE_URL = "<?= rtrim($_ENV['BASE_URL'], '/') ?>";
+</script>
 </head>
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">

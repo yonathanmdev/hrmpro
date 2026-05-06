@@ -42,7 +42,7 @@
             else if (ethMonth == 12) { gMonth = (ethDay <= 25) ? 8 : 9; gDay = (ethDay <= 25) ? ethDay + 6 : ethDay - 25; }
             else if (ethMonth == 13) { gMonth = 9; gDay = ethDay + 5; }
         }
-        return { day: gDay, month: gMonth, year: gYear };
+        return { year: gYear,  month: gMonth, day: gDay };
     }
 
     // ግሪጎርያን ወደ ኢትዮጵያ
@@ -94,23 +94,80 @@
         2. UI/CSS - ለሞዳል ተኳሃኝ የሆነ (Fixed & High Z-index)
     ----------------------------------------------------------- */
     const style = document.createElement('style');
-    style.textContent = `
-        .eth-cal-popup { 
-            position: fixed; /* ከሞዳል ውጭ እንዲታይ */
-            width: 320px; background: #fff; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
-            border-radius: 8px; padding: 12px; 
-            z-index: 999999 !important; /* ሁሌም ከላይ እንዲሆን */
-            display: none; border: 1px solid #ccc;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .cal-head { display: flex; justify-content: space-between; align-items: center; background: #1A1208; color: #C8962A; padding: 8px; border-radius: 5px; }
-        .grid-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; margin-top: 10px; }
-        .grid-days div { padding: 8px 0; cursor: pointer; border-radius: 4px; font-size: 13px; }
-        .grid-days div:hover { background: #eee; }
-        .grid-days .today { outline: 2px solid #C8962A; font-weight: bold; background: #fff9eb; }
-        .drop-list { position: absolute; background: #fff; border: 1px solid #ddd; max-height: 180px; overflow-y: auto; z-index: 1000000; width: 100px; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-    `;
+style.textContent = `
+    .eth-cal-popup { 
+        position: fixed;
+        width: 320px; 
+        background: #fff; 
+        box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
+        border-radius: 8px; 
+        padding: 12px; 
+        z-index: 999999 !important;
+        display: none; 
+        border: 1px solid #ccc;
+        font-family: 'Segoe UI', sans-serif;
+
+        /* ← Remove any fixed height — let it grow naturally */
+        height: auto;
+        min-height: unset;
+        max-height: unset;
+        overflow: visible;
+    }
+    .cal-head { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        background: #1A1208; 
+        color: #C8962A; 
+        padding: 8px; 
+        border-radius: 5px; 
+        position: relative; /* needed for dropdown lists */
+    }
+    .grid-days { 
+        display: grid; 
+        grid-template-columns: repeat(7, 1fr); 
+        gap: 2px; 
+        text-align: center; 
+        margin-top: 10px; 
+    }
+    .grid-days div { 
+        padding: 6px 0;   /* ← slightly reduced from 8px to keep compact */
+        cursor: pointer; 
+        border-radius: 4px; 
+        font-size: 13px; 
+        min-height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .grid-days div:hover { background: #eee; }
+    .grid-days .today { 
+        outline: 2px solid #C8962A; 
+        font-weight: bold; 
+        background: #fff9eb; 
+    }
+    .grid-days .selected-day {
+        background: #C8962A;
+        color: #fff;
+        font-weight: bold;
+        border-radius: 4px;
+    }
+    .grid-days .empty {
+        cursor: default;  /* ← empty cells not clickable */
+        pointer-events: none;
+    }
+    .drop-list { 
+        position: absolute; 
+        background: #fff; 
+        border: 1px solid #ddd; 
+        max-height: 180px; 
+        overflow-y: auto; 
+        z-index: 1000000; 
+        width: 100px; 
+        display: none; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+    }
+`;
     document.head.appendChild(style);
 
     const popup = document.createElement('div');

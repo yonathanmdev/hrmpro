@@ -1,33 +1,35 @@
-<?php $is_organization_page = true; ?>
+<?php $is_director_page = true; ?>
 <!-- Main content -->
 <section class="content">
   <div class="container-fluid">
 
     <!-- Card -->
-    <div class="card card-default">
-      <div class="card-header">
+    <div class="card card-primary card-outline">
+      <div class="card-header bg-white d-flex flex-column flex-md-row align-items-md-center">
 
-        <h3 class="card-title">ዳይሬክተር</h3>
+  <div class="ml-md-auto">
+    <button 
+      type="button" 
+      class="btn btn-primary btn-sm w-100 w-md-auto"
+      data-toggle="modal" 
+      data-target="#orgModal"
+    >
+      <i class="fas fa-plus mr-1"></i>
+      ዳይሬክተር መዝግብ
+    </button>
+  </div>
 
-        <div class="card-tools">
-           <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#orgModal">
-            አዲስ ዳይሬክተር መዝግብ
-          </button>
-          <button type="button" class="btn btn-tool" data-card-widget="collapse">
-            <i class="fas fa-minus"></i>
-          </button>
-          <button type="button" class="btn btn-tool" data-card-widget="remove">
-            <i class="fas fa-times"></i>
-          </button>
-         
-        </div>
-
-      </div>
+</div>
 
       <div class="card-body">
-        <!-- Example Table (optional) -->
-      <table id="example1" class="table table-bordered table-hover dataTable dtr-inline" aria-describedby="example2_info">
-    <thead>
+        <!-- Header -->
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 text-dark">
+      የዳይሬክተር ዝርዝር
+    </h6>
+  </div>
+      <table id="example1" data-empty-msg="ምንም ዳይሬክተር የለም።" class="table table-bordered table-hover dataTable dtr-inline small" style="color: #000;" aria-describedby="example2_info">
+    <thead class="thead-light">
       <tr>
         <th>#</th>
         <th>ዳይሬክተር ስም </th>
@@ -37,29 +39,38 @@
     <tbody>
       <?php if (!empty($directors)): ?>
         <?php foreach ($directors as $index => $row): ?>
-          <tr>
+          <tr id="row-<?= $row['id'] ?>">
             <td><?= $index + 1 ?></td>
             <td><?= htmlspecialchars($row['director_name']) ?></td>
     
-            <td>
-               <button class="btn btn-primary btn-sm edit-org" 
-                      data-id="<?= $row['id'] ?>" 
-                      data-name="<?= htmlspecialchars($row['director_name']) ?>" title="አስተካክል"  >
-                <i class="fas fa-edit"></i>
-              </button> 
-              <button class="btn btn-danger btn-sm delete-org" 
-                      data-id="<?= $row['id'] ?>" 
-                      data-name="<?= htmlspecialchars($row['director_name']) ?>" title="ሰርዝ">
+            <td class="text-center align-middle">
+  <div class="btn-group btn-group-sm shadow-sm" role="group">
 
-                <i class="fas fa-trash"></i>
-              </button>
-            </td>
+    <button 
+      class="btn btn-outline-secondary edit-director" 
+      data-id="<?= $row['id'] ?>" 
+      data-name="<?= htmlspecialchars($row['director_name']) ?>" 
+      title="አስተካክል"
+    >
+      <i class="fas fa-edit"></i>
+    </button>
+
+    <button 
+      class="btn btn-outline-danger shadow-sm delete-director" 
+      data-id="<?= $row['id'] ?>" 
+      data-name="<?= htmlspecialchars($row['director_name']) ?>" 
+      data-toggle="tooltip" 
+        data-placement="top"
+      title="ሰርዝ"
+
+    >
+    <i class="fas fa-trash-alt me-1"></i> ሰርዝ
+    </button>
+
+  </div>
+</td>
           </tr>
         <?php endforeach; ?>
-      <?php else: ?>
-        <tr>
-          <td colspan="3" class="text-center">ምንም የተመዘገበ ዳይሬክተር የለም።</td>
-        </tr>
       <?php endif; ?>
     </tbody>
   </table>
@@ -70,7 +81,7 @@
 
   </div>
 </section>
-<?php include 'partials/edit-organization-modal.php'; ?>
+<?php include 'partials/edit-director-modal.php'; ?>
 
 <!-- Modal (place OUTSIDE card) -->
 <div class="modal fade" id="orgModal">
@@ -80,21 +91,23 @@
       <form id="orgForm" method="POST" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-director-process">
 
         <!-- Header -->
-        <div class="modal-header bg-secondary">
-          <h4 class="modal-title">አዲስ ዳይሬክተር መዝግብ</h4>
-          <button type="button" class="close" data-dismiss="modal">
-            <span>&times;</span>
-          </button>
-        </div>
+        <div class="modal-header">
+        <h6 class="modal-title font-weight-bold">
+          <i class="fas fa-plus mr-1"></i> አዲስ ዳይሬክተር መዝግብ
+        </h6>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
 
         <!-- Body -->
         <div class="modal-body">
-          <div class="form-group">
-            <label for="org_name">የዳይሬክተር ስም</label>
+          <div class="form-group mb-2">
+            <label for="director_name" class="mb-1"><small class="font-weight-bold">የዳይሬክተር ስም</small></label>
             <input 
               type="text" 
               id="director_name" 
-              class="form-control" 
+              class="form-control form-control-sm" 
               name="director_name" 
               placeholder="ስም ያስገቡ" 
               required
@@ -104,12 +117,11 @@
 
         <!-- Footer -->
         <div class="modal-footer justify-content-between">
-          <button type="button" class="btn btn-default" data-dismiss="modal">
+          <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">
             ዝጋ
           </button>
-          <button type="submit" class="btn btn-primary">
-            መዝግብ
-          </button>
+          <button type="submit" class="btn btn-primary btn-sm">መዝግብ</button>
+          
         </div>
 
       </form>

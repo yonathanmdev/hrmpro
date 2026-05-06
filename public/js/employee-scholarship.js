@@ -1,6 +1,7 @@
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('click', function (e) {
     // ፕሮጀክትህ ያለበትን ትክክለኛ Path እዚህ ጋር አረጋግጥ
-    const BASE_URL = window.location.origin + '/HRM';
+    
     let searchTimeout = null;
 
     /* -----------------------------------------------------------
@@ -124,4 +125,29 @@ $(document).ready(function() {
             $('#searchResults').hide();
         }
     });
+
+    // ============================================================
+    // 3. DELETE — SweetAlert2 confirmation + soft delete
+    // ============================================================
+        const deleteScholarship = e.target.closest('.delete-scholarship');
+        if (deleteScholarship) {
+            confirmDelete({
+                endpoint:    'delete-scholarship-process',
+                id:          deleteScholarship.dataset.id,
+                name:        deleteScholarship.dataset.name,
+                task:        'delete',
+                title:       `"የ${deleteScholarship.dataset.name}" ት/ት እድል ይሰረዝ?`,
+                warning:     `<strong>"የ${deleteScholarship.dataset.name}"</strong> ን ት/ት እድል ሊያስወግዱ ነው።`,
+                confirmText: '<i class="fas fa-user-times"></i> አዎ፣ ሰርዝ!',
+                successText: 'የት/ት እድሉ ተሰርዟል።',
+                requireReason:   true,
+                requirePassword: true,
+                onSuccess: () => document.getElementById(`row-${deleteScholarship.dataset.id}`)?.remove()
+            });
+            return;
+        }
+   
+ 
+});
+
 });

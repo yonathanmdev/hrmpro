@@ -5,21 +5,29 @@ use App\Helpers\EthiopianDateHelper;
 <section class="content">
   <div class="container-fluid">
     <div class="card card-primary card-outline">
-     <div class="card-header">
-        <h3 class="card-title">የትምህርት እድል መመዝገቢያ</h3>
-        <div class="card-tools">
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#scholarshipModal">
-            <i class="fas fa-user-plus"></i> የትምህርት እድል መዝግብ
-          </button>
-        </div>
-      </div>
-    </div>
+      <div class="card-header">
+<div class="card-header bg-white d-flex align-items-center">
 
-    <div class="card card-primary card-outline">
-      
+  <div class="ml-auto">
+    <button 
+      type="button" 
+      class="btn btn-primary btn-sm"
+      data-toggle="modal" 
+      data-target="#scholarshipModal"
+    >
+      <i class="fas fa-plus mr-1"></i>
+      የትምህርት እድል መዝግብ
+    </button>
+  </div>
+
+</div>
+
+      </div>
+    
+  
       <div class="card-body">
-        <table id="example1" class="table table-bordered table-striped">
-          <thead>
+        <table id="example1" data-empty-msg="ምንም በት/ት ያሉ የተመዘገበ ሰራተኛ የለም።" class="table table-bordered table-striped small" style="color: #000;" aria-describedby="example2_info">
+          <thead class="thead-light">
             <tr>
               <th>#</th>
               <th>መለያ ቁጥር</th>
@@ -43,7 +51,7 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
 ?>
   
 
-                <tr>
+                <tr id="row-<?= $employee['record_id'] ?>">
                   <td><?= $index + 1 ?></td>
                   <td><?= htmlspecialchars($employee['employee_id'] ?? '') ?></td>
                   <td><?= htmlspecialchars(trim(($employee['first_name'] ?? '') . ' ' . ($employee['father_name'] ?? '') . ' ' . ($employee['g_father_name'] ?? ''))) ?></td>
@@ -52,28 +60,33 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                   <td><?= EthiopianDateHelper::getMonthName($ethDate['month']) ?> <?= $ethDate['day'] ?> <?= $ethDate['year'] ?></td>
                    <td><?= EthiopianDateHelper::getMonthName($regethDate['month']) ?> <?= $regethDate['day'] ?> <?= $regethDate['year'] ?></td>
 
-                  <td>
-                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-onleave-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" class="btn btn-sm btn-secondary" title="እይ">
+                  <td class="text-center align-middle">
+                   <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-onleave-views/<?= htmlspecialchars($employee['uuid'] ?? '') ?>/<?= htmlspecialchars($employee['record_id'] ?? '') ?>"   class="btn btn-sm btn-outline-primary" title="እይ">
                       <i class="fas fa-eye"></i> 
                     </a>
-                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-edit?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>&record_id=<?= htmlspecialchars($employee['record_id'] ?? '') ?>" class="btn btn-sm btn-warning" title="ማስተካከያ">
+                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-edit/<?= htmlspecialchars($employee['uuid'] ?? '') ?>/<?= htmlspecialchars($employee['record_id'] ?? '') ?>" class="btn btn-sm btn-outline-secondary" title="ማስተካከያ">
                       <i class="fas fa-edit"></i> 
                     </a>
                     <?php if (isset($userRole) && $userRole === 'hr_director'): ?>
-    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-onleave-views?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>" 
-       class="btn btn-sm btn-primary" 
+    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-onleave-views/<?= htmlspecialchars($employee['uuid'] ?? '') ?>/<?= htmlspecialchars($employee['record_id'] ?? '') ?>" 
+       class="btn btn-sm btn-outline-success" 
        title="አጽድቅ">
         <i class="fas fa-check"></i> 
     </a>
 <?php endif; ?>
-                    
+   <?php if ($employee['registered_by'] ===  $_SESSION['user']['id']): ?>
+<button class="btn btn-outline-danger btn-sm delete-scholarship" 
+                      data-id="<?= $employee['record_id']?>"
+                      data-name="<?= htmlspecialchars($employee['first_name'] ?? '') . ' ' . htmlspecialchars($employee['father_name'] ?? '') . ' ' . htmlspecialchars($employee['g_father_name'] ?? '') ?>"
+                      title="ሰርዝ">
+
+                <i class="fas fa-trash"></i>
+              </button>  
+                <?php endif; ?>   
+                                 
                   </td>
                 </tr>
               <?php endforeach; ?>
-            <?php else: ?>
-              <tr>
-                <td colspan="9" class="text-center">ምንም ያልጸደቀ የት/ት እድል የለም።</td>
-              </tr>
             <?php endif; ?>
           </tbody>
         </table>
@@ -84,22 +97,25 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
 <div class="modal fade" id="scholarshipModal" tabindex="-1" role="dialog" aria-labelledby="scholarshipModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-primary">
-               <h5 class="modal-title text-white" id="scholarshipModalLabel"><i class="fas fa-graduation-cap"></i> አዲስ የትምህርት እድል ምዝገባ</h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+            <!-- 1. Modal Header -->
+        <div class="modal-header">
+          <h6 class="modal-title font-weight-bold">
+            <i class="fas fa-plus mr-1"></i> አዲስ የትምህርት እድል መዝገባ
+          </h6>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
             <form id="scholarshipForm" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-store" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     
                     <div class="form-group position-relative">
-                        <label for="empSearchInput" class="font-weight-bold">ሰራተኛ ይፈልጉ</label>
+                        <label for="empSearchInput" class="font-weight-bold mb-1"><small class="font-weight-bold">ሰራተኛ ይፈልጉ </small></label>
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text"><i class="fas fa-search"></i></span>
                             </div>
-                            <input type="text" id="empSearchInput" class="form-control" placeholder="የሰራተኛ ስም ወይም መታወቂያ..." autocomplete="off">
+                            <input type="text" id="empSearchInput" class="form-control form-control-sm" placeholder="የሰራተኛ ስም ወይም መታወቂያ..." autocomplete="off">
                         </div>
                         <div id="searchResults" class="list-group position-absolute w-100 shadow-lg" style="z-index: 1051; display: none; max-height: 200px; overflow-y: auto;"></div>
                     </div>
@@ -117,9 +133,9 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
 
                     <div class="row mt-3">
                       <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="scholarship_type">የተሰጣቸው የትምህርት እድል </label>
-                                 <select class="form-control" name="scholarship_type" id="scholarship_type" required>
+                            <div class="form-group mb-2">
+                                <label for="scholarship_type" class="mb-1"><small class="font-weight-bold">የተሰጣቸው የትምህርት እድል </small></label>
+                                 <select class="form-control form-control-sm" name="scholarship_type" id="scholarship_type" required>
                                   <option selected="" disabled="" value="">ይምረጡ </option>
                                   <option value="የመጀመሪያ_ዲግሪ ">የመጀመሪያ ዲግሪ </option>
                                   <option value="ሁለተኛ_ዲግሪ">ሁለተኛ ዲግሪ</option>
@@ -129,24 +145,24 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                           </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="scholarship_duration_years">የቆይታ ጊዜ </label>
-                                  <input type="number" name="scholarship_duration_years" class="form-control" id="scholarship_duration_years" required>
+                            <div class="form-group mb-2">
+                                <label for="scholarship_duration_years" class="mb-1"><small class="font-weight-bold">የቆይታ ጊዜ </small></label>
+                                  <input type="number" name="scholarship_duration_years" class="form-control form-control-sm" id="scholarship_duration_years" required>
                                  
                           </div>
                         </div>
                           <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="agreement_date">ውል የተያዘበት ቀን (ቀን/ወር/ዓመት) </label>
+                            <div class="form-group mb-2">
+                                <label for="agreement_date" class="mb-1"><small class="font-weight-bold">ውል የተያዘበት ቀን (ቀን/ወር/ዓመት) </small></label>
                                   <input type="text" 
-       class="ethiopian-date form-control" 
+       class="ethiopian-date form-control form-control-sm" 
        name="eth_agreement_date" 
        data-rule="past" 
        data-gregorian="#agreement_date" 
        placeholder="ቀን/ወር/ዓ.ም ይምረጡ" 
        readonly 
        style="background-color: #fff; cursor: pointer;" required>
-                <input type="date" class="form-control" id="agreement_date" name="agreement_date" required readonly>
+                <input type="date" class="d-none" id="agreement_date" name="agreement_date" required readonly>
 
                           </div>
                         </div>
@@ -154,8 +170,8 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
 
                     <div class="row mt-3">
                         <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="attachment">የትምህርት እድል ሰነድ (Letter/Evidence)</label>
+                            <div class="form-group mb-2">
+                                <label for="attachment" class="mb-1"><small class="font-weight-bold">የትምህርት እድል ሰነድ (Letter/Evidence)</small></label>
                                 <div class="custom-file">
                                     <input type="file" name="scholarship_file" class="custom-file-input" id="attachment" required>
                                     <label class="custom-file-label" for="attachment">ፋይል ይምረጡ (PDF/Image)...</label>
@@ -166,8 +182,8 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
 
                 </div>
                 <div class="modal-footer justify-content-between">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">ዝጋ</button>
-                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                    <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">ዝጋ</button>
+                    <button type="submit" class="btn btn-primary btn-sm" id="submitBtn" disabled>
                         <i class="fas fa-save"></i> መረጃውን መዝግብ
                     </button>
                 </div>

@@ -1,6 +1,7 @@
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
+   <?php include_once __DIR__ . '/../partials/employee_search_modal.php'; ?>
     <?php include_once 'footer.php'; ?>
 
   <!-- Control Sidebar -->
@@ -70,67 +71,135 @@
 <!-- jQuery Knob Chart -->
    <script src="dist/js/pages/dashboard.js"></script>
 <?php endif; ?>
+<?php
+function myAsset($path) {
+    $fullPath = __DIR__ . '/' . $path;
+    $version = file_exists($fullPath) ? filemtime($fullPath) : time();
+    return $path . '?v=' . $version;
+}
+?>
+<script src="<?= myAsset('js/employee_search.js') ?>"></script>
+<script src="<?= myAsset('js/confirm-delete.js') ?>"></script>
 <?php if (isset($is_organization_page) && $is_organization_page === true): ?>
     
-    <script src="js/organizations-logic.js"></script>
+    <script src="<?= myAsset('js/organizations-logic.js') ?>"></script>
     <?php endif; ?>
+   <?php if (isset($is_organization_deleted_page) && $is_organization_deleted_page === true): ?>
+     <script src="<?= myAsset('js/deleted-organizations.js') ?>"></script>
+    <?php endif; ?>
+<?php if (isset($is_archived_organizations_page) && $is_archived_organizations_page === true): ?>
+    <script src="<?= myAsset('js/archived-organization.js') ?>"></script>
+<?php endif; ?>
+<?php if (isset($is_branch_page) && $is_branch_page === true): ?>
+    <script src="<?= myAsset('js/branches-logic.js') ?>"></script>
+    <?php endif; ?>
+ <?php if (isset($is_branch_deleted_page) && $is_branch_deleted_page === true): ?>
+     <script src="<?= myAsset('js/deleted-branches.js') ?>"></script>
+    <?php endif; ?>
+    <?php if (isset($is_archived_branches_page) && $is_archived_branches_page === true): ?>
+    <script src="<?= myAsset('js/archived-branches.js') ?>"></script>
+<?php endif; ?>
+
+<?php if (isset($is_director_page) && $is_director_page === true): ?>
+    
+    <script src="<?= myAsset('js/directors-logic.js') ?>"></script>
+    <?php endif; ?>
+    <?php if (isset($is_director_deleted_page) && $is_director_deleted_page === true): ?>
+        <script src="<?= myAsset('js/deleted-directors.js') ?>"></script>
+    <?php endif; ?>
+  <?php if (isset($is_position_page) && $is_position_page === true): ?>
+      <script src="<?= myAsset('js/positions-logic.js') ?>"></script>
+      <?php endif; ?>
+        <?php if (isset($is_position_deleted_page) && $is_position_deleted_page === true): ?>
+          <script src="<?= myAsset('js/deleted-positions.js') ?>"></script>
+        <?php endif; ?>
+
+    
    <?php if (isset($is_register_user_page) && $is_register_user_page === true): ?>
     <script>const BASE_URL = "<?= '/HRM' ?>"; // or use $_ENV['BASE_URL'] if you have .env</script>
-    <script src="js/edit-user.js"></script>
-    <script>
-    const BRANCH_NAME    = <?= json_encode($branchNameString) ?>;
-    const ORGANIZATIONS  = <?= json_encode($organizations) ?>;
+    <script src="<?= myAsset('js/edit-user.js') ?>"></script>
+   <script>
+    const SESSION_ROLE    = <?= json_encode($_SESSION['user']['role'] ?? '') ?>;
+    const BRANCH_NAME     = <?= json_encode($branchNameString) ?>;
+    const ORGANIZATIONS   = <?= json_encode($organizations) ?>;
+    const SUB_BRANCHES    = <?= json_encode($subBranches ?? []) ?>;
 </script>
-<script src="js/register-user.js"></script>
+<script src="<?= myAsset('js/register-user.js') ?>"></script>
     <?php endif; ?>
+
+      <?php if (isset($is_user_deleted_page) && $is_user_deleted_page === true): ?>
+        <script src="<?= myAsset('js/deleted-users.js') ?>"></script>
+    <?php endif; ?>
+
    <?php if (isset($is_employee_registration_page) && $is_employee_registration_page === true): ?>
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
-    <script src="js/employee-registration.js"></script>
-     <script src="js/ethiopian-calendar.js"></script>
+    <script src="<?= myAsset('js/employee-registration.js') ?>"></script>
+     <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
     
   
     <?php endif; ?>
+ 
+      <?php if (isset($is_employee_active_page) && $is_employee_active_page === true): ?>
+    <script src="<?= myAsset('js/employee.js') ?>"></script>
+    <?php endif; ?>
+
+    <?php if (isset($is_employee_deletion_page) && $is_employee_deletion_page === true): ?>
+    <script src="<?= myAsset('js/employee.js') ?>"></script>
+    <?php endif; ?>
+    
    <?php if (isset($is_employee_edit_page) && $is_employee_edit_page === true): ?>
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
-    <script src="js/employee-edit.js"></script>
-    <script src="js/ethiopian-calendar.js"></script>
+    <script src="<?= myAsset('js/employee-edit.js') ?>"></script>
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
     
     <?php endif; ?>
+ <?php if (isset($is_exprience_registration_page) && $is_exprience_registration_page === true): ?>
+    <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
+    <script src="plugins/jquery-validation/additional-methods.min.js"></script>
+      <script src="<?= myAsset('js/search-company-job-title.js') ?>"></script>
+    <script src="<?= myAsset('js/employee-exprience.js') ?>"></script>
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
+    
+    <?php endif; ?>
+
      <?php if (isset($is_employee_scholarship_page) && $is_employee_scholarship_page === true): ?>
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
-    <script src="js/ethiopian-calendar.js"></script>
-    <script src="js/employee-scholarship.js"></script>  
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
+    <script src="<?= myAsset('js/employee-scholarship.js') ?>"></script>  
     <?php endif; ?>
 <?php if (isset($is_employee_scholarship_edit_page) && $is_employee_scholarship_edit_page === true): ?>
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
-    <script src="js/ethiopian-calendar.js"></script>
-    <script src="js/employee-scholarship.js"></script>
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
+    <script src="<?= myAsset('js/employee-scholarship.js') ?>"></script>
     
     <?php endif; ?>
-   
+    <?php if (isset($is_employee_warranty_page) && $is_employee_warranty_page === true): ?>
+          <script src="<?= myAsset('js/employee-warranty.js') ?>"></script>
+        <?php endif; ?>
+
     <?php if (isset($is_employee_debt_suspension_page) && $is_employee_debt_suspension_page === true): ?>
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
-    <script src="js/ethiopian-calendar.js"></script>
-    <script src="js/employee-debt-suspenssion.js"></script>
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
+    <script src="<?= myAsset('js/employee-debt-suspension.js') ?>"></script>
     
     <?php endif; ?>
     <?php if (isset($is_employee_debt_suspension_clearing_page) && $is_employee_debt_suspension_clearing_page === true): ?>
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
-    <script src="js/ethiopian-calendar.js"></script>
-    <script src="js/employee-debt-suspenssion.js"></script>
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
+    <script src="<?= myAsset('js/employee-debt-suspenssion.js') ?>"></script>
     
     <?php endif; ?>
 <?php if (isset($is_employee_debt_suspension_edit_page) && $is_employee_debt_suspension_edit_page === true): ?>
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
-    <script src="js/ethiopian-calendar.js"></script>
-     <script src="js/employee-debt-suspenssion.js"></script>
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
+     <script src="<?= myAsset('js/employee-debt-suspenssion.js') ?>"></script>
     <?php endif; ?>
 
     <?php if ($_SESSION['user']['role']==='hr_director'): ?>
@@ -139,11 +208,12 @@
     const NOTIFICATION_URLS = {
         onboarding: BASE_URL + '/onBoardingEmployees',
         scholarship: BASE_URL + '/on-leave-scholarship-count',
-        debtsuspension: BASE_URL + '/debt-suspension-count'
+        debtsuspension: BASE_URL + '/debt-suspension-count',
+        employee_deleteion_request: BASE_URL + '/employee-deletions-request-count'
     };
     
 </script>
-<script src="js/all-userdefined-notifications.js"></script>
+<script src="<?= myAsset('js/all-userdefined-notifications.js') ?>"></script>
     <?php endif; ?>
 <script>
 $(function () {
@@ -188,11 +258,24 @@ $(function () {
 
 <script>
   $(function () {
+    // Define the message using the PHP variable
+    var dynamicMsg = $("#example1").data("empty-msg") || "ምንም መረጃ የለም።";
     $("#example1").DataTable({
       "responsive": true, "lengthChange": false, "autoWidth": false,
-      "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+      "deferRender": true,
+      "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+      "language": {
+            "emptyTable": dynamicMsg, // Dynamic Amharic message,
+            "zeroRecords": "ምንም የሚዛመድ መረጃ አልተገኘም",
+            "search": "ፈልግ:",
+            "paginate": {
+                "next": "ቀጣይ",
+                "previous": "ቀዳሚ"
+            }
+        }
     }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
     $('#example2').DataTable({
+      "deferRender": true,
       "paging": true,
       "lengthChange": false,
       "searching": false,

@@ -16,7 +16,7 @@ if (!empty($scholarship['agreement_date'])) {
         <h3 class="card-title font-weight-bold">የት/ት ማስተካከያ (Scholarship Adjustment)</h3>
         <div class="card-tools">
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-onleave" class="btn btn-outline-secondary" title="ተመለስ">
-            <i class="fas fa-arrow-left"></i> ተመለስ
+           <i class="fas fa-times fa-lg"></i>
           </a>
         </div>
       </div>
@@ -137,11 +137,11 @@ if (!empty($scholarship['agreement_date'])) {
 
           <div class="row mt-4">
             <div class="col-md-12 text-right">
-                <button type="submit" class="btn btn-primary px-4">
+                <button type="submit" class="btn btn-warning px-4">
                     <i class="fas fa-check-circle"></i> መረጃውን አስተካክል
                 </button>
                 <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-onleave" class="btn btn-link text-secondary">
-                    ተውት/ዝጋ
+                    ዝጋ
                 </a>
             </div>
           </div>

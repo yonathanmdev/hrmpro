@@ -8,7 +8,7 @@ use App\Helpers\EthiopianDateHelper;
         <h3 class="card-title">የእዳ/እገዳ ማጽደቂያ</h3>
         <div class="card-tools">
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-pending" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> ተመለስ
+           <i class="fas fa-times fa-lg"></i>
           </a>
         </div>
       </div>
@@ -289,7 +289,7 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
    <div class="row">
             <div class="col-12">
               <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary mr-2">
+                <button type="submit" class="btn btn-success mr-2">
                   <i class="fas fa-save"></i> አጽድቅ
                 </button>
                 <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-pending" class="btn btn-secondary">

@@ -7,20 +7,18 @@ use App\Helpers\EthiopianDateHelper;
 
     <div class="card card-primary card-outline">
       <div class="card-header">
-        <h3 class="card-title">እዳ እገዳ ያለባቸው</h3>
+        <h6 class="card-title">እዳ እገዳ ያለባቸው</h6>
       </div>
 
       <div class="card-body">
-        <table id="example1" class="table table-bordered table-striped">
-          <thead>
+        <table id="example1" data-empty-msg="እዳ/እገዳ ያለበት ሰራተኛ የለም።" class="table table-bordered table-striped small" style="color: #000;" aria-describedby="example2_info">
+          <thead class="thead-light">
             <tr>
               <th>#</th>
               <th>መለያ ቁጥር</th>
               <th>ስም</th>
               <th>የስራ መደብ</th>
               <th>ጾታ</th>
-              <th>የልደት ቀን</th>
-              <th>Status</th>
               <th>የተመዘገቡበት ቀን</th>
               <th>Actions</th>
             </tr>
@@ -37,35 +35,30 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
 ?>
   
 
-                <tr>
+                <tr id="row-<?= $employee['record_id'] ?>">
                   <td><?= $index + 1 ?></td>
                   <td><?= htmlspecialchars($employee['employee_id'] ?? '') ?></td>
                   <td><?= htmlspecialchars(trim(($employee['first_name'] ?? '') . ' ' . ($employee['father_name'] ?? '') . ' ' . ($employee['g_father_name'] ?? ''))) ?></td>
                   <td><?= htmlspecialchars($employee['job_name'] ?? 'N/A') ?></td>
                   <td><?= ($employee['sex'] ?? '') === 'Male' ? 'ወንድ' : 'ሴት' ?></td>
-                  <td><?= EthiopianDateHelper::getMonthName($ethDate['month']) ?> <?= $ethDate['day'] ?> <?= $ethDate['year'] ?></td>
-                  <td><?= htmlspecialchars($employee['status'] ?? 'Active') ?></td>
                   <td><?= EthiopianDateHelper::getMonthName($regethDate['month']) ?> <?= $regethDate['day'] ?> <?= $regethDate['year'] ?></td>
                    <td>
-                     <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-clearing?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>&record_id=<?= htmlspecialchars($employee['record_id'] ?? '') ?>" class="btn btn-sm btn-secondary" title="እይ">
+                     <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-clearing/<?= htmlspecialchars($employee['uuid'] ?? '') ?>/<?= htmlspecialchars($employee['record_id'] ?? '') ?>" class="btn btn-sm btn-outline-primary" title="እይ">
                       <i class="fas fa-eye"></i> 
                     </a>
-                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-edit?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>&record_id=<?= htmlspecialchars($employee['record_id'] ?? '') ?>" class="btn btn-sm btn-primary" title="ማስተካከያ">
+                    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-edit/<?= htmlspecialchars($employee['uuid'] ?? '') ?>/<?= htmlspecialchars($employee['record_id'] ?? '') ?>" class="btn btn-sm btn-outline-secondary" title="ማስተካከያ">
                       <i class="fas fa-edit"></i> 
                     </a>
-                   <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-clearing?uuid=<?= htmlspecialchars($employee['uuid'] ?? '') ?>&record_id=<?= htmlspecialchars($employee['record_id'] ?? '') ?>" 
-   class="btn btn-sm btn-info" 
+                   <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-debt-suspension-clearing/<?= htmlspecialchars($employee['uuid'] ?? '') ?>/<?= htmlspecialchars($employee['record_id'] ?? '') ?>" 
+   class="btn btn-sm btn-outline-success" 
    title="እዳ/እገዳ ማንሳት">
-    <i class="fas fa-trash"></i> 
+    <i class="fas fa-key"></i> 
 </a>
                     
                   </td>
                 </tr>
               <?php endforeach; ?>
-            <?php else: ?>
-              <tr>
-                <td colspan="9" class="text-center">እዳ/እገዳ ያለባቸው ምንም ሰራተኛ አልተመዘገበም።</td>
-              </tr>
+           
             <?php endif; ?>
           </tbody>
         </table>
