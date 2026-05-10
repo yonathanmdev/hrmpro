@@ -17,7 +17,7 @@
       data-target="#userModal"
     >
       <i class="fas fa-user-plus mr-2"></i>
-      ተቆጣጣሪ
+      ተቆጣጣሪ መዝግብ
     </button>
   </div>
 
