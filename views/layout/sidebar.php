@@ -50,15 +50,6 @@
             </a>
 
           </li>
-          <li class="nav-item">
-            <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-developer" class="nav-link">
-              <i class="nav-icon fas fa-th"></i>
-              <p>
-                register-developer
-                <span class="right badge badge-danger">New</span>
-              </p>
-            </a>
-          </li>
           
          
          <?php 
@@ -79,6 +70,16 @@
     <ul class="nav nav-treeview">
       
       <?php if ($userRole === 'system_admin'): ?>
+        <li class="nav-item">
+            <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-developer" class="nav-link">
+              <i class="nav-icon fas fa-th"></i>
+              <p>
+                register-developer
+                <span class="right badge badge-danger">New</span>
+              </p>
+            </a>
+          </li>
+          
         <li class="nav-item">
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-organization" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
