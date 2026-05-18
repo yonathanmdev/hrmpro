@@ -301,8 +301,11 @@ class Position {
         return ['status' => 'error', 'message' => 'ስህተት ተፈጥሯል፤ እባክዎ በድጋሚ ይሞክሩ።'];
     }
 }
-public function findAllDeleted(): array
+public function findAllDeleted(?string $branchId): array
 {
+    $whereClause = $branchId
+        ? "AND jp.branch_id = :branchId"
+        : "";
     $stmt = $this->db->prepare("
         SELECT
             jp.id,
@@ -349,12 +352,14 @@ public function findAllDeleted(): array
         INNER JOIN users u ON u.id = jp.deleted_by
 
         WHERE jp.status     = 'inactive'
+         $whereClause
           AND jp.deleted_at IS NOT NULL
 
         ORDER BY jp.deleted_at DESC
     ");
 
-    $stmt->execute();
+  $params = $branchId ? ['branchId' => $branchId] : [];
+    $stmt->execute($params);
     return $stmt->fetchAll(\PDO::FETCH_ASSOC);
 }
 public function restore(string $id, string $userId): array
