@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <base href="/HRM/">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Log in — HRM</title>
+    <title>Log in — Warka Hub HRMS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap">
     <link rel="stylesheet" href="public/plugins/fontawesome-free/css/all.min.css">
@@ -28,7 +28,6 @@ if (session_status() === PHP_SESSION_NONE) {
             --danger:    #a32d2d;
             --danger-lt: #fcebeb;
             --radius:    14px;
-            --shadow:    0 4px 32px rgba(26,26,24,0.10);
         }
 
         html, body {
@@ -38,24 +37,12 @@ if (session_status() === PHP_SESSION_NONE) {
             color: var(--ink);
         }
 
-        /* — Background pattern — */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                radial-gradient(circle at 20% 35%, rgba(45,106,79,0.07) 0%, transparent 55%),
-                radial-gradient(circle at 78% 68%, rgba(45,106,79,0.05) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* Subtle dot grid */
+        /* Subtle dot grid on right side background */
         body::after {
             content: '';
             position: fixed;
             inset: 0;
-            background-image: radial-gradient(circle, rgba(26,26,24,0.07) 1px, transparent 1px);
+            background-image: radial-gradient(circle, rgba(26,26,24,0.06) 1px, transparent 1px);
             background-size: 28px 28px;
             pointer-events: none;
             z-index: 0;
@@ -70,119 +57,55 @@ if (session_status() === PHP_SESSION_NONE) {
             grid-template-columns: 1fr 1fr;
         }
 
-        /* — Left panel — */
+        /* ─── Left panel: full banner image ─── */
         .panel-left {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 4rem 5rem;
-            background: var(--accent-dk);
             position: relative;
             overflow: hidden;
         }
 
-        .panel-left::before {
-            content: '';
+        /* The banner fills the whole left panel */
+        .panel-left img.banner {
             position: absolute;
-            top: -120px; right: -120px;
-            width: 380px; height: 380px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.04);
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: left center;
+            display: block;
         }
 
+        /* Subtle bottom scrim so the footer text is readable */
         .panel-left::after {
             content: '';
             position: absolute;
-            bottom: -80px; left: -80px;
-            width: 280px; height: 280px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.03);
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                transparent 60%,
+                rgba(13, 37, 24, 0.55) 100%
+            );
+            pointer-events: none;
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 3.5rem;
-        }
-
-        .brand-icon {
-            width: 42px; height: 42px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; color: #fff;
-        }
-
-        .brand-name {
-            font-family: 'DM Serif Display', serif;
-            font-size: 22px;
-            color: #fff;
-            letter-spacing: 0.01em;
-        }
-
-        .panel-left h1 {
-            font-family: 'DM Serif Display', serif;
-            font-size: clamp(2rem, 3.5vw, 3rem);
-            line-height: 1.2;
-            color: #fff;
-            margin-bottom: 1.25rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .panel-left h1 em {
-            font-style: italic;
-            color: rgba(255,255,255,0.65);
-        }
-
-        .panel-left p {
-            font-size: 15px;
-            color: rgba(255,255,255,0.55);
-            line-height: 1.7;
-            max-width: 340px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .divider {
-            width: 40px; height: 2px;
-            background: rgba(255,255,255,0.3);
-            margin: 2rem 0;
-            border-radius: 2px;
-        }
-
-        .stat-row {
-            display: flex;
-            gap: 2.5rem;
-            margin-top: 3.5rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .stat { }
-        .stat-num {
-            font-family: 'DM Serif Display', serif;
-            font-size: 28px;
-            color: #fff;
-            line-height: 1;
-        }
-        .stat-label {
-            font-size: 12px;
+        /* Footer credit inside banner */
+        .banner-footer {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 1.75rem;
+            z-index: 2;
+            font-size: 11px;
             color: rgba(255,255,255,0.45);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-top: 4px;
+            letter-spacing: 0.04em;
         }
 
-        /* — Right panel — */
+        /* ─── Right panel ─── */
         .panel-right {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             padding: 4rem 5rem;
+            background: var(--surface);
         }
 
         .login-card {
@@ -190,12 +113,52 @@ if (session_status() === PHP_SESSION_NONE) {
             max-width: 400px;
         }
 
+        /* Top brand row above the form */
+        .card-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .card-brand img.logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            object-fit: contain;
+            background: var(--accent-dk);
+            padding: 4px;
+        }
+
+        /* Fallback if no logo file — show icon box */
+        .card-brand .brand-icon {
+            width: 38px; height: 38px;
+            background: var(--accent-dk);
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; color: #fff;
+            flex-shrink: 0;
+        }
+
+        .card-brand-name {
+            font-family: 'DM Serif Display', serif;
+            font-size: 17px;
+            color: var(--ink);
+            line-height: 1.2;
+        }
+
+        .card-brand-sub {
+            font-size: 11px;
+            color: var(--ink-muted);
+            margin-top: 1px;
+        }
+
         .login-header {
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
         }
 
         .login-eyebrow {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
             letter-spacing: 0.1em;
             text-transform: uppercase;
@@ -213,6 +176,21 @@ if (session_status() === PHP_SESSION_NONE) {
         .login-title span {
             font-style: italic;
             color: var(--ink-muted);
+        }
+
+        /* Amharic badge */
+        .amharic-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent-lt);
+            color: var(--accent-dk);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-bottom: 1.25rem;
+            border: 1px solid rgba(45,106,79,0.15);
         }
 
         /* — Alert — */
@@ -252,10 +230,8 @@ if (session_status() === PHP_SESSION_NONE) {
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* — Form — */
-        .field {
-            margin-bottom: 1.25rem;
-        }
+        /* — Form fields — */
+        .field { margin-bottom: 1.25rem; }
 
         .field label {
             display: block;
@@ -266,11 +242,9 @@ if (session_status() === PHP_SESSION_NONE) {
             letter-spacing: 0.02em;
         }
 
-        .input-wrap {
-            position: relative;
-        }
+        .input-wrap { position: relative; }
 
-        .input-wrap i {
+        .input-wrap .field-icon {
             position: absolute;
             left: 14px;
             top: 50%;
@@ -279,6 +253,7 @@ if (session_status() === PHP_SESSION_NONE) {
             color: var(--ink-muted);
             pointer-events: none;
             transition: color 0.2s;
+            z-index: 1;
         }
 
         .field input {
@@ -303,20 +278,44 @@ if (session_status() === PHP_SESSION_NONE) {
             box-shadow: 0 0 0 3px rgba(45,106,79,0.12);
         }
 
-        .field input:focus + i,
-        .input-wrap:focus-within i {
-            color: var(--accent);
+        .input-wrap:focus-within .field-icon { color: var(--accent); }
+
+        /* Show/hide password toggle */
+        .toggle-pw {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--ink-muted);
+            padding: 4px;
+            line-height: 1;
+            z-index: 1;
         }
+        .toggle-pw:hover { color: var(--accent); }
 
-        /* Reorder so icon appears after input in DOM for the sibling selector above */
-        .input-wrap i { order: 2; }
+        /* — Forgot password link (standalone, below password) — */
+        .forgot-link {
+            display: block;
+            text-align: right;
+            font-size: 12px;
+            color: var(--accent);
+            text-decoration: none;
+            margin-top: -0.75rem;
+            margin-bottom: 1.25rem;
+            transition: opacity 0.15s;
+        }
+        .forgot-link:hover { opacity: 0.7; text-decoration: underline; }
 
-        /* — Remember & submit row — */
+        /* — Form footer — */
         .form-footer {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 1.75rem;
+            margin-top: 1.5rem;
             gap: 12px;
         }
 
@@ -361,12 +360,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
         .btn-signin:hover  { background: var(--accent-dk); }
         .btn-signin:active { transform: scale(0.97); }
-
-        .btn-signin i {
-            font-size: 13px;
-            transition: transform 0.2s;
-        }
-
+        .btn-signin i { font-size: 13px; transition: transform 0.2s; }
         .btn-signin:hover i { transform: translateX(3px); }
 
         /* — Footer note — */
@@ -376,21 +370,6 @@ if (session_status() === PHP_SESSION_NONE) {
             color: var(--ink-muted);
             text-align: center;
             opacity: 0.7;
-        }
-
-        /* — Amharic title badge — */
-        .amharic-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--accent-lt);
-            color: var(--accent-dk);
-            font-size: 13px;
-            font-weight: 500;
-            padding: 5px 12px;
-            border-radius: 20px;
-            margin-bottom: 1.25rem;
-            border: 1px solid rgba(45,106,79,0.15);
         }
 
         /* — Responsive — */
@@ -405,38 +384,30 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <div class="page">
 
-    <!-- Left decorative panel -->
+    <!-- ── Left panel: banner image ── -->
     <div class="panel-left">
-        <div class="brand">
-            <div class="brand-icon"><i class="fas fa-users"></i></div>
-            <span class="brand-name">HRM Portal</span>
-        </div>
-
-        <h1>Manage your<br>team <em>with ease.</em></h1>
-
-        <div class="divider"></div>
-
-        <p>A unified platform for human resources — track employees, manage payroll, and streamline your organisation's workflow.</p>
-
-        <div class="stat-row">
-            <div class="stat">
-                <div class="stat-num">∞</div>
-                <div class="stat-label">Employees</div>
-            </div>
-            <div class="stat">
-                <div class="stat-num">24/7</div>
-                <div class="stat-label">Access</div>
-            </div>
-            <div class="stat">
-                <div class="stat-num">100%</div>
-                <div class="stat-label">Secure</div>
-            </div>
-        </div>
+        <img
+            class="banner"
+            src="public/images/hrm-login-banner.png"
+            alt="Warka Hub HRMS — Manage your team with ease"
+        >
+        <span class="banner-footer">© <?php echo date('Y'); ?> Warka Hub HRMS</span>
     </div>
 
-    <!-- Right login panel -->
+    <!-- ── Right login panel ── -->
     <div class="panel-right">
         <div class="login-card">
+
+            <!-- Brand row -->
+            <div class="card-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <div class="card-brand-name">Warka Hub HRMS</div>
+                    <div class="card-brand-sub">Human Resource Management</div>
+                </div>
+            </div>
 
             <div class="login-header">
                 <div class="amharic-badge">
@@ -460,6 +431,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <div class="field">
                     <label for="email">Email address</label>
                     <div class="input-wrap">
+                        <i class="fas fa-envelope field-icon" aria-hidden="true"></i>
                         <input
                             type="email"
                             id="email"
@@ -468,13 +440,13 @@ if (session_status() === PHP_SESSION_NONE) {
                             required
                             autocomplete="email"
                         >
-                        <i class="fas fa-envelope"></i>
                     </div>
                 </div>
 
                 <div class="field">
                     <label for="password">Password</label>
                     <div class="input-wrap">
+                        <i class="fas fa-lock field-icon" aria-hidden="true"></i>
                         <input
                             type="password"
                             id="password"
@@ -483,9 +455,13 @@ if (session_status() === PHP_SESSION_NONE) {
                             required
                             autocomplete="current-password"
                         >
-                        <i class="fas fa-lock"></i>
+                        <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">
+                            <i class="fas fa-eye" id="togglePwIcon"></i>
+                        </button>
                     </div>
                 </div>
+
+                <a href="forgot_password" class="forgot-link">Forgot your password?</a>
 
                 <div class="form-footer">
                     <label class="remember">
@@ -500,7 +476,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
             </form>
 
-            <p class="login-note">Protected by secure session management. &copy; <?php echo date('Y'); ?> HRM System.</p>
+            <p class="login-note">Protected by secure session management. &copy; <?php echo date('Y'); ?> Warka Hub HRMS.</p>
 
         </div>
     </div>
@@ -509,5 +485,44 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <script src="public/plugins/jquery/jquery.min.js"></script>
 <script src="public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?php echo $GLOBALS['nonce']; ?>">
+    // Show / hide password toggle
+    const toggleBtn  = document.getElementById('togglePw');
+    const pwInput    = document.getElementById('password');
+    const toggleIcon = document.getElementById('togglePwIcon');
+
+    toggleBtn.addEventListener('click', () => {
+        const isHidden = pwInput.type === 'password';
+        pwInput.type        = isHidden ? 'text' : 'password';
+        toggleIcon.className = isHidden ? 'fas fa-eye-slash' : 'fas fa-eye';
+        toggleBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    });
+
+    // Handle form validation intercept
+    const form  = document.querySelector('form');
+    const emailInput = document.getElementById('email');
+
+    form.addEventListener('submit', (e) => {
+        // Remove any existing error alert box first if they try to click sign-in again
+        const existingAlert = document.getElementById('error-alert');
+        if (existingAlert) existingAlert.remove();
+
+        // Check if values are completely empty or whitespace
+        if (!emailInput.value.trim() || !pwInput.value.trim()) {
+            e.preventDefault(); // Stop form from sending to login_process
+
+            // Inject a beautifully matching alert component right above the inputs
+            const alertHtml = `
+                <div class="alert" role="alert" id="error-alert">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Please fill in both the email and password fields.</span>
+                    <button class="alert-close" onclick="document.getElementById('error-alert').remove()" aria-label="Close">&times;</button>
+                </div>
+            `;
+            
+            form.insertAdjacentHTML('beforebegin', alertHtml);
+        }
+    });
+</script>
 </body>
 </html>

@@ -188,7 +188,6 @@ echo mb_convert_case($display_name, MB_CASE_TITLE, "UTF-8") . ' (' . $display_ro
           <i class="fas fa-th-large"></i>
         </a>
       </li>
-      
     </ul>
   </nav>
   <!-- /.navbar -->
