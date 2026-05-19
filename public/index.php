@@ -20,12 +20,13 @@ if (!empty($_ENV['SESSION_PATH'])) {
     // የሴሽን መቀመጫውን ቀይር
     session_save_path($path);
 }
-session_name('__Host-HRMSESSION');
+$isSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+session_name($isSecure ? '__Host-HRMSESSION' : 'HRMSESSION');
 session_set_cookie_params([
     'lifetime' => 0,
     'path'     => '/',
     'domain'   => '',
-    'secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+    'secure'   => $isSecure,
     'httponly' => true,
     'samesite' => 'Strict'
 ]);
@@ -33,7 +34,7 @@ session_start();
 // 3. በመጨረሻ ሴሽኑን አስጀምር
 session_start();
 $GLOBALS['nonce'] = base64_encode(random_bytes(16));
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-{$GLOBALS['nonce']}' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://code.ionicframework.com; font-src 'self' https://fonts.gstatic.com https://code.ionicframework.com; img-src 'self' data:; frame-ancestors 'none'");
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-{$GLOBALS['nonce']}' 'unsafe-hashes' 'sha256-gyxxoCxYhQLuEM1HY+p4l/JbkLLVhrPAvbL3w6J5l20=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://code.ionicframework.com; font-src 'self' https://fonts.gstatic.com https://code.ionicframework.com; img-src 'self' data:; frame-ancestors 'none'");
 if (($_ENV['APP_ENV'] ?? '') === 'local') {
     ini_set('display_errors', 1);
     error_reporting(E_ALL);
