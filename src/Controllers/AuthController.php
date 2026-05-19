@@ -21,7 +21,12 @@ class AuthController extends BaseController {
             // 1. ዳታውን መቀበል እና trim ማድረግ
             $email = isset($_POST['email']) ? trim($_POST['email']) : '';
             $password = $_POST['password'] ?? '';
-
+// 2. Server-Side Validation: ዳታው ባዶ አለመሆኑን ማረጋገጥ
+        if (empty($email) || empty($password)) {
+            $_SESSION['error'] = "እባክዎ ኢሜይል እና ፓስወርድ በትክክል ያስገቡ!";
+            header("Location: " . $_ENV['BASE_URL'] . "/login");
+            exit();
+        }
             // 2. የ User ሞዴልን መጥራት (ከ BaseController የመጣውን $this->db በመስጠት)
             $userModel = new User($this->db);
             $user = $userModel->findByEmail($email);
