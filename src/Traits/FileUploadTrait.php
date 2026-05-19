@@ -8,9 +8,11 @@ trait FileUploadTrait {
         }
 
         if ($_FILES[$inputName]['error'] !== UPLOAD_ERR_OK) {
+        if ($_FILES[$inputName]['error'] !== UPLOAD_ERR_NO_FILE) {
             error_log("Upload error ({$inputName}): " . $_FILES[$inputName]['error']);
-            return null;
         }
+        return null;
+    }
 
         $fileName = time() . '_' . basename($_FILES[$inputName]['name']);
         $storageRoot = dirname(__DIR__, 2) . '/storage/uploads/';
