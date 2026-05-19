@@ -20,6 +20,7 @@ if (!empty($_ENV['SESSION_PATH'])) {
     // የሴሽን መቀመጫውን ቀይር
     session_save_path($path);
 }
+session_name('__Host-HRMSESSION');
 session_set_cookie_params([
     'lifetime' => 0,
     'path'     => '/',
