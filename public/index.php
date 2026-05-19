@@ -23,7 +23,8 @@ if (!empty($_ENV['SESSION_PATH'])) {
 
 // 3. በመጨረሻ ሴሽኑን አስጀምር
 session_start();
-
+$GLOBALS['nonce'] = base64_encode(random_bytes(16));
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-{$GLOBALS['nonce']}' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://code.ionicframework.com; font-src 'self' https://fonts.gstatic.com https://code.ionicframework.com; img-src 'self' data:; frame-ancestors 'none'");
 if (($_ENV['APP_ENV'] ?? '') === 'local') {
     ini_set('display_errors', 1);
     error_reporting(E_ALL);

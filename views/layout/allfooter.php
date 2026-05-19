@@ -24,7 +24,7 @@
 <!-- jQuery UI 1.11.4 -->
 <script src="plugins/jquery-ui/jquery-ui.min.js"></script>
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
-<script>
+<script nonce="<?php echo $GLOBALS['nonce']; ?>">
   $.widget.bridge('uibutton', $.ui.button)
 </script>
 <!-- Bootstrap 4 -->
@@ -118,7 +118,7 @@ function myAsset($path) {
    <?php if (isset($is_register_user_page) && $is_register_user_page === true): ?>
     <script>const BASE_URL = "<?= '/HRM' ?>"; // or use $_ENV['BASE_URL'] if you have .env</script>
     <script src="<?= myAsset('js/edit-user.js') ?>"></script>
-   <script>
+   <script nonce="<?php echo $GLOBALS['nonce']; ?>">
     const SESSION_ROLE    = <?= json_encode($_SESSION['user']['role'] ?? '') ?>;
     const BRANCH_NAME     = <?= json_encode($branchNameString) ?>;
     const ORGANIZATIONS   = <?= json_encode($organizations) ?>;
@@ -204,8 +204,8 @@ function myAsset($path) {
     <?php endif; ?>
 
     <?php if ($_SESSION['user']['role']==='hr_director'): ?>
-    <script>const BASE_URL = "<?= '/HRM' ?>"; // or use $_ENV['BASE_URL'] if you have .env</script>
-   <script>
+    <script nonce="<?php echo $GLOBALS['nonce']; ?>">const BASE_URL = "<?= '/HRM' ?>"; // or use $_ENV['BASE_URL'] if you have .env</script>
+   <script nonce="<?php echo $GLOBALS['nonce']; ?>">
     const NOTIFICATION_URLS = {
         onboarding: BASE_URL + '/onBoardingEmployees',
         scholarship: BASE_URL + '/on-leave-scholarship-count',
@@ -216,12 +216,12 @@ function myAsset($path) {
 </script>
 <script src="<?= myAsset('js/all-userdefined-notifications.js') ?>"></script>
     <?php endif; ?>
-<script>
+<script nonce="<?php echo $GLOBALS['nonce']; ?>">
 $(function () {
   bsCustomFileInput.init();
 });
 </script>
-<script>
+<script nonce="<?php echo $GLOBALS['nonce']; ?>">
   $(function () {
     function resetSubmitButtons($form) {
       $form.data('submitting', false);
@@ -257,7 +257,7 @@ $(function () {
 </body>
 </html>
 
-<script>
+<script nonce="<?php echo $GLOBALS['nonce']; ?>">
   $(function () {
     // Define the message using the PHP variable
     var dynamicMsg = $("#example1").data("empty-msg") || "ምንም መረጃ የለም።";
@@ -287,29 +287,12 @@ $(function () {
     });
   });
 </script>
-<script>
-  $(function() {
-    var Toast = Swal.mixin({
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 3000
-    });
-
-    <?php if (isset($_SESSION['success'])): ?>
-      Toast.fire({
-        icon: 'success',
-        title: '<?php echo $_SESSION['success']; ?>'
-      });
-      <?php unset($_SESSION['success']); ?>
-    <?php endif; ?>
-
-    <?php if (isset($_SESSION['error'])): ?>
-      Toast.fire({
-        icon: 'error',
-        title: '<?php echo $_SESSION['error']; ?>'
-      });
-      <?php unset($_SESSION['error']); ?>
-    <?php endif; ?>
-  });
+<!-- 1. First: flash data -->
+<script nonce="<?php echo $GLOBALS['nonce']; ?>">
+  window.__flash = {
+    success: <?php echo json_encode($_SESSION['success'] ?? null); ?>,
+    error:   <?php echo json_encode($_SESSION['error']   ?? null); ?>
+  };
+  <?php unset($_SESSION['success'], $_SESSION['error']); ?>
 </script>
+<script src="<?= myAsset('js/toast.js') ?>"></script>

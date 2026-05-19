@@ -259,7 +259,18 @@ if ($employeeModel->updateEmployee($uuid, $data)) {
             header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
             exit();
         }
-
+// In your handleCreate/registration method
+if (empty($_FILES['employee_image']['name']) || $_FILES['employee_image']['error'] === UPLOAD_ERR_NO_FILE) {
+    $_SESSION['error'] = 'እባክዎ የሰራተኛ ፎቶ ይምረጡ።';
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+    exit();
+}
+// ADD THIS
+if (empty($_FILES['employee_file201']['name']) || $_FILES['employee_file201']['error'] === UPLOAD_ERR_NO_FILE) {
+    $_SESSION['error'] = 'እባክዎ የሰራተኛ የ201 ፋይል ይምረጡ።';
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+    exit();
+}
        $imageName   = $this->uploadFile('employee_image', 'images');
 $file201Name = $this->uploadFile('employee_file201', 'documents');
 
