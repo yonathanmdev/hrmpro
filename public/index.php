@@ -40,8 +40,9 @@ $baseRoutes = [
 
 $teddyRoutes = require __DIR__ . '/../src/Routes/Teddyroutes.php';
 $yoniRoutes  = require __DIR__ . '/../src/Routes/Yoniroutes.php';
+$yibeRoutes  = require __DIR__ . '/../src/Routes/YibeRoutes.php';
 
-$routes = array_merge($baseRoutes, $teddyRoutes, $yoniRoutes);
+$routes = array_merge($baseRoutes, $teddyRoutes, $yoniRoutes, $yibeRoutes);
 
 /* ---------------- ROUTING FIX ---------------- */
 

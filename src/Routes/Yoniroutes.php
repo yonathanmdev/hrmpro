@@ -45,6 +45,7 @@ return [
     'register-position-process'  => ['DirectorController', 'handlePositionRegistration', true],
     'update-position-process'    => ['DirectorController', 'handleEditPosition', true],
     'get-position'               => ['DirectorController', 'getPositionById', true],
+    'getPositionById'            => ['DirectorController', 'getPositionById', true],
     'delete-position-process'    => ['DirectorController', 'deletePosition', true],
         'deleted-positions'         => ['DirectorController', 'showDeletedPositions', true],
         'restore-position'   => ['DirectorController', 'restorePosition', true],

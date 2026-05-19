@@ -37,7 +37,9 @@ $.validator.addMethod('minAgeAtEmployment', function(value, element) {
 
 $.validator.addMethod('noFutureDate', function(value, element) {
     if (this.optional(element)) return true;
-    var inputDate = new Date(value);
+    var parts = value.split('-');
+    if (parts.length !== 3) return false;
+    var inputDate = new Date(parts[0], parts[1] - 1, parts[2]); // ← local time, no UTC shift
     if (isNaN(inputDate.getTime())) return false;
     var today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -53,11 +55,6 @@ $(document).ready(function() {
     $('#employeeRegistrationModal form').validate({
         ignore: ':hidden:not([required])',
         rules: {
-            employee_id: {
-                required: true,
-                minlength: 2,
-                maxlength: 50
-            },
             first_name: {
                 required: true,
                 minlength: 2,
@@ -129,9 +126,6 @@ $(document).ready(function() {
                 number: true,
                 min: 0
             },
-            experience: {
-                maxlength: 200
-            },
             displin_situation: {
                 required: true
             },
@@ -153,11 +147,6 @@ $(document).ready(function() {
             }
         },
         messages: {
-            employee_id: {
-                required: "የሰራተኛ መለያ ቁጥር አስፈላጊ ነው።",
-                minlength: "የሰራተኛ መለያ ቁጥር ቢያንስ 2 ዲጅት መሆን አለበት።",
-                maxlength: "የሰራተኛ መለያ ቁጥር ከ50 ፊደል መብለጥ የለበትም።"
-            },
             first_name: {
                 required: "ስም አስፈላጊ ነው።",
                 minlength: "ስም ቢያንስ 2 ፊደል መሆን አለበት።",
