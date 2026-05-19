@@ -20,7 +20,15 @@ if (!empty($_ENV['SESSION_PATH'])) {
     // የሴሽን መቀመጫውን ቀይር
     session_save_path($path);
 }
-
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path'     => '/',
+    'domain'   => '',
+    'secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+    'httponly' => true,
+    'samesite' => 'Strict'
+]);
+session_start();
 // 3. በመጨረሻ ሴሽኑን አስጀምር
 session_start();
 $GLOBALS['nonce'] = base64_encode(random_bytes(16));
