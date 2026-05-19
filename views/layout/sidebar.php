@@ -259,6 +259,25 @@
   </li>
    </ul>
   </li>
+
+  <li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link">
+      <i class="nav-icon fas fa-edit"></i>
+      <p>
+        ሪፖርት
+        <i class="fas fa-angle-left right"></i>
+      </p>
+    </a>
+    <ul class="nav nav-treeview">
+            <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/report" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>ማየት</p>
+          </a>
+        </li>
+    </ul>
+    
+  </li>
   <?php endif; ?>
 <?php endif; ?>
      

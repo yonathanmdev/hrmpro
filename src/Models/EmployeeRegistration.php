@@ -202,8 +202,13 @@ $this->assignJob($data['job_property_id'], $data['branch_id']);            // In
             $oldJobId = $currentEmployee['job_property_id'];
             $newJobId = $data['job_property_id'];
 // 🔥 handle job safely
-$this->assignJob($newJobId, $currentEmployee['branch_id'], $oldJobId);
+$oldJobId = $currentEmployee['job_property_id'];
+$newJobId = $data['job_property_id'];
 
+// ── Only reassign job if it actually changed
+if ($oldJobId != $newJobId) {
+    $this->assignJob($newJobId, $currentEmployee['branch_id'], $oldJobId);
+}
             // Update employee
             $sql = "UPDATE employees_table SET
                 employee_id = ?, pension_number = ?, first_name = ?, father_name = ?, g_father_name = ?, mother_name = ?,

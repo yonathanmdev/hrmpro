@@ -20,7 +20,7 @@ $is_employee_edit_page = true; ?>
             <div class="col-md-4">
               <div class="form-group">
                 <label for="employee_id">የሰራተኛው መለያ ቁጥር</label>
-                <input type="text" class="form-control" id="employee_id" name="employee_id" value="<?= htmlspecialchars($employee['employee_id'] ?? '') ?>" required>
+                <input type="text" class="form-control" id="employee_id" name="employee_id" value="<?= htmlspecialchars($employee['employee_id'] ?? '') ?>" required readonly>
               </div>
             </div>
             <div class="col-md-4">
@@ -195,7 +195,7 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
                 <input type="text" class="form-control" id="immidate_boss" name="immidate_boss" value="<?= htmlspecialchars($employee['immidate_boss'] ?? '') ?>" required>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 d-none">
               <div class="form-group">
                 <label for="annual_rest">የዓመት እረፍት</label>
                 <input type="number" step="1" min="0" class="form-control" id="annual_rest" name="annual_rest" value="<?= htmlspecialchars($employee['annual_rest'] ?? '0') ?>">
@@ -208,23 +208,18 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
                 <input type="number" step="0.01" min="0" class="form-control" id="effeciency" name="effeciency" value="<?= htmlspecialchars($employee['effeciency'] ?? '') ?>">
               </div>
             </div>
-          </div>
 
-          <div class="row">
             <div class="col-md-4">
               <div class="form-group">
                 <label for="level_of_effeciency">Level of Efficiency</label>
                 <input type="text" class="form-control" id="level_of_effeciency" name="level_of_effeciency" value="<?= htmlspecialchars($employee['level_of_effeciency'] ?? '') ?>" readonly>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="no_of_files_in_folder">የማህደር የፋይል ብዛት</label>
-                <input type="number" step="1" min="0" class="form-control" id="no_of_files_in_folder" name="no_of_files_in_folder" value="<?= htmlspecialchars($employee['no_of_files_in_folder'] ?? '0') ?>">
-              </div>
-            </div>
+          </div>
+
+          <div class="row">
           
-            <div class="col-md-4">
+            <div class="col-md-4 d-none">
               <div class="form-group">
                 <label for="experience">የስራ ልምድ</label>
                 <input type="text" class="form-control" id="experience" name="experience" value="<?= htmlspecialchars($employee['experience'] ?? '') ?>">
@@ -233,7 +228,13 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
           </div>
 
           <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="no_of_files_in_folder">የማህደር የፋይል ብዛት</label>
+                <input type="number" step="1" min="0" class="form-control" id="no_of_files_in_folder" name="no_of_files_in_folder" value="<?= htmlspecialchars($employee['no_of_files_in_folder'] ?? '0') ?>">
+              </div>
+            </div>
+            <div class="col-md-4">
               <div class="form-group">
                 <label for="displin_situation">የዲሲፕሊን ሁኔታ</label>
                  <select class="form-control" id="displin_situation" name="displin_situation" required>
@@ -246,7 +247,7 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
                  </select>
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               <div class="form-group">
                 <label for="competency_situation">የብቃት ሁኔታ</label>
                  <select class="form-control" id="competency_situation" name="competency_situation">

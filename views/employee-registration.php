@@ -107,12 +107,6 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
           <div class="row">
             <div class="col-md-4">
               <div class="form-group mb-2">
-                <label class="mb-1" for="employee_id"><small class="font-weight-bold">የሰራተኛው መለያ ቁጥር</small></label>
-                <input type="text" class="form-control form-control-sm" id="employee_id" name="employee_id" required>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group mb-2">
                 <label class="mb-1" for="first_name"><small class="font-weight-bold">ስም</small></label>
                 <input type="text" class="form-control form-control-sm" id="first_name" name="first_name" required>
               </div>
@@ -123,15 +117,16 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                 <input type="text" class="form-control form-control-sm" id="father_name" name="father_name" required>
               </div>
             </div>
-          </div>
 
-          <div class="row">
-            <div class="col-md-4">
+               <div class="col-md-4">
               <div class="form-group mb-2">
                 <label class="mb-1" for="g_father_name"><small class="font-weight-bold">የአያት ስም</small></label>
                 <input type="text" class="form-control form-control-sm" id="g_father_name" name="g_father_name" required>
               </div>
             </div>
+          </div>
+
+          <div class="row">
             <div class="col-md-4">
               <div class="form-group mb-2">
                 <label class="mb-1" for="mother_name"><small class="font-weight-bold">የእናት ሙሉ ስም</small></label>
@@ -148,10 +143,8 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                 </select>
               </div>
             </div>
-          </div>
 
-          <div class="row">
-            <div class="col-md-4">
+                  <div class="col-md-4">
               <div class="form-group mb-2">
                 <label class="mb-1" for="birth_date"><small class="font-weight-bold">የልደት ቀን</small></label>
   <input type="text" 
@@ -166,6 +159,9 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                 <input type="date" class="d-none" id="birth_date" name="birth_date" required >
               </div>
             </div>
+          </div>
+
+          <div class="row">
             <div class="col-md-4">
               <div class="form-group mb-2">
                 <label class="mb-1" for="phone_number"><small class="font-weight-bold">ስቁ.</small></label>
@@ -192,10 +188,7 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
   				</select>
               </div>
             </div>
-          </div>
-
-          <div class="row">
-             <div class="col-md-4">
+<div class="col-md-4">
               <div class="form-group mb-2">
                  <label class="mb-1" for="yegabcha_huneta"><small class="font-weight-bold">የጋብቻ ሁኔታ</small></label>
               <select class="form-control form-control-sm" id="yegabcha_huneta" name="yegabcha_huneta" required>
@@ -207,6 +200,11 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                 
               </div>
             </div>
+
+          </div>
+
+          <div class="row">
+             
             <div class="col-md-4">
               <div class="form-group mb-2">
                 <label class="mb-1" for="job_property_id"><small class="font-weight-bold">የስራ መደቡ መጠሪያ</small></label>
@@ -228,10 +226,8 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                 <input type="text" class="form-control form-control-sm" id="department" name="department">
               </div>
             </div>
-          </div>
 
-          <div class="row">
-           <div class="col-md-4">
+            <div class="col-md-4">
               <div class="form-group mb-2">
                 <label class="mb-1" for="employment_situation"><small class="font-weight-bold">የቅጥር ሁኔታ </small></label>
                  <select class="form-control form-control-sm" id="employment_situation" name="employment_situation" required>
@@ -242,6 +238,10 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                
               </div>
             </div>
+          </div>
+
+          <div class="row">
+           
              <div class="col-md-4">
               <div class="form-group mb-2">
                 <label class="mb-1" for="date_of_employed"><small class="font-weight-bold">የቅጥር ቀን</small></label>
@@ -261,9 +261,7 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                 <input type="text" class="form-control form-control-sm" id="immidate_boss" name="immidate_boss" required>
               </div>
             </div>
-          </div>
-<div class="row">
-  <div class="col-md-4">
+<div class="col-md-4">
               <div class="form-group mb-2">
                 <label class="mb-1" for="competency_situation"><small class="font-weight-bold">የብቃት ሁኔታ</small></label>
                  <select class="form-control form-control-sm" id="competency_situation" name="competency_situation" required>
@@ -274,6 +272,10 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                 </select>
               </div>
             </div>
+
+          </div>
+<div class="row">
+  
              <div class="col-md-4">
               <div class="form-group">
                 <label class="mb-1" for="displin_situation"><small class="font-weight-bold">የዲሲፕሊን ሁኔታ</small></label>
@@ -290,48 +292,45 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
               </div>
             </div>
           
-            <div class="col-md-4">
-              <div class="form-group mb-2">
-                <label class="mb-1" for="experience"><small class="font-weight-bold">የስራ ልምድ</small></label>
-                <input type="text" class="form-control form-control-sm" id="experience" name="experience">
-              </div>
-            </div>
-</div>
-          <div class="row">
-                  
-             <div class="col-md-4">
+ <div class="col-md-4">
               <div class="form-group mb-2">
                 <label class="mb-1" for="effeciency"><small class="font-weight-bold">የስራ አፈፃፀም (ለነባር) (%)</small></label>
                 <input type="number" step="0.01" min="0" class="form-control form-control-sm" id="effeciency" name="effeciency">
               </div>
             </div>
+                  
+            
             <div class="col-md-4">
               <div class="form-group">
                 <label class="mb-1" for="level_of_effeciency"><small class="font-weight-bold">የአፈፃፀም ደረጃ</small></label>
                 <input type="text" class="form-control form-control-sm" id="level_of_effeciency" name="level_of_effeciency" readonly>
               </div>
             </div>
+
+</div>
+          <div class="row">
+
              
-            <div class="col-md-4">
+            <div class="col-md-6">
               <div class="form-group mb-2">
                 <label class="mb-1" for="no_of_files_in_folder"><small class="font-weight-bold">ከማህደራቸው ያለ ጠቅላላ ፋይል ብዛት</small></label>
                 <input type="number" step="1" min="0" class="form-control form-control-sm" id="no_of_files_in_folder" name="no_of_files_in_folder" value="0">
               </div>
                     </div>  
-                    </div>  
-                     <div class="row">
-               <div class="col-md-4">
+<div class="col-md-6">
               <div class="form-group mb-2">
                    <label class="mb-1" for="pension_number"><small class="font-weight-bold">የጡረታ መለያ ቁጥር </small></label>
                 <input type="text" class="form-control form-control-sm" id="pension_number" name="pension_number">
             </div>
             </div>
-            <div class="col-md-4">
-              <div class="form-group mb-2">
+ <div class="col-md-4">
+              <div class="form-group mb-2 d-none">
                 <label class="mb-1" for="annual_rest"><small class="font-weight-bold">የዓመት እረፍት</small></label>
                 <input type="number" step="1" min="0" class="form-control form-control-sm" id="annual_rest" name="annual_rest" value="0">
               </div>
             </div>
+                    </div>  
+                     <div class="row">
          
             <div class="col-md-4">
               <div class="form-group">

@@ -137,7 +137,7 @@ function myAsset($path) {
     <script src="<?= myAsset('js/employee-registration.js') ?>"></script>
      <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
     
-  
+ 
     <?php endif; ?>
  
       <?php if (isset($is_employee_active_page) && $is_employee_active_page === true): ?>
@@ -152,6 +152,7 @@ function myAsset($path) {
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
     <script src="<?= myAsset('js/employee-edit.js') ?>"></script>
+     <script src="<?= myAsset('js/employee-reg-position-id.js') ?>"></script>
     <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
     
     <?php endif; ?>

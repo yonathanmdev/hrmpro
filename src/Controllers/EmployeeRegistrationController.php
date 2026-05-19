@@ -3,7 +3,7 @@ namespace App\Controllers;
 use DateTime;
 use App\Models\EmployeeRegistration;
 use App\Models\User;
-
+use App\Models\Position;
 use App\Helpers\AuthHelper;
 use Ramsey\Uuid\Uuid;
 use \App\Traits\FileUploadTrait;
@@ -142,9 +142,10 @@ class EmployeeRegistrationController extends BaseController {
             exit();
         }
 
-        $oldJobId = $currentEmployee['job_property_id'];
-        $newJobId = trim($_POST['job_property_id'] ?? '');
-
+        $oldJobId    = $currentEmployee['job_property_id'];
+$newJobId    = trim($_POST['job_property_id'] ?? '');
+$employeeId  = trim($currentEmployee['employee_id']);
+      
         // Handle file uploads (optional for editing)
         $imageName = $this->uploadFile('employee_image', 'images');
         $file201Name = $this->uploadFile('employee_file201', 'documents');
@@ -157,8 +158,33 @@ class EmployeeRegistrationController extends BaseController {
             $file201Name = $currentEmployee['employee_file201'];
         }
 
-        $data = [
-            'employee_id' => trim($_POST['employee_id'] ?? ''),
+try {
+    $positionModel = new Position($this->db);
+    $position = $positionModel->getPositionById(trim($_POST['job_property_id'] ?? ''));
+
+    if (!$position) {
+        $_SESSION['error'] = "የተመረጠው የስራ መደብ ሊገኝ አልቻለም።";
+        header("Location: " . $redirectUrl); // ← fixed
+        exit();
+    }
+
+    if (empty(trim($position['job_identifier_no'] ?? ''))) {
+        $_SESSION['error'] = "የስራ መደቡ መለያ ቁጥር አልተገኘም። እባክዎ መደቡን ያረጋግጡ።";
+        header("Location: " . $redirectUrl); // ← fixed
+        exit();
+    }
+
+} catch (\PDOException $e) {
+    error_log("Employee ID Validation Error: " . $e->getMessage());
+    $_SESSION['error'] = "የሰራተኛ መለያ ቁጥር ማረጋገጫ ላይ ስህተት አጋጥሟል።";
+    header("Location: " . $redirectUrl); // ← fixed
+    exit();
+}
+
+$data = [
+    'employee_id'    => ($oldJobId != $newJobId) 
+                            ? trim($position['job_identifier_no']) 
+                            : $employeeId, // ← keep existing if job unchanged
             'pension_number' => trim($_POST['pension_number'] ?? null) ?: null,
             'first_name' => trim($_POST['first_name'] ?? ''),
             'father_name' => trim($_POST['father_name'] ?? ''),
@@ -186,22 +212,25 @@ class EmployeeRegistrationController extends BaseController {
             'remark' => trim($_POST['remark'] ?? null) ?: null,
         ];
 
-        if ($employeeModel->updateEmployee($uuid, $data)) {
-            // Log audit if job was changed
-            if ($oldJobId != $newJobId) {
-                \App\Helpers\AuditHelper::log('employee_job_changed', 'employee', $uuid, null, [
-                    'old_job_id' => $oldJobId,
-                    'new_job_id' => $newJobId,
-                    'employee_id' => $data['employee_id'],
-                    'changed_by' => $user['id']
-                ], ['change_type' => 'job_assignment']);
-            }
+if ($employeeModel->updateEmployee($uuid, $data)) {
 
-            $_SESSION['success'] = 'ሰራተኛው መረጃ በትክክል ተስተካከለ።';
-        } else {
-            $_SESSION['error'] = 'የሰራተኛ ማስተካከያ ሂደት አልተሳካም።';
-        }
+    // ── Only reassign job if it actually changed
+    if ($oldJobId != $newJobId) {
+        $employeeModel->assignJob($newJobId, $branchId, (string)$oldJobId);
 
+        \App\Helpers\AuditHelper::log('employee_job_changed', 'employee', $uuid, null, [
+            'old_job_id'  => $oldJobId,
+            'new_job_id'  => $newJobId,
+            'employee_id' => $employeeId,
+            'changed_by'  => $user['id']
+        ], ['change_type' => 'job_assignment']);
+    }
+
+    $_SESSION['success'] = 'ሰራተኛው መረጃ በትክክል ተስተካከለ።';
+
+} else {
+    $_SESSION['error'] = 'የሰራተኛ ማስተካከያ ሂደት አልተሳካም።';
+}
         header("Location: " . $redirectUrl);
         exit();
     }
@@ -231,29 +260,55 @@ class EmployeeRegistrationController extends BaseController {
             exit();
         }
 
-        $imageName = $this->uploadFile('employee_image', 'images');
-        $file201Name = $this->uploadFile('employee_file201', 'documents');
+       $imageName   = $this->uploadFile('employee_image', 'images');
+$file201Name = $this->uploadFile('employee_file201', 'documents');
 
-        if (!$imageName || !$file201Name) {
-            $imageError = $_FILES['employee_image']['error'] ?? UPLOAD_ERR_NO_FILE;
-            $file201Error = $_FILES['employee_file201']['error'] ?? UPLOAD_ERR_NO_FILE;
+if (!$imageName || !$file201Name) {
+    $messages = [];
 
-            $imageMessage = $imageName ? null : $this->getUploadErrorMessage($imageError);
-            $file201Message = $file201Name ? null : $this->getUploadErrorMessage($file201Error);
+    if (!$imageName) {
+        $imageError  = $_FILES['employee_image']['error'] ?? UPLOAD_ERR_NO_FILE;
+        $messages[] = 'Photo: ' . $this->getUploadErrorMessage($imageError);
+    }
 
-            $messages = array_filter([
-                $imageMessage ? "Photo: $imageMessage" : null,
-                $file201Message ? "File201: $file201Message" : null,
-            ]);
+    if (!$file201Name) {
+        $file201Error = $_FILES['employee_file201']['error'] ?? UPLOAD_ERR_NO_FILE;
+        $messages[]   = 'File201: ' . $this->getUploadErrorMessage($file201Error);
+    }
 
-            $_SESSION['error'] = 'ፋይል እንዲወርድ አልቻለም። ' . implode(' | ', $messages);
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
-            exit();
-        }
+    $_SESSION['error'] = !empty($messages)
+        ? 'ፋይል እንዲወርድ አልቻለም። ' . implode(' | ', $messages)
+        : 'ፋይል እንዲወርድ አልቻለም።';
 
-        $data = [
-            'uuid' => Uuid::uuid4()->toString(),
-            'employee_id' => trim($_POST['employee_id'] ?? ''),
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+    exit();
+}
+try {
+    $positionModel = new Position($this->db);
+    $position = $positionModel->getPositionById(trim($_POST['job_property_id'] ?? ''));
+
+    if (!$position) {
+        $_SESSION['error'] = "የተመረጠው የስራ መደብ ሊገኝ አልቻለም።";
+        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+        exit();
+    }
+
+    if (empty(trim($position['job_identifier_no'] ?? ''))) {
+        $_SESSION['error'] = "የስራ መደቡ መለያ ቁጥር አልተገኘም። እባክዎ መደቡን ያረጋግጡ።";
+        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+        exit();
+    }
+
+} catch (\PDOException $e) {
+    error_log("Employee ID Validation Error: " . $e->getMessage());
+    $_SESSION['error'] = "የሰራተኛ መለያ ቁጥር ማረጋገጫ ላይ ስህተት አጋጥሟል።";
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+    exit();
+}
+
+$data = [
+    'uuid'        => Uuid::uuid4()->toString(),
+    'employee_id' => trim($position['job_identifier_no']), // ← guaranteed non-null here
             'pension_number' => trim($_POST['pension_number'] ?? null) ?: null,
             'first_name' => trim($_POST['first_name'] ?? ''),
             'father_name' => trim($_POST['father_name'] ?? ''),
@@ -283,6 +338,7 @@ class EmployeeRegistrationController extends BaseController {
             'remark' => trim($_POST['remark'] ?? null) ?: null,
             'reg_by' => $user['id'],
         ];
+
 
         $employeeModel = new EmployeeRegistration($this->db);
         if ($employeeModel->createEmployee($data)) {
@@ -337,7 +393,6 @@ class EmployeeRegistrationController extends BaseController {
 
         // Required field validations
         $requiredFields = [
-            'employee_id' => 'የሰራተኛ መለያ ቁጥር',
             'first_name' => 'ስም',
             'father_name' => 'የአባት ስም',
             'g_father_name' => 'የአያት ስም',
@@ -364,7 +419,6 @@ class EmployeeRegistrationController extends BaseController {
 
         // Length validations
         $lengthValidations = [
-            'employee_id' => ['min' => 2, 'max' => 50, 'label' => 'የሰራተኛ መለያ ቁጥር'],
             'first_name' => ['min' => 2, 'max' => 50, 'label' => 'ስም'],
             'father_name' => ['min' => 2, 'max' => 50, 'label' => 'የአባት ስም'],
             'g_father_name' => ['min' => 2, 'max' => 50, 'label' => 'የአያት ስም'],
