@@ -176,10 +176,11 @@ echo mb_convert_case($display_name, MB_CASE_TITLE, "UTF-8") . ' (' . $display_ro
           </a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" 
-             href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/login"
-             onclick="return confirm('እርግጠኛ ነዎት? ከስርዓቱ መውጣት ይፈልጋሉ?')">
-            <i class="fas fa-sign-out-alt mr-2"></i> ውጣ
-          </a>
+   href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/login"
+   id="logout-btn"
+   data-confirm="እርግጠኛ ነዎት? ከስርዓቱ መውጣት ይፈልጋሉ?">
+    <i class="fas fa-sign-out-alt mr-2"></i> ውጣ
+</a>
         </div>
       </li>
       <li class="nav-item">

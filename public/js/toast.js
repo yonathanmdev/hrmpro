@@ -15,3 +15,11 @@ $(function () {
     Toast.fire({ icon: 'error', title: window.__flash.error });
   }
 });
+const logoutBtn = document.getElementById('logout-btn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', function(e) {
+        if (!confirm(this.dataset.confirm)) {
+            e.preventDefault();
+        }
+    });
+}
