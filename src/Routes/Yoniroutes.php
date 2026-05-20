@@ -78,7 +78,7 @@ return [
     
     // File Management
     'employee-archive' => ['ScholarshipController', 'getDocument', true],
-  
+    'upload-certificate' => ['ArchiveController', 'attachFile', true],
     //scholarship
     'employee-scholarship'         => ['ScholarshipController', 'showScholarshipForm', true],
     'employee-scholarship-search'  => ['ScholarshipController', 'liveSearch', true],
@@ -115,6 +115,7 @@ return [
     'delete-debt-suspension-process' => ['DebtSuspensionController', 'delete', true],
     // Stored files
 
+    
     
     'serve-file' => ['FileController', 'serveFile', true], // true = auth required
 

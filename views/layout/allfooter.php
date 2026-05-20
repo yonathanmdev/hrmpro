@@ -156,6 +156,15 @@ function myAsset($path) {
     <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
     
     <?php endif; ?>
+
+     <?php if (isset($is_employee_archive_page) && $is_employee_archive_page === true): ?>
+    <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
+    <script src="plugins/jquery-validation/additional-methods.min.js"></script>
+    <script src="<?= myAsset('js/file-attachment.js') ?>"></script>
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
+    
+    <?php endif; ?>
+   
  <?php if (isset($is_exprience_registration_page) && $is_exprience_registration_page === true): ?>
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>

@@ -237,6 +237,8 @@ public function getDocumentByEmpId(string $uuid) {
     // Note: If emp_id is a UUID string, ensure the column is INDEXED 
     // in MariaDB for performance with 780k+ rows.
     $sql = "SELECT 
+                d.id,
+                d.owner_type,
                 d.file_url, 
                 d.created_at,
                 d.entity_type

@@ -5,23 +5,35 @@
       <img src="images/logo.png" alt="Warka Hub Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
       <span class="brand-text font-weight-light small">HRMS</span>
     </a>
+<?php
+$first_name  = $_SESSION['user']['first_name'] ?? '';
+$father_name = $_SESSION['user']['father_name'] ?? '';
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <!-- Sidebar user panel (optional) -->
-      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-        <div class="image">
-          <img src="dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
-        </div>
-        <div class="info ml-2">
-          <a href="javascript:void(0)" class="d-block"><?php 
-  $full_name = ($_SESSION['user']['first_name'] ?? '') . ' ' . ($_SESSION['user']['father_name'] ?? '');
-  $display_name = trim($full_name) ?: 'Guest';
+$full_name    = $first_name . ' ' . $father_name;
+$display_name = trim($full_name) ?: 'Guest';
 
-  echo mb_convert_case($display_name, MB_CASE_TITLE, "UTF-8"); 
-?></a>
-        </div>
+// Get initials
+$first_initial  = mb_strtoupper(mb_substr(trim($first_name), 0, 1, "UTF-8"), "UTF-8");
+$father_initial = mb_strtoupper(mb_substr(trim($father_name), 0, 1, "UTF-8"), "UTF-8");
+$initials       = $first_initial . $father_initial ?: 'GU';
+?>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+    <div class="image">
+      <!-- Initials avatar instead of image -->
+      <div class="img-circle elevation-2 d-flex align-items-center justify-content-center"
+           style="width:35px; height:35px; background-color:#007bff; color:#fff; font-weight:bold; font-size:14px; line-height:35px; text-align:center;">
+        <?php echo $initials; ?>
       </div>
+    </div>
+    <div class="info ml-2">
+      <a href="javascript:void(0)" class="d-block">
+        <?php echo mb_convert_case($display_name, MB_CASE_TITLE, "UTF-8"); ?>
+      </a>
+    </div>
+  </div>
 
       <!-- SidebarSearch Form -->
       <div class="form-inline">
