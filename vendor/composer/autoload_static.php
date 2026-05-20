@@ -116,6 +116,7 @@ class ComposerStaticInite4f6e93e15fd7a66c431e184d04ea545
         'App\\Controllers\\ExperiencesController' => __DIR__ . '/../..' . '/src/Controllers/ExperiencesController.php',
         'App\\Controllers\\FileController' => __DIR__ . '/../..' . '/src/Controllers/FileController.php',
         'App\\Controllers\\OrgController' => __DIR__ . '/../..' . '/src/Controllers/OrgController.php',
+        'App\\Controllers\\ReportController' => __DIR__ . '/../..' . '/src/Controllers/ReportController.php',
         'App\\Controllers\\ScholarshipController' => __DIR__ . '/../..' . '/src/Controllers/ScholarshipController.php',
         'App\\Controllers\\TeddyController' => __DIR__ . '/../..' . '/src/Controllers/TeddyController.php',
         'App\\Controllers\\TeddybackendContoller' => __DIR__ . '/../..' . '/src/Controllers/TeddybackendContoller.php',

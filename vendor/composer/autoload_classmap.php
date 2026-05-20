@@ -18,6 +18,7 @@ return array(
     'App\\Controllers\\ExperiencesController' => $baseDir . '/src/Controllers/ExperiencesController.php',
     'App\\Controllers\\FileController' => $baseDir . '/src/Controllers/FileController.php',
     'App\\Controllers\\OrgController' => $baseDir . '/src/Controllers/OrgController.php',
+    'App\\Controllers\\ReportController' => $baseDir . '/src/Controllers/ReportController.php',
     'App\\Controllers\\ScholarshipController' => $baseDir . '/src/Controllers/ScholarshipController.php',
     'App\\Controllers\\TeddyController' => $baseDir . '/src/Controllers/TeddyController.php',
     'App\\Controllers\\TeddybackendContoller' => $baseDir . '/src/Controllers/TeddybackendContoller.php',
