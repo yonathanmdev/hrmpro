@@ -17,7 +17,7 @@
     <thead class="thead-light">
       <tr>
         <th>#</th>
-        <th>Yonatha misgan Yibelital</th>
+        <th>Report Change</th>
         <th>Action</th>
       </tr>
     </thead>
