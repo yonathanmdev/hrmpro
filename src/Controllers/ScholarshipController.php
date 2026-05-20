@@ -79,7 +79,12 @@ public function storeScholarship() {
         $agreement_date = $_POST['agreement_date'] ?? null;
         $duration = $_POST['scholarship_duration_years'] ?? null;
         $registered_by = $_SESSION['user']['id'] ?? null;
-
+// ADD THIS
+if (empty($_FILES['scholarship_file']['name']) || $_FILES['scholarship_file']['error'] === UPLOAD_ERR_NO_FILE) {
+    $_SESSION['error'] = 'እባክዎ የስኮላርሺፕ ፋይል ይምረጡ።';
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-scholarship-onleave");
+    exit();
+}
         // 2. ፋይሉን መጫን (በከፈትከው uploadFile ፈንክሽን በመጠቀም)
         // ማሳሰቢያ፡ በ HTML ፎርምህ ላይ የፋይሉ ስም 'scholarship_file' መሆኑን አረጋግጥ
         $scholarshipFileName = $this->uploadFile('scholarship_file', 'documents');

@@ -230,7 +230,12 @@ public function handleFileAttachment() {
     // ── File upload ───────────────────────────────────────────
     $file_url        = null;
     $newFileUploaded = false;
-
+// ADD THIS
+if (empty($_FILES['warranty_file']['name']) || $_FILES['warranty_file']['error'] === UPLOAD_ERR_NO_FILE) {
+    $_SESSION['error'] = 'እባክዎ የዋስትና ፋይል ይምረጡ።';
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-warranty");
+    exit();
+}
     if (isset($_FILES['warranty_file']) && $_FILES['warranty_file']['error'] === UPLOAD_ERR_OK) {
         $warrantyFileName = $this->uploadFile('warranty_file', 'documents');
         if ($warrantyFileName) {

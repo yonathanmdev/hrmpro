@@ -73,7 +73,12 @@ public function storeDebtSuspension() {
         $debt_type = $_POST['debt_suspension_type'] ?? null;
         $start_date = $_POST['start_date'] ?? null;
         $registered_by = $_SESSION['user']['id'] ?? null;
-
+// ADD THIS
+if (empty($_FILES['debt_suspension_file']['name']) || $_FILES['debt_suspension_file']['error'] === UPLOAD_ERR_NO_FILE) {
+    $_SESSION['error'] = 'እባክዎ የእዳ/እገዳ ፋይል ይምረጡ።';
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-debt-suspension-pending");
+    exit();
+}
         // 2. ፋይሉን መጫን (በከፈትከው uploadFile ፈንክሽን በመጠቀም)
         // ማሳሰቢያ፡ በ HTML ፎርምህ ላይ የፋይሉ ስም 'scholarship_file' መሆኑን አረጋግጥ
         $debtSuspensionFileName = $this->uploadFile('debt_suspension_file', 'documents');
