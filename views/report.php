@@ -17,7 +17,7 @@
     <thead class="thead-light">
       <tr>
         <th>#</th>
-        <th>በመሰራት ላይ </th>
+        <th>Yonatha misgan Yibelital</th>
         <th>Action</th>
       </tr>
     </thead>
