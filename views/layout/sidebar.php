@@ -272,6 +272,25 @@ $initials       = $first_initial . $father_initial ?: 'GU';
    </ul>
   </li>
 
+<li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link">
+        <i class="nav-icon fas fa-edit"></i>
+        <p>
+            On Leave
+            <i class="fas fa-angle-left right"></i>
+        </p>
+    </a>
+    <ul class="nav nav-treeview">
+        <li class="nav-item">
+            <!-- This link triggers the modal by ID -->
+            <a href="javascript:void(0)" class="nav-link" data-toggle="modal" data-target="#employeeSearchModal" data-source="onleave">
+                <i class="far fa-circle nav-icon"></i>
+                <p>መመዝገብ/መረጃ</p>
+            </a>
+        </li>
+    </ul>
+ </li>
+
   <li class="nav-item small">
     <a href="javascript:void(0)" class="nav-link">
       <i class="nav-icon fas fa-edit"></i>

@@ -7,5 +7,5 @@ return [
     'Registertest'               => ['TeddyController', 'showtest', true],
     'register-developer'         => ['TeddyController', 'showdeveloper', true],
     'register-dev-process'       => ['TeddybackendContoller', 'handleDeveloperRegistration', true],
-    'register-employee'         => ['EmployeeController', 'showmenuemployee', true],
+    'employee-leave'             => ['EmployeeOnleaveController', 'showOnLeavePage', true],
 ];
