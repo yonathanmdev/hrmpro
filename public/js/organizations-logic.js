@@ -5,20 +5,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // 1. EDIT — ሞዳሉን መረጃ ሞልቶ መክፈት
     // ============================================================
     document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.edit-org');
-        if (btn) {
-            const id   = btn.getAttribute('data-id');
-            const name = btn.getAttribute('data-name');
-            const edit_org_description = btn.getAttribute('data-description') || '';
+    const btn = e.target.closest('.edit-org');
+    if (btn) {
+        const id          = btn.getAttribute('data-id');
+        const branch_id   = btn.getAttribute('data-branch-id');
+        const name        = btn.getAttribute('data-name');
+        const alt_name    = btn.getAttribute('data-alt-name')    || '';
+        const logo_url    = btn.getAttribute('data-logo-url')    || '';
+        const description = btn.getAttribute('data-description') || '';
 
-            document.getElementById('edit_org_id').value  = id;
-            document.getElementById('edit_org_name').value = name;
-            document.getElementById('edit_org_description').value = edit_org_description;
+        document.getElementById('edit_org_id').value          = id;
+        document.getElementById('edit_org_branch_id').value   = branch_id;
+        document.getElementById('edit_org_name').value        = name;
+        document.getElementById('edit_org_alt_name').value    = alt_name;      // ✅ fixed
+        document.getElementById('edit_org_description').value = description;   // ✅ fixed
 
-
-            $('#editOrgModal').modal('show');
+        // Show current logo preview if available
+        const preview = document.getElementById('current_logo_preview');
+        if (preview) {
+            if (logo_url) {
+                preview.href        = logo_url;
+                preview.style.display = 'inline';
+            } else {
+                preview.style.display = 'none';
+            }
         }
-    });
+
+        // Store logo_url in hidden field for controller
+        const logoHidden = document.getElementById('edit_org_logo_url');
+        if (logoHidden) logoHidden.value = logo_url;
+
+        $('#editOrgModal').modal('show');
+    }
+});
 
     // ============================================================
     // 2. EDIT — የተስተካከለውን መረጃ መላክ

@@ -47,8 +47,11 @@
   <div class="btn-group btn-group-sm shadow-sm" role="group">
                <button class="btn btn-outline-secondary btn-sm edit-org" 
                       data-id="<?= $row['id'] ?>" 
+                      data-branch-id="<?= $row['branch_id'] ?>"
                       data-name="<?= htmlspecialchars($row['name']) ?>"
                       data-description="<?= htmlspecialchars($row['organization_type']) ?>"
+                      data-alt-name="<?= htmlspecialchars($row['alt_name']) ?>"
+                    data-logo-url="<?= rtrim($_ENV['BASE_URL'], '/') ?>?action=serve-file&file=<?= htmlspecialchars($row['logo_url']) ?>&type=image"
                       title="አስተካክል"  >
                 <i class="fas fa-edit"></i>
               </button> 
@@ -78,7 +81,7 @@
   <div class="modal-dialog modal-md">
     <div class="modal-content">
 
-      <form id="orgForm" method="POST" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-organization-process">
+      <form id="orgForm" method="POST" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-organization-process" enctype="multipart/form-data">
 
         <!-- 1. Modal Header -->
         <div class="modal-header">
@@ -104,6 +107,16 @@
             >
           </div>
           <div class="form-group mb-2">
+            <label for="org_alternate_name" class="mb-1"><small class="font-weight-bold">አማራጭ ስም</small></label>
+            <input 
+              type="text" 
+              id="org_alternate_name" 
+              class="form-control form-control-sm" 
+              name="org_alternate_name" 
+              placeholder="አማራጭ ስም ያስገቡ" 
+            >
+          </div>
+          <div class="form-group mb-2">
             <label for="org_description" class="mb-1"><small class="font-weight-bold">የተቋሙ ዓይነት</small></label>
             <input 
               type="text" 
@@ -114,6 +127,10 @@
               required
             >
           </div>
+          <div class="form-group mb-2">
+                <label class="mb-1" for="logo"><small class="font-weight-bold">ሎጎ</small></label>
+                <input type="file" class="form-control-file" id="logo" name="logo" accept="image/*" required>
+              </div>
         </div>
 
         <!-- Footer -->

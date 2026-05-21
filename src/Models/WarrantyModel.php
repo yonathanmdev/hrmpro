@@ -50,7 +50,7 @@ public function autoSearch($term, $branchId) {
                 e.employee_image 
             FROM employees_table e
             WHERE e.branch_id = ? 
-            AND (e.status = 'Active' OR e.status = 'On Leave' OR e.status = 'On Leave Pending')
+            AND (e.status = 'Active' OR e.status = 'Study Leave' OR e.status = 'Study Leave Pending')
             AND e.full_name_normalized LIKE ?
             AND NOT EXISTS (
                 SELECT 1 

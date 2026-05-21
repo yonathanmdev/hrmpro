@@ -47,10 +47,21 @@ class AuthController extends BaseController {
                     'email'              => $user['email'],
                     'role'               => $user['role']
                 ];
-$branchModel = new Branch($this->db);
-$branchName = $branchModel->getBranchById($user['branch_id']);
-$_SESSION['user']['branch_name'] = $branchName ? $branchName['name'] : 'Unknown Branch';
-                // Log successful login
+// 2. Safely resolve Branch details if a branch assignment exists
+    if (!empty($user['branch_id'])) {
+        $branchModel = new Branch($this->db);
+        $branchData  = $branchModel->getBranchById($user['branch_id']);
+        
+        $_SESSION['user']['branch_name']     = !empty($branchData['name']) ? $branchData['name'] : 'Unknown Branch';
+        $_SESSION['user']['alt_name'] = !empty($branchData['alt_name']) ? $branchData['alt_name'] : null;
+        $_SESSION['user']['logo_url'] = !empty($branchData['logo_url']) ? $branchData['logo_url'] : null;
+    } else {
+        // Fallback defaults for system-wide/global administrators
+        $_SESSION['user']['branch_name']     = 'ዋናው መስሪያ ቤት (Headquarters)';
+        $_SESSION['user']['alt_name'] = 'WARKA HUB';
+        $_SESSION['user']['logo_url'] = null; // Dashboard code falls back to icon cleanly
+    }     
+// Log successful login
                 \App\Helpers\AuditHelper::logAs($user['id'], 'login_success', 'auth', $user['id']);
 
                 header("Location:" . $_ENV['BASE_URL'] . "/dashboard");

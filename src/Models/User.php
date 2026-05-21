@@ -362,4 +362,33 @@ public function purge(string $id, string $archiveId, string $entityType = 'user'
         return ['status' => 'error', 'message' => 'መሰረዝ አልተቻለም።'];
     }
 }
+
+
+public function getActiveUsersCount($branch_id = null) {
+    try {
+        // Strict condition assignment: handles tenant isolation flawlessly
+        $branchCondition = !empty($branch_id) ? "branch_id = :branch_id" : "1=1";
+        
+        $query = "SELECT COUNT(*) as total 
+                  FROM users 
+                  WHERE {$branchCondition} AND status = 'active' AND is_deleted = 0";
+        
+        $stmt = $this->db->prepare($query);
+        
+        // Bind the named parameter only if a strict branch context is active
+        if (!empty($branch_id)) {
+            // Swapped to PARAM_STR to match your standard employee methods execution pattern
+            $stmt->bindValue(':branch_id', $branch_id, \PDO::PARAM_STR);
+        }
+        
+        $stmt->execute();
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        
+        return $row ? (int)$row['total'] : 0;
+        
+    } catch (\PDOException $e) {
+        error_log("Database Error in Users::getTotalUsersCount: " . $e->getMessage());
+        return 0;
+    }
+}
     }

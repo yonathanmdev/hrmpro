@@ -10,15 +10,17 @@ class Branch {
          }
 
     public function insertBranch($data) {
-        $sql = "INSERT INTO branches (id, organization_id, parent_id, name, level, registered_by) 
-                VALUES (?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO branches (id, organization_id, parent_id, name, alt_name, level, logo_url, registered_by) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             $data['id'], 
             $data['org_id'], 
             $data['parent_id'], 
             $data['name'], 
+            $data['alt_name'], 
             $data['level'], 
+            $data['logo_url'], 
             $data['registered_by']
         ]);
     }
@@ -56,7 +58,7 @@ public function getMainOfficeId($orgId) {
     }
 }
 public function getBranchById($branchId) {
-    $sql = "SELECT name, level FROM branches WHERE id = ? LIMIT 1";
+    $sql = "SELECT name, alt_name, level, logo_url FROM branches WHERE id = ? LIMIT 1";
     try {
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$branchId]);
@@ -76,13 +78,15 @@ public function isSubBranchOf($branchId, $parentBranchId) {
     ]);
     return $stmt->fetchColumn() !== false;
 }
-public function updateBranch($id, $name) {
-        $sql = "UPDATE branches SET name = ? WHERE id = ? AND status = 'active'";
+public function updateBranch($id, $name, $alt_name, $logo_url) {
+        $sql = "UPDATE branches SET name = ?, logo_url = ?, alt_name = ? WHERE id = ? AND status = 'active'";
         
         try {
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 $name,
+                $logo_url,
+                $alt_name,
                 $id
             ]);
         } catch (\PDOException $e) {
@@ -456,4 +460,33 @@ public function restoreFromArchive(string $originalId, string $restoredBy): arra
         return ['status' => 'error', 'message' => 'መልስ አልተቻለም፡ ' . $e->getMessage()];
     }
 }
+
+public function getTotalBranchesCount($branch_id = null) {
+    try {
+        // Strict condition assignment: handles tenant isolation flawlessly
+        $branchCondition = !empty($branch_id) ? "parent_id = :branch_id" : "1=1";
+        
+        $query = "SELECT COUNT(*) as total 
+                  FROM branches 
+                  WHERE {$branchCondition} AND is_deleted = 0";
+        
+        $stmt = $this->db->prepare($query);
+        
+        // Bind the named parameter only if a strict branch context is active
+        if (!empty($branch_id)) {
+            // Swapped to PARAM_STR to match your standard employee methods execution pattern
+            $stmt->bindValue(':branch_id', $branch_id, \PDO::PARAM_STR);
+        }
+        
+        $stmt->execute();
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        
+        return $row ? (int)$row['total'] : 0;
+        
+    } catch (\PDOException $e) {
+        error_log("Database Error in Branches::getTotalBranchesCount: " . $e->getMessage());
+        return 0;
+    }
+}
+
 }
