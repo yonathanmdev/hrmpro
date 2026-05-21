@@ -3,6 +3,7 @@ namespace App\Controllers;
 use App\Models\EmployeeRegistration;
 use App\Models\User;
 use App\Models\Branch;
+use App\Helpers\AuthHelper;
 
 class DashboardController extends BaseController {
     
@@ -10,10 +11,9 @@ class DashboardController extends BaseController {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-
+ AuthHelper::checkRole(['system_admin','org_admin', 'hr_director', 'hr_officer']);
         $branch_id = $_SESSION['user']['branch_id'] ?? null;
         
-        // Get the role from the session (e.g., 'system_admin', 'org_admin', 'hr_director', 'hr_officer')
         $role = $_SESSION['user']['role'] ?? ''; 
 
         // Initialize variables to safe defaults
