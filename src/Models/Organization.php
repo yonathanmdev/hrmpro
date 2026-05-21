@@ -19,7 +19,7 @@ class Organization {
      * @param string $id በኮንትሮለር የተፈጠረ UUID
      * @param string $name የተመዘገበው የድርጅት ስም
      */
-   public function create($id, $name, $description, $registeredBy) {
+   public function create($id, $orgName, $orgDescription, $registeredBy, $orgAlternateName, $imageName){
     try {
         $this->db->beginTransaction();
 
@@ -30,8 +30,8 @@ class Organization {
         // Execute ብቻ አድርግ፣ return አትበል
         $stmt->execute([
             $id,
-            $name,
-            $description
+            $orgName,
+            $orgDescription
         ]);
 
         // 2. የ Branch ሞዴልን መጥራት
@@ -40,8 +40,10 @@ class Organization {
             'id' => \Ramsey\Uuid\Uuid::uuid4()->toString(),
             'org_id' => $id,
             'parent_id' => null,
-            'name' => $name,
+            'name' => $orgName,
+            'alt_name' => $orgAlternateName,
             'level' => 1,
+            'logo_url' => $imageName,
             'registered_by' => $registeredBy
         ]);
 
@@ -62,11 +64,21 @@ class Organization {
      * ሁሉንም ድርጅቶች ለዝርዝር ለማምጣት (እንደ ተጨማሪ)
      */
     public function getAll() {
-        $sql = "SELECT * FROM organizations where status = 'active' ORDER BY name ASC";
-        $stmt = $this->db->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
+    $sql = "SELECT 
+                o.*,
+                b.id as branch_id,
+                b.organization_id,
+                b.alt_name,
+                b.logo_url
+            FROM organizations o
+            LEFT JOIN branches b ON b.organization_id = o.id
+            WHERE o.status = 'active'
+            AND b.level = 1
+            ORDER BY o.name ASC";
+    
+    $stmt = $this->db->query($sql);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
     /**
      * Find organization by ID
      */
@@ -76,20 +88,38 @@ class Organization {
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-public function updateOrganization($id, $name, $description) {
+public function updateOrganization($id, $branchId, $name, $description, $orgAlternateName, $imageName) {
+    try {
+        // Begin transaction — both updates must succeed or both rollback
+        $this->db->beginTransaction();
+
+        // 1. Update organization
         $sql = "UPDATE organizations SET name = ?, organization_type = ? WHERE id = ? AND status = 'active'";
-        
-        try {
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
-                $name,
-                $description,
-                $id
-            ]);
-        } catch (\PDOException $e) {
-            throw $e;
-        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            $name,
+            $description,
+            $id
+        ]);
+
+        // 2. Update branch
+        $branchModel = new \App\Models\Branch($this->db);
+        $branchModel->updateBranch(
+            $branchId,
+            $name,
+            $orgAlternateName,
+            $imageName
+        );
+        // 3. Commit if both succeeded
+        $this->db->commit();
+        return true;
+
+    } catch (\PDOException $e) {
+        // Rollback both if either failed
+        $this->db->rollBack();
+        throw $e;
     }
+}
    // ============================================================
     // SOFT DELETE
     // ============================================================

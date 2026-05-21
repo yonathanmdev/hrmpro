@@ -23,7 +23,7 @@ public function autoSearch($term, $branchId) {
                 e.employee_image 
             FROM employees_table e
             WHERE e.branch_id = ? 
-            AND (e.status = 'Active' OR e.status = 'On Leave' OR e.status = 'On Leave Pending')
+            AND (e.status = 'Active' OR e.status = 'Study Leave' OR e.status = 'Study Leave Pending')
             AND e.full_name_normalized LIKE ? 
             -- Exclude if there is any record that isn't 'cleared'
             -- AND NOT EXISTS ( SELECT 1 FROM debt_suspension ds  WHERE ds.emp_id = e.uuid AND ds.status != 'cleared')

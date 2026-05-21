@@ -25,6 +25,7 @@
       <tr>
         <th>#</th>
         <th>የቅርንጫፍ ስም </th>
+        <th>አማራጭ ስም</th>
         <th>Action</th>
       </tr>
     </thead>
@@ -34,10 +35,14 @@
           <tr id="row-<?= htmlspecialchars($row['id']) ?>">
             <td><?= $index + 1 ?></td>
             <td><?= htmlspecialchars($row['name']) ?></td>
+            <td><?= htmlspecialchars($row['alt_name']) ?></td>
             <td>
                <button class="btn btn-primary btn-sm edit-branch" 
                       data-id="<?= $row['id'] ?>" 
-                      data-name="<?= htmlspecialchars($row['name']) ?>" title="አስተካክል"  >
+                      data-name="<?= htmlspecialchars($row['name']) ?>" 
+                       data-alternate-name="<?= htmlspecialchars($row['alt_name']) ?>"
+                     data-logo-url="<?= rtrim($_ENV['BASE_URL'], '/') ?>?action=serve-file&file=<?= htmlspecialchars($row['logo_url']) ?>&type=image"
+                     title="አስተካክል"  >
                 <i class="fas fa-edit"></i>
               </button> 
               <button class="btn btn-danger btn-sm delete-branch" 
@@ -66,7 +71,7 @@
   <div class="modal-dialog modal-md">
     <div class="modal-content">
 
-      <form id="orgForm" method="POST" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-branch-process">
+      <form id="orgForm" method="POST" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-branch-process" enctype="multipart/form-data">
 
         <div class="modal-header">
         <h6 class="modal-title font-weight-bold">
@@ -87,6 +92,30 @@
               class="form-control form-control-sm" 
               name="branch_name" 
               placeholder="ስም ያስገቡ" 
+              required
+            >
+          </div>
+
+
+          <div class="form-group mb-2">
+            <label for="org_alternate_name" class="mb-1"><small class="font-weight-bold">አማራጭ ስም</small></label>
+            <input 
+              type="text" 
+              id="branch_alternate_name" 
+              class="form-control form-control-sm" 
+              name="branch_alternate_name" 
+              placeholder="አማራጭ ስም ያስገቡ" 
+            >
+          </div>
+
+          <div class="form-group mb-2">
+            <label for="branch_logo" class="mb-1"><small class="font-weight-bold">ሎጎ</small></label>
+            <input 
+              type="file" 
+              class="form-control-file" 
+              id="branch_logo" 
+              name="logo" 
+              accept="image/*"
               required
             >
           </div>

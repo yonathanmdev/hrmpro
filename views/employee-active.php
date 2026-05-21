@@ -70,9 +70,9 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
         $status = $employee['status'] ?? 'Active';
         echo htmlspecialchars(match ($status) {
             'Active'           => 'በስራ ላይ',
-            'On Leave'         => 'በት/ት ላይ',
+            'Study Leave'         => 'በት/ት ላይ',
             'Onboarding'       => 'ምዝገባ ላይ',
-            'On Leave Pending' => 'የት/ት እድል ያገኙ',
+            'Study Leave Pending' => 'የት/ት እድል ያገኙ',
             default            => $status,
         });
         ?>

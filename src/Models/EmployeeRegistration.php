@@ -530,5 +530,86 @@ $stmt->execute([$employee['job_property_id']]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+public function getAllEmployeesCount($branch_id = null) {
+        try {
+            // Strict condition assignment
+            $branchCondition = !empty($branch_id) ? "branch_id = :branch_id" : "1=1";
+            
+            $query = "SELECT COUNT(*) as total 
+                      FROM employees_table 
+                      WHERE {$branchCondition} 
+                        AND (status != 'inactive' AND status != 'Onboarding') 
+                        AND is_deleted != 2";
+            
+            $stmt = $this->db->prepare($query);
+            
+            if (!empty($branch_id)) {
+                $stmt->bindValue(':branch_id', $branch_id, \PDO::PARAM_STR);
+            }
+            
+            $stmt->execute();
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            return $row ? (int)$row['total'] : 0;
+            
+        } catch (\PDOException $e) {
+            error_log("Database Error in Employee::getAllEmployeesCount: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function getOnleaveEmployeesCount($branch_id = null) {
+        try {
+            $branchCondition = !empty($branch_id) ? "branch_id = :branch_id" : "1=1";
+            
+            $query = "SELECT COUNT(*) as total 
+                      FROM employees_table 
+                      WHERE {$branchCondition} 
+                        AND status = 'On Leave' 
+                        AND is_deleted != 2";
+            
+            $stmt = $this->db->prepare($query);
+            
+            if (!empty($branch_id)) {
+                $stmt->bindValue(':branch_id', $branch_id, \PDO::PARAM_STR);
+            }
+            
+            $stmt->execute();
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            return $row ? (int)$row['total'] : 0;
+            
+        } catch (\PDOException $e) {
+            error_log("Database Error in Employee::getOnleaveEmployeesCount: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function getStudyleaveEmployeesCount($branch_id = null) {
+        try {
+            $branchCondition = !empty($branch_id) ? "branch_id = :branch_id" : "1=1";
+            
+            $query = "SELECT COUNT(*) as total 
+                      FROM employees_table 
+                      WHERE {$branchCondition} 
+                        AND status = 'Study Leave' 
+                        AND is_deleted != 2";
+            
+            $stmt = $this->db->prepare($query);
+            
+            if (!empty($branch_id)) {
+                $stmt->bindValue(':branch_id', $branch_id, \PDO::PARAM_STR);
+            }
+            
+            $stmt->execute();
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            return $row ? (int)$row['total'] : 0;
+            
+        } catch (\PDOException $e) {
+            error_log("Database Error in Employee::getStudyleaveEmployeesCount: " . $e->getMessage());
+            return 0;
+        }
+    }
     }
 

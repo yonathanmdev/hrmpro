@@ -5,10 +5,10 @@ use App\Models\Branch;
 use App\Models\User;
 use App\Helpers\AuthHelper;
 use Ramsey\Uuid\Uuid;
-
+use \App\Traits\FileUploadTrait;
 // 1. BaseControllerን እንዲወርስ እናደርጋለን
 class OrgController extends BaseController {
-    
+     use FileUploadTrait;
    public function showRegisterForm() {
      AuthHelper::checkRole(['system_admin', 'org_admin']);
     $organizations =[];
@@ -33,11 +33,12 @@ class OrgController extends BaseController {
    }
 
     public function handleRegistration() {
-        AuthHelper::checkRole(['system_admin', 'org_admin']);
+        AuthHelper::checkRole(['system_admin']);
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // 1. ዳታውን መቀበል
         $orgName = isset($_POST['org_name']) ? trim($_POST['org_name']) : '';
+        $orgAlternateName = isset($_POST['org_alternate_name']) ? trim($_POST['org_alternate_name']) : '';
         $orgDescription = isset($_POST['org_description']) ? trim($_POST['org_description']) : '';
         
         // Session ውስጥ ተጠቃሚው መኖሩን ማረጋገጥ (ደህንነት)
@@ -55,6 +56,29 @@ class OrgController extends BaseController {
             header("Location: " . $_ENV['BASE_URL'] . "/login");
             exit();
         }
+// In your handleCreate/registration method
+if (empty($_FILES['logo']['name']) || $_FILES['logo']['error'] === UPLOAD_ERR_NO_FILE) {
+    $_SESSION['error'] = 'እባክዎ የድርጅት ሎጎ ይምረጡ።';
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/register-organization");
+    exit();
+}
+       $imageName   = $this->uploadFile('logo', 'images');
+
+if (!$imageName) {
+    $messages = [];
+
+    if (!$imageName) {
+        $imageError  = $_FILES['logo']['error'] ?? UPLOAD_ERR_NO_FILE;
+        $messages[] = 'Photo: ' . $this->getUploadErrorMessage($imageError);
+    }
+
+    $_SESSION['error'] = !empty($messages)
+        ? 'ፋይል እንዲወርድ አልቻለም። ' . implode(' | ', $messages)
+        : 'ፋይል እንዲወርድ አልቻለም።';
+
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/register-organization");
+    exit();
+}
         // 3. UUID ማመንጨት (ለ Organization)
         $id = Uuid::uuid4()->toString();
 
@@ -62,7 +86,7 @@ class OrgController extends BaseController {
 
         try {
             // 4. ሞዴሉን መጥራት (ይህ ድርጅቱን እና Main Officeን በአንድ ላይ ይመዘግባል)
-            $result = $orgModel->create($id, $orgName, $orgDescription, $registeredBy);
+            $result = $orgModel->create($id, $orgName, $orgDescription, $registeredBy, $orgAlternateName, $imageName);
 
             if ($result) {
                 // Log organization creation
@@ -75,6 +99,12 @@ class OrgController extends BaseController {
                 $_SESSION['success'] = "ድርጅቱ እና ዋና መሥሪያ ቤቱ በተሳካ ሁኔታ ተመዝግቧል!";
                 header("Location: " . $_ENV['BASE_URL'] . "/register-organization");
                 exit();
+            }
+            if ($imageName) {
+                $imagePath = dirname(__DIR__, 2) . '/storage/uploads/images/' . $imageName;
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
             }
         } catch (\Exception $e) {
             // 5. ስህተቶችን መያዝ
@@ -98,20 +128,39 @@ public function handleEditOrganization() {
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {        
         $orgId = isset($_POST['id']) ? trim($_POST['id']) : '';
+        $branchId = isset($_POST['branch_id']) ? trim($_POST['branch_id']) : '';
         $orgName = isset($_POST['org_name']) ? trim($_POST['org_name']) : '';
-        $orgDescription = isset($_POST['edit_org_description']) ? trim($_POST['edit_org_description']) : '';
+        $orgAlternateName = isset($_POST['org_alternate_name']) ? trim($_POST['org_alternate_name']) : '';
+        $orgDescription = isset($_POST['org_description']) ? trim($_POST['org_description']) : '';
         if (empty($orgId) || empty($orgName) || empty($orgDescription)) {
             echo json_encode(['status' => 'error', 'message' => 'እባክዎ የተቋሙን መለያ እና ስም በትክክል ያስገቡ!']);
             exit();
         }
 
+        $imageName   = $this->uploadFile('logo', 'images');
+
+if (!$imageName) {
+    $messages = [];
+
+    if (!$imageName) {
+        $imageError  = $_FILES['logo']['error'] ?? UPLOAD_ERR_NO_FILE;
+        $messages[] = 'Photo: ' . $this->getUploadErrorMessage($imageError);
+    }
+
+    $_SESSION['error'] = !empty($messages)
+        ? 'ፋይል እንዲወርድ አልቻለም። ' . implode(' | ', $messages)
+        : 'ፋይል እንዲወርድ አልቻለም።';
+
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/register-organization");
+    exit();
+}
         $orgModel = new Organization($this->db);
 
         try {
             // Get old data for logging
             $oldData = $orgModel->findById($orgId);
             
-            $result = $orgModel->updateOrganization($orgId, $orgName, $orgDescription);
+            $result = $orgModel->updateOrganization($orgId, $branchId, $orgName, $orgDescription, $orgAlternateName, $imageName);
 
             if ($result) {
                 // Log organization update
@@ -141,6 +190,7 @@ public function handleBranchRegistration() {
         // 1. ዳታውን መቀበል እና trim() ማድረግ   
         $branchName = isset($_POST['branch_name']) ? trim($_POST['branch_name']) : '';
         $registeredBy = isset($_SESSION['user']) ? $_SESSION['user']['id'] : null;  
+        $orgAlternateName = isset($_POST['branch_alternate_name']) ? trim($_POST['branch_alternate_name']) : '';
         $branchModel =  new Branch($this->db);
         $branchLevel = $branchModel->getBranchById($_SESSION['user']['branch_id']);
         if (!$branchLevel || !isset($branchLevel['level'])) {
@@ -157,6 +207,30 @@ public function handleBranchRegistration() {
             header("Location: " . $_ENV['BASE_URL'] . "/register-branch");
             exit();        
  }
+
+ // In your handleCreate/registration method
+if (empty($_FILES['logo']['name']) || $_FILES['logo']['error'] === UPLOAD_ERR_NO_FILE) {
+    $_SESSION['error'] = 'እባክዎ የድርጅት ሎጎ ይምረጡ።';
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/register-organization");
+    exit();
+}
+       $imageName   = $this->uploadFile('logo', 'images');
+
+if (!$imageName) {
+    $messages = [];
+
+    if (!$imageName) {
+        $imageError  = $_FILES['logo']['error'] ?? UPLOAD_ERR_NO_FILE;
+        $messages[] = 'Photo: ' . $this->getUploadErrorMessage($imageError);
+    }
+
+    $_SESSION['error'] = !empty($messages)
+        ? 'ፋይል እንዲወርድ አልቻለም። ' . implode(' | ', $messages)
+        : 'ፋይል እንዲወርድ አልቻለም።';
+
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/register-organization");
+    exit();
+}
         // 3. UUID ማመንጨት (ለ Branch)
         $id = Uuid::uuid4()->toString();
 
@@ -167,7 +241,9 @@ public function handleBranchRegistration() {
                 'org_id' => $orgId,
                 'parent_id' => $parentId,
                 'name' => $branchName,
+                'alt_name' => $orgAlternateName,
                 'level' => $level,
+                'logo_url' => $imageName,
                 'registered_by' => $registeredBy
             ]);
 
@@ -177,7 +253,9 @@ public function handleBranchRegistration() {
                     'org_id' => $orgId,
                     'parent_id' => $parentId,
                     'name' => $branchName,
+                    'alt_name' => $orgAlternateName,
                     'level' => $level,
+                    'logo_url' => $imageName,
                     'registered_by' => $registeredBy
                 ]);
 
@@ -198,16 +276,39 @@ public function handleBranchRegistration() {
     }
 }
 public function handleEditBranch() {
-    // ለጃቫ ስክሪፕት ምላሽ ለመስጠት header ማስተካከል
-     AuthHelper::checkRole(['org_admin']);
+    // Set headers immediately for JavaScript compatibility
+    AuthHelper::checkRole(['org_admin']);
     header('Content-Type: application/json');
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {        
         $orgId = isset($_POST['id']) ? trim($_POST['id']) : '';
         $orgName = isset($_POST['branch_name']) ? trim($_POST['branch_name']) : '';
-               if (empty($orgId) || empty($orgName) ) {
+        $orgAlternateName = isset($_POST['branch_alternate_name']) ? trim($_POST['branch_alternate_name']) : '';
+        $existingLogoUrl = isset($_POST['existing_logo_url']) ? trim($_POST['existing_logo_url']) : '';
+
+        if (empty($orgId) || empty($orgName)) {
             echo json_encode(['status' => 'error', 'message' => 'እባክዎ የተቋሙን መለያ እና ስም በትክክል ያስገቡ!']);
             exit();
+        }
+
+        // Check if a brand new file was actually selected for upload
+        $hasNewFile = isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK;
+        $imageName = null;
+
+        if ($hasNewFile) {
+            $imageName = $this->uploadFile('logo', 'images');
+
+            // If the upload routine failed on a real file transfer attempt
+            if (!$imageName) {
+                $imageError = $_FILES['logo']['error'] ?? UPLOAD_ERR_NO_FILE;
+                $errorMessage = 'ፋይል እንዲወርድ አልቻለም። ' . $this->getUploadErrorMessage($imageError);
+                
+                echo json_encode(['status' => 'error', 'message' => $errorMessage]);
+                exit();
+            }
+        } else {
+            // No new file uploaded, keep the current database image path intact
+            $imageName = $existingLogoUrl;
         }
 
         $orgModel = new Branch($this->db);
@@ -216,7 +317,8 @@ public function handleEditBranch() {
             // Get old data for logging
             $oldData = $orgModel->getBranchById($orgId);
             
-            $result = $orgModel->updateBranch($orgId, $orgName);
+            // Pass the resolved image string to the model layer
+            $result = $orgModel->updateBranch($orgId, $orgName, $orgAlternateName, $imageName);
 
             if ($result) {
                 // Log branch update

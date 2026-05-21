@@ -404,8 +404,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     <i class="fas fa-users"></i>
                 </div>
                 <div>
-                    <div class="card-brand-name">Warka Hub HRMS</div>
-                    <div class="card-brand-sub">Human Resource Management</div>
+                    <div class="card-brand-name">Human Resource Management System</div>
                 </div>
             </div>
 

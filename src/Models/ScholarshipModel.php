@@ -31,7 +31,7 @@ class ScholarshipModel {
             LEFT JOIN job_property jp ON e.job_property_id = jp.id
             WHERE e.organization_id = ?
               AND e.branch_id = ?
-              AND  e.status = 'On Leave'
+              AND  e.status = 'Study Leave'
               AND e.is_deleted != 2
             ORDER BY e.rdate DESC
         ";
@@ -89,7 +89,7 @@ public function autoSearch($term, $branchId) {
         ]);
         // 4. Update Employee Status using the UUID from the controller
         // Note: $scholarshipData['uuid'] must be passed from your controller
-        $sql4 = "UPDATE employees_table SET status = 'On Leave Pending' WHERE uuid = ?";
+        $sql4 = "UPDATE employees_table SET status = 'Study Leave Pending' WHERE uuid = ?";
         $stmt4 = $this->db->prepare($sql4);
         $stmt4->execute([$scholarshipData['employee_id']]);
 
@@ -108,7 +108,7 @@ public function countPendingScholarshipEmployees(string $organizationId, string 
         WHERE organization_id = ?
           AND branch_id = ? 
           AND is_deleted != 2
-          AND status = 'On Leave Pending'
+          AND status = 'Study Leave Pending'
     ";
 
     $stmt = $this->db->prepare($sql);
@@ -144,7 +144,7 @@ public function countPendingScholarshipEmployees(string $organizationId, string 
               AND s.status = 'pending'
               AND e.branch_id = ?
               AND s.is_deleted = 0
-              AND  e.status = 'On Leave Pending'
+              AND  e.status = 'Study Leave Pending'
             ORDER BY s.created_at ASC
         ";
 
@@ -207,7 +207,7 @@ public function countPendingScholarshipEmployees(string $organizationId, string 
         $this->db->beginTransaction();
 
         // 1. Update the main employee table
-        $sqlEmployee = "UPDATE employees_table SET status = 'On Leave' WHERE uuid = ?";
+        $sqlEmployee = "UPDATE employees_table SET status = 'Study Leave' WHERE uuid = ?";
         $stmt1 = $this->db->prepare($sqlEmployee);
         $stmt1->execute([$uuid]);
 
