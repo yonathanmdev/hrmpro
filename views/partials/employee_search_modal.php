@@ -8,6 +8,8 @@
         </button>
       </div>
       <div class="modal-body">
+        <!-- Secure Hidden Input to hold the source context -->
+        <input type="hidden" name="source_context" id="modalSourceContext" value="">
         <!-- Error message only if API fails -->
         <div id="search_error_msg" class="alert alert-danger small" style="display:none;"></div>
         
