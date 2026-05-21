@@ -104,12 +104,12 @@ class ArchiveController extends BaseController {
                         }
                     }
 
-                    $_SESSION['success'] = 'መረጃው በትክክል ተዘምኗል!';
+                    $_SESSION['success'] = 'መረጃው በትክክል ተስተካክሏል!';
                     header("Location: " . $redirect_back);
                     exit();
                 }
 
-                throw new \Exception("ማዘመን አልተቻለም።");
+                throw new \Exception("ማስተካከል አልተቻለም።");
             }
 
             // ════════════════════════════════════════════════════════
@@ -118,7 +118,7 @@ class ArchiveController extends BaseController {
 
             // File is required on upload
             if (empty($_FILES['certificate_file']['name']) || $_FILES['certificate_file']['error'] === UPLOAD_ERR_NO_FILE) {
-                $_SESSION['error'] = 'እባክዎ የምስክር ፋይል ይምረጡ።';
+                $_SESSION['error'] = 'እባክዎ ፋይል ይምረጡ።';
                 header("Location: " . $redirect_back);
                 exit();
             }

@@ -80,8 +80,8 @@ document.addEventListener('DOMContentLoaded', function () {
     documentId.value = docId;
 
     // የሞዳሉን ርዕስ እና ቁልፍ ስም ይቀይራል
-    modalTitle.innerHTML = '<i class="fas fa-edit mr-1"></i> ፋይል አርትዕ';
-    submitBtn.innerHTML  = '<i class="fas fa-save mr-1"></i> አዘምን';
+    modalTitle.innerHTML = '<i class="fas fa-edit mr-1"></i> ፋይል አያይዝ';
+    submitBtn.innerHTML  = '<i class="fas fa-save mr-1"></i> አስተካክል';
 
     // የነበረውን የምስክር ወረቀት አይነት ዝርዝር ውስጥ ፈልጎ መምረጥ (Select)
     if (certTypeSelect) {

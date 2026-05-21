@@ -212,6 +212,21 @@ function myAsset($path) {
      <script src="<?= myAsset('js/employee-debt-suspenssion.js') ?>"></script>
     <?php endif; ?>
 
+    <?php if (isset($is_report_page) && $is_report_page === true): ?>
+    <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
+    <script src="plugins/jquery-validation/additional-methods.min.js"></script>
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
+     <script src="<?= myAsset('js/report-page.js') ?>"></script>
+    <?php endif; ?>
+
+ <?php if (isset($is_report_view_page) && $is_report_view_page === true): ?>
+    <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
+    <script src="plugins/jquery-validation/additional-methods.min.js"></script>
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
+     <script src="<?= myAsset('js/report-view.js') ?>"></script>
+    <?php endif; ?>
+
+
     <?php if ($_SESSION['user']['role']==='hr_director'): ?>
     <script nonce="<?php echo $GLOBALS['nonce']; ?>">const BASE_URL = "<?= '/HRM' ?>"; // or use $_ENV['BASE_URL'] if you have .env</script>
    <script nonce="<?php echo $GLOBALS['nonce']; ?>">
