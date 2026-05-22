@@ -341,9 +341,13 @@ public function getOnboardingEmployees(string $organizationId, string $branchId)
     $stmt = $this->db->prepare($sql);
     return $stmt->execute([$uuid]);
 }
-public function autoSearch(string $term, string $branchId) {
+public function autoSearch(string $term, string $branchId, string $source = null) {
     $cleanTerm = AmharicNormalizer::normalize($term);
 
+    // Determine the status condition based on the source
+    $statusCondition = ($source === 'onleave') ? "e.status = 'Active'" : "e.status != 'Onboarding'";
+
+    // The query follows the order: branch_id, then status, then is_deleted
     $sql = "SELECT 
                 e.uuid, 
                 e.first_name, 
@@ -354,8 +358,8 @@ public function autoSearch(string $term, string $branchId) {
                 e.deletion_source
             FROM employees_table e
             WHERE e.branch_id = ? 
+            AND $statusCondition
             AND e.is_deleted != 2
-            AND e.status != 'Onboarding'
             AND e.full_name_normalized LIKE ? 
            LIMIT 10";
 
@@ -364,7 +368,6 @@ public function autoSearch(string $term, string $branchId) {
     
     return $stmt->fetchAll(\PDO::FETCH_ASSOC);
 }
-
 // ================================================================
     // STAGE 1 — Officer requests deletion
     // ================================================================

@@ -73,6 +73,8 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
             'Study Leave'         => 'በት/ት ላይ',
             'Onboarding'       => 'ምዝገባ ላይ',
             'Study Leave Pending' => 'የት/ት እድል ያገኙ',
+            'On Leave'         => 'እረፍት ላይ',
+            'On Leave Pending' => 'የእረፍት የጠየቁ',
             default            => $status,
         });
         ?>

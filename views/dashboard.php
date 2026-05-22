@@ -47,7 +47,7 @@ $role = $_SESSION['user']['role'] ?? '';
           <div class="report-type-card card card-outline card-info h-100 shadow-sm" style="border-radius: 12px;">
             <div class="card-body text-center py-4 d-flex flex-column align-items-center justify-content-center position-relative">
               <span class="badge badge-info float-right position-absolute px-2 py-1" style="top: 12px; right: 12px; font-size: 11px; border-radius: 20px;">
-             Users
+                <?= number_format($total_users) ?> Total
               </span>
               <i class="fas fa-users-cog fa-2x text-info mb-3 mt-2"></i>
               <h6 class="font-weight-bold mb-1" style="color: #1a365d; font-size: 15px;">ጠቅላላ ተጠቃሚዎች</h6>
