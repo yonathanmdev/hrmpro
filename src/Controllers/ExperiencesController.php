@@ -28,8 +28,32 @@ class ExperiencesController extends BaseController {
             'employee' => $employee
         ]);
     }  
+public function showExperienceLetter($params = []){
+    AuthHelper::checkRole(['hr_director', 'hr_officer']);
+    
+    $employee_uuid = $params['uuid'] ?? $_GET['uuid'] ?? null;
+    $branch_id = $_SESSION['user']['branch_id'] ?? null;
+    
+    if (!$branch_id) {
+        $_SESSION['error'] = "የቅርንጫፍ መረጃ አልተገኘም!";
+        header("Location: " . $_ENV['BASE_URL'] . "/register-director");
+        exit();
+    }
+    
+    $experienceModel = new ExperienceModel($this->db);
+    $experiences = $experienceModel->getEmployeeExperiences($employee_uuid);
+    $employeeModel = new EmployeeRegistration($this->db);
+    $employee = $employeeModel->getEmployeeByUuid($employee_uuid);
 
-public function employeeSearch() {
+    // 🆕 Using renderPrintable to avoid Header/Footer
+    $this->renderPrintable('employee-experience-letter', [
+        'title'       => 'የስራ ልምድ ደብዳቤ',
+        'experiences' => $experiences,
+        'employee'    => $employee,
+        'isPrint'     => true // Flag to handle print-specific logic in the view
+    ]);
+}
+    public function employeeSearch() {
     // 1. ማንኛውንም ቀድሞ የወጣ Output (Warning/Notice) ለማጽዳት
     if (ob_get_length()) ob_clean();
 

@@ -74,6 +74,7 @@ return [
     'employee-experience-store' => ['ExperiencesController', 'storeExperience', true],
     'employee-experience-show' => ['ExperiencesController', 'getExperienceById', true],
     'employee-experience-update' => ['ExperiencesController', 'updateExperience', true],
+    'employee-experience-letter' => ['ExperiencesController', 'showExperienceLetter', true],
     'employee-experience-delete' => ['ExperiencesController', 'delete', true],
     
     // File Management

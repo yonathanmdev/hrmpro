@@ -341,7 +341,7 @@ public function getOnboardingEmployees(string $organizationId, string $branchId)
     $stmt = $this->db->prepare($sql);
     return $stmt->execute([$uuid]);
 }
-public function autoSearch(string $term, string $branchId, string $source = null) {
+public function autoSearch(string $term, string $branchId, ?string $source = null) {
     $cleanTerm = AmharicNormalizer::normalize($term);
 
     // Determine the status condition based on the source
