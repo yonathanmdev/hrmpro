@@ -34,3 +34,13 @@ function exportCSV() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+document.addEventListener('DOMContentLoaded', function() {
+        const printBtn = document.getElementById('printGenderReportBtn');
+        
+        if (printBtn) {
+            printBtn.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevents the "#" from jumping the page
+                window.print();         // Triggers the browser print dialog
+            });
+        }
+    });

@@ -48,4 +48,19 @@ class BaseController {
         require_once $footerPath;
     }
 }
+
+/**
+ * ቪው ፋይሎችን ያለ ሄደር እና ፉተር ለህትመት ወይም ለፖፕ-አፕ ለማሳየት
+ */
+protected function renderPrintable($viewName, $data = []) {
+    extract($data);
+    
+    $viewPath = __DIR__ . "/../../views/" . $viewName . ".php";
+
+    if (file_exists($viewPath)) {
+        require_once $viewPath;
+    } else {
+        die("ስህተት: የህትመት ቪው ፋይል አልተገኘም: " . $viewPath);
+    }
+}
 }

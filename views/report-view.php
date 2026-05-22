@@ -42,9 +42,9 @@ $totalCount  = $genderSummary['total_count'] ?? ($maleCount + $femaleCount);
       </small>
     </div>
     <div>
-      <a href="javascript:window.print()" class="btn btn-secondary btn-sm mr-1" style="color: white; text-decoration: none;">
-        <i class="fas fa-print mr-1"></i> አትም (Print)
-      </a>
+      <a href="#" id="printGenderReportBtn" class="btn btn-sm btn-success mr-2">
+    <i class="fas fa-print mr-1"></i> አትም
+</a>
       <a href="javascript:window.print()" class="btn btn-danger btn-sm" style="color: white; text-decoration: none;">
         <i class="fas fa-file-pdf mr-1"></i> በ PDF አስቀምጥ
       </a>
