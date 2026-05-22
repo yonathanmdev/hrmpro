@@ -32,21 +32,21 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
               <div class="card-body text-center py-4">
                 <i class="fas fa-users fa-2x text-primary mb-2"></i>
                 <h6 class="font-weight-bold mb-1">የሰራተኞች ጥቅል ሪፖርት</h6>
-                <small class="text-muted">ሪፖርት በጾታ</small>
+                <small class="text-muted">ሪፖርት በጾታና በቅጥር ሁኔታ</small>
               </div>
             </div>
           </div>
 
-          <!-- 2. የደመወዝ ሪፖርት -->
+          <!-- 2. የትምህርት ደረጃ ሪፖርት -->
           <div class="col-md-4 col-sm-6 mb-3">
             <div class="report-type-card card card-outline card-success h-100"
-                 data-report="payroll"
+                 data-report="education"
                  data-branch="<?= htmlspecialchars($branch_id) ?>"
                  style="cursor:pointer;">
               <div class="card-body text-center py-4">
                 <i class="fas fa-money-bill-wave fa-2x text-success mb-2"></i>
-                <h6 class="font-weight-bold mb-1">የደሞዝ ሪፖርት</h6>
-                <small class="text-muted">ወርሃዊ የደሞዝ ክፍያ ሪፖርት</small>
+                <h6 class="font-weight-bold mb-1">የትምህርት ደረጃ ሪፖርት</h6>
+                <small class="text-muted">የትምህርት ደረጃ በጾታ</small>
               </div>
             </div>
           </div>

@@ -6,102 +6,83 @@ use App\Helpers\AuthHelper;
 
 class ReportController extends BaseController {
     
-    // Column definitions
+    // የሪፖርት አምዶች ዝርዝር
     private array $reportColumns = [
-        // 🆕 'ፆታ' የሚለውን አምድ እዚህ ላይ ጨምረነዋል
-        'employees'   => ['#', 'ሙሉ ስም', 'ፆታ', 'ዲፓርትመንት', 'ቦታ', 'የተቀጠሩበት ቀን'],
+        'employees'   => ['#', 'ሙሉ ስም', 'ፆታ', 'የቅጥር ሁኔታ', 'የተቀጠሩበት ቀን'],
         'payroll'     => ['#', 'ሙሉ ስም', 'ፆታ', 'ዲፓርትመንት', 'የተቀጠሩበት ቀን'],
+        'education'   => ['#', 'ሙሉ ስም', 'ፆታ', 'የቅጥር ሁኔታ', 'የተቀጠሩበት ቀን'], 
     ];
 
-    // Report Titles
+    // የሪፖርት ርዕሶች ዝርዝር
     private array $reportTitles = [
-        'employees'   => 'የሰራተኞች ዝርዝር ሪፖርት',
-        'payroll'     => 'የደመወዝ ሪፖርት',
+        'employees'   => 'የሰራተኞች ብዛት ማጠቃለያ ሪፖርት (በፆታ እና ቅጥር ሁኔታ)',
+        'payroll'     => 'የደመወዝ ሪፖርት ማጠቃለያ',
+        'education'   => 'የሰራተኞች የትምህርት ደረጃ ማጠቃለያ ሪፖርት', 
     ];
 
-    /**
-     * 🆕 ከ index.php የሚመጣውን የ $params አደራደር ተቀብሎ የሚያስተናግድ ዋና ተግባር
-     */
     public function handleReport(array $params = []) {
-        // ሁለተኛው segment ($params['uuid']) ባዶ ከሆነ መደበኛውን የካርድ ገጽ አሳይ
         if (empty($params['uuid'])) {
             $this->showReportCards();
         } else {
-            // ሁለተኛው segment ካለው ወደ ሪፖርት ማሳያው ገጽ መምራት
             $this->generateReportView($params);
         }
     }
 
-    /**
-     * መደበኛውን የሪፖርት መምረጫ ካርዶች ገጽ ያሳያል (የድሮው showReport)
-     */
     private function showReportCards() {
         AuthHelper::checkRole(['hr_director', 'hr_officer']);
-        
         $branch_id = $_SESSION['user']['branch_id'] ?? null;
         if (!$branch_id) {
             $_SESSION['error'] = "የቅርንጫፍ መረጃ አልተገኘም!";
             header("Location: " . $_ENV['BASE_URL'] . "/report");
             exit();
         }
-
         $this->render('report', [
             'title'    => 'Report Generation',
-            'branchId' => $branch_id // ለጃቫስክሪፕቱ ካርድ መገንቢያ እንዲጠቅም
+            'branchId' => $branch_id
         ]);
     }  
 
-    /**
-     * 🆕 ንጹሑን URL ሰባብሮ የ report-view.php ገጽን በአዲስ ታብ ይከፍታል
-     */
     private function generateReportView(array $params) {
         AuthHelper::checkRole(['hr_director', 'hr_officer']);
 
-        // URL መዋቅር: report/{reportType}/{branchId}
-        // index.php segment አከፋፈል: $params['uuid'] = 2ኛ segment, $params['record_id'] = 3ኛ segment
-        $reportType = $params['uuid']      ?? ''; // ምሳሌ: employees
-        $branchId   = $params['record_id'] ?? ''; // ምሳሌ: 87667f3a-4fe5-...
+        $reportType = $params['uuid']      ?? ''; 
+        $branchId   = $params['record_id'] ?? ''; 
 
-        // የደህንነት ማረጋገጫ (Validation)
+        // የደህንነት ማረጋገጫ መከላከያ መስመር
         if (!$this->isValidUuid($branchId) || !array_key_exists($reportType, $this->reportColumns)) {
             die('የማይፈቀድ ቅርንጫፍ ወይም የሪፖርት አይነት።');
         }
 
-        // ማጣሪያዎች (Filters - ከቅጹ ላይ በ GET የሚመጡ)
-        
         $filters = [
             'from'       => $_GET['from']       ?? null,
             'to'         => $_GET['to']         ?? null,
             'department' => $_GET['department'] ?? null,
         ];
 
-        // ከዳታቤዝ መረጃ ማምጣት
         $model = new ReportModel($this->db);
         $data  = $model->getReport($reportType, $branchId, $filters);
         
-        // 🆕 የወንድ እና የሴት ብዛት ስታቲስቲክስን ከሞዴሉ ማምጣት
+        // ከሞዴሉ የፆታ፣ የቅጥር እና የብራንች ስም መረጃዎችን ማምጣት
         $genderSummary = $model->getGenderCounts($branchId, $filters);
         
-        // ማጣሪያው ላይ ለመጠቀም የዲፓርትመንት ዝርዝር
         $departments = method_exists($model, 'getDepartments') ? $model->getDepartments($branchId) : [];
 
-        // የሪፖርት ገጹን (HTML) ሬንደር ማድረግ
-        // 🆕 'genderSummary' የሚለውን አሬይ ወደ ቪው ፋይሉ አሳልፈነዋል
-        $this->render('report-view', [
+        // 🔄 ሎጂክ፦ የሪፖርቱን አይነት አይቶ ወደ ተለያዩ የቪው ፋይሎች መምሪያ
+        // 'education' ከሆነ -> report_education.php ን ይከፍታል፤ ካልሆነ -> report-view.php ን ይከፍታል
+        $viewName = ($reportType === 'education') ? 'report_education' : 'report-view';
+
+        $this->render($viewName, [
             'reportTitle'   => $this->reportTitles[$reportType],
             'reportType'    => $reportType,
             'branchId'      => $branchId,
             'columns'       => $this->reportColumns[$reportType],
             'data'          => $data,
             'departments'   => $departments,
-            'genderSummary' => $genderSummary 
+            'genderSummary' => $genderSummary
         ]);
     }
 
     private function isValidUuid(string $uuid): bool {
-        return (bool) preg_match(
-            '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
-            $uuid
-        );
+        return (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uuid);
     }
 }
