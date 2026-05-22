@@ -25,7 +25,7 @@ $is_anual_rest_registration = true; ?>
   <tr>
     <th>#</th>
     <th>የስራ መደብ</th>
-    <th>በጀት አመት</th>
+    <th>በጀት</th>
     <th>የአመት እረፍት ብዛት (በቀን)</th>     <!-- ← new -->
     <th>ሁኔታ</th>
     <th>Actions</th>
