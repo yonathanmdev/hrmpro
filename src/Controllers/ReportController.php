@@ -8,8 +8,9 @@ class ReportController extends BaseController {
     
     // Column definitions
     private array $reportColumns = [
-        'employees'   => ['#', 'ሙሉ ስም', 'ዲፓርትመንት', 'ቦታ', 'የተቀጠሩበት ቀን'],
-        'payroll'     => ['#', 'ሙሉ ስም', 'ዲፓርትመንት', 'የተቀጠሩበት ቀን'],
+        // 🆕 'ፆታ' የሚለውን አምድ እዚህ ላይ ጨምረነዋል
+        'employees'   => ['#', 'ሙሉ ስም', 'ፆታ', 'ዲፓርትመንት', 'ቦታ', 'የተቀጠሩበት ቀን'],
+        'payroll'     => ['#', 'ሙሉ ስም', 'ፆታ', 'ዲፓርትመንት', 'የተቀጠሩበት ቀን'],
     ];
 
     // Report Titles
@@ -67,6 +68,7 @@ class ReportController extends BaseController {
         }
 
         // ማጣሪያዎች (Filters - ከቅጹ ላይ በ GET የሚመጡ)
+        
         $filters = [
             'from'       => $_GET['from']       ?? null,
             'to'         => $_GET['to']         ?? null,
@@ -77,17 +79,22 @@ class ReportController extends BaseController {
         $model = new ReportModel($this->db);
         $data  = $model->getReport($reportType, $branchId, $filters);
         
+        // 🆕 የወንድ እና የሴት ብዛት ስታቲስቲክስን ከሞዴሉ ማምጣት
+        $genderSummary = $model->getGenderCounts($branchId, $filters);
+        
         // ማጣሪያው ላይ ለመጠቀም የዲፓርትመንት ዝርዝር
         $departments = method_exists($model, 'getDepartments') ? $model->getDepartments($branchId) : [];
 
         // የሪፖርት ገጹን (HTML) ሬንደር ማድረግ
+        // 🆕 'genderSummary' የሚለውን አሬይ ወደ ቪው ፋይሉ አሳልፈነዋል
         $this->render('report-view', [
-            'reportTitle' => $this->reportTitles[$reportType],
-            'reportType'  => $reportType,
-            'branchId'    => $branchId,
-            'columns'     => $this->reportColumns[$reportType],
-            'data'        => $data,
-            'departments' => $departments
+            'reportTitle'   => $this->reportTitles[$reportType],
+            'reportType'    => $reportType,
+            'branchId'      => $branchId,
+            'columns'       => $this->reportColumns[$reportType],
+            'data'          => $data,
+            'departments'   => $departments,
+            'genderSummary' => $genderSummary 
         ]);
     }
 
