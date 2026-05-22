@@ -6,12 +6,20 @@ $is_exprience_registration_page = true; ?>
     <div class="card shadow-sm border-0">
 
       <!-- Header -->
+<!-- Header -->
 <div class="card-header bg-white d-flex align-items-center justify-content-between card-primary card-outline py-2">
     <h6 class="m-0 font-weight-bold text-dark">
     <?= htmlspecialchars(trim(($employee['first_name'] ?? '') . ' ' . ($employee['father_name'] ?? ''))) ?> የስራ ልምድ
     </h6>
     
     <div class="ml-auto">
+        <!-- New Generate Button -->
+        <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-experience-letter/<?= htmlspecialchars($employee['uuid']) ?>" 
+           class="btn btn-sm btn-success mr-2" target="_blank">
+            <i class="fas fa-file-pdf mr-1"></i> የስራ ልምድ ደብዳቤ አውጣ
+        </a>
+
+        <!-- Original Add Button -->
         <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#addExperienceModal">
             <i class="fas fa-plus mr-1"></i> የስራ ልምድ መዝግብ
         </button>

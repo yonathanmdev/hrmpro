@@ -276,7 +276,7 @@ $initials       = $first_initial . $father_initial ?: 'GU';
     <a href="javascript:void(0)" class="nav-link">
         <i class="nav-icon fas fa-edit"></i>
         <p>
-            On Leave
+            እረፍት
             <i class="fas fa-angle-left right"></i>
         </p>
     </a>
@@ -285,7 +285,7 @@ $initials       = $first_initial . $father_initial ?: 'GU';
             <!-- This link triggers the modal by ID -->
             <a href="javascript:void(0)" class="nav-link" data-toggle="modal" data-target="#employeeSearchModal" data-source="onleave">
                 <i class="far fa-circle nav-icon"></i>
-                <p>መመዝገብ/መረጃ</p>
+                <p>መመዝገብ</p>
             </a>
         </li>
     </ul>

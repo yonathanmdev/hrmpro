@@ -20,6 +20,7 @@ class DashboardController extends BaseController {
         $total_employees     = 0;
         $onleave_employees   = 0;
         $studyleave_employees = 0;
+        $total_users         = 0;
         $active_users        = 0;
         $total_branches       = 0; // New dynamic counter container
 
@@ -27,8 +28,10 @@ class DashboardController extends BaseController {
         if ($role === 'system_admin' || $role === 'org_admin') {
             $userModel    = new User($this->db);
             $branchModel  = new Branch($this->db);
+            $total_users   = $userModel->getTotalUsersCount($branch_id);
             $active_users = $userModel->getActiveUsersCount($branch_id);
             $total_branches = $branchModel->getTotalBranchesCount($branch_id);
+
         }
         
         // 2. Check for HR Roles (HR Director or HR Officer)
@@ -48,6 +51,7 @@ class DashboardController extends BaseController {
             'onleave_employees'    => $onleave_employees,
             'studyleave_employees' => $studyleave_employees,
             'total_branches'       => $total_branches,
+            'total_users'         => $total_users,
             'active_users'         => $active_users
         ];
 

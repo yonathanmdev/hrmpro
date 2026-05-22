@@ -38,6 +38,7 @@ public function employeeSearch() {
     AuthHelper::checkRole(['hr_director', 'hr_officer']);
     
     $term = $_GET['query'] ?? '';
+    $source = $_GET['source'] ?? '';
     $branchId = $_SESSION['user']['branch_id'] ?? null;
 
     // 3. Headerን ቀድሞ መላክ (ለደህንነት)
@@ -51,7 +52,7 @@ public function employeeSearch() {
     try {
         
         $employeeModel = new EmployeeRegistration($this->db);
-        $results = $employeeModel->autoSearch($term, $branchId);
+        $results = $employeeModel->autoSearch($term, $branchId,  $source);
 
         // 4. ውጤቱን መላክ
         echo json_encode($results);

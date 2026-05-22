@@ -58,7 +58,7 @@ class AuthController extends BaseController {
     } else {
         // Fallback defaults for system-wide/global administrators
         $_SESSION['user']['branch_name']     = 'ዋናው መስሪያ ቤት (Headquarters)';
-        $_SESSION['user']['alt_name'] = 'WARKA HUB';
+        $_SESSION['user']['alt_name'] = null;
         $_SESSION['user']['logo_url'] = null; // Dashboard code falls back to icon cleanly
     }     
 // Log successful login
