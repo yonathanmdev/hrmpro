@@ -19,11 +19,11 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
 
       <div class="card-body">
 
-        <p class="text-muted mb-3">የሚፈልጉትን ሪፖርት ዓይነት ይምረጡ — በአዲስ ትር ይከፈታል።</p>
+        <p class="text-muted mb-3">የሚፈልጉትን ሪፖርት ዓይነት ይምረጡ — በአዲስ ታብ ይከፈታል።</p>
 
         <div class="row">
 
-          <!-- 1. የሰራተኞች ዝርዝር -->
+          <!-- 1. የሰራተኞች ሪፖርት -->
           <div class="col-md-4 col-sm-6 mb-3">
             <div class="report-type-card card card-outline card-primary h-100"
                  data-report="employees"
@@ -31,13 +31,13 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                  style="cursor:pointer;">
               <div class="card-body text-center py-4">
                 <i class="fas fa-users fa-2x text-primary mb-2"></i>
-                <h6 class="font-weight-bold mb-1">የሰራተኞች ዝርዝር</h6>
-                <small class="text-muted">ሁሉም ሰራተኞች ዝርዝር ሪፖርት</small>
+                <h6 class="font-weight-bold mb-1">የሰራተኞች ጥቅል ሪፖርት</h6>
+                <small class="text-muted">ሪፖርት በጾታ</small>
               </div>
             </div>
           </div>
 
-          <!-- 2. የደሞዝ ሪፖርት -->
+          <!-- 2. የደመወዝ ሪፖርት -->
           <div class="col-md-4 col-sm-6 mb-3">
             <div class="report-type-card card card-outline card-success h-100"
                  data-report="payroll"
