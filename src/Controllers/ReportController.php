@@ -11,13 +11,17 @@ class ReportController extends BaseController {
         'employees'   => ['#', 'ሙሉ ስም', 'ፆታ', 'የቅጥር ሁኔታ', 'የተቀጠሩበት ቀን'],
         'payroll'     => ['#', 'ሙሉ ስም', 'ፆታ', 'ዲፓርትመንት', 'የተቀጠሩበት ቀን'],
         'education'   => ['#', 'ሙሉ ስም', 'ፆታ', 'የቅጥር ሁኔታ', 'የተቀጠሩበት ቀን'], 
-    ];
+        'age'         => ['ተ.ቁ', 'ዕድሜ ክልል', 'ቋሚ ወንድ', 'ቋሚ ሴት', 'ቋሚ ድምር', 'ጊዜያዊ ወንድ', 'ጊዜያዊ ሴት', 'ጊዜያዊ ድምር', 'ጠቅላላ ወንድ', 'ጠቅላላ ሴት', 'ጠቅላላ ድምር'], 
+        'level'       => ['ተ.ቁ', 'የስራ ደረጃ', 'ቋሚ ወንድ', 'ቋሚ ሴት', 'ቋሚ ድምር', 'ጊዜያዊ ወንድ', 'ጊዜያዊ ሴት', 'ጊዜያዊ ድምር', 'ጠቅላላ ወንድ', 'ጠቅላላ ሴት', 'ጠቅላላ ድምር'],
+        ];
 
     // የሪፖርት ርዕሶች ዝርዝር
     private array $reportTitles = [
         'employees'   => 'የሰራተኞች ብዛት ማጠቃለያ ሪፖርት (በፆታ እና ቅጥር ሁኔታ)',
         'payroll'     => 'የደመወዝ ሪፖርት ማጠቃለያ',
         'education'   => 'የሰራተኞች የትምህርት ደረጃ ማጠቃለያ ሪፖርት', 
+        'age'         => 'የሰራተኞች ብዛት ማጠቃለያ ሪፖርት በዕድሜ ክልል', 
+        'level'     => 'የሠራተኞች ብዛት በስራ ደረጃ እና በፆታ ማጠቃለያ ሪፖርት',
     ];
 
     public function handleReport(array $params = []) {
@@ -67,16 +71,24 @@ class ReportController extends BaseController {
         
         $departments = method_exists($model, 'getDepartments') ? $model->getDepartments($branchId) : [];
 
-        // 🔄 ሎጂክ፦ የሪፖርቱን አይነት አይቶ ወደ ተለያዩ የቪው ፋይሎች መምሪያ
-        // 'education' ከሆነ -> report_education.php ን ይከፍታል፤ ካልሆነ -> report-view.php ን ይከፍታል
-        $viewName = ($reportType === 'education') ? 'report_education' : 'report-view';
+        // 🔄 ሎጂክ ማስተካከያ፦ የሪፖርቱን አይነት አይቶ ወደ ተገቢው የቪው ፋይል መምሪያ
+        if ($reportType === 'education') {
+            $viewName = 'report_education';
+        } elseif ($reportType === 'age') {
+            $viewName = 'report_age';
+        } elseif ($reportType === 'level') {
+            $viewName = 'report_level'; // 👈 ይህ አዲስ የተጨመረው መስመር ነው!
+        } else {
+            $viewName = 'report-view';
+        }
 
         $this->render($viewName, [
             'reportTitle'   => $this->reportTitles[$reportType],
             'reportType'    => $reportType,
             'branchId'      => $branchId,
             'columns'       => $this->reportColumns[$reportType],
-            'data'          => $data,
+            'reportData'    => $data, // 💡 ከ report_age.php ጋር እንዲናበብ 'reportData' ተብሎ ተቀምጧል
+            'data'          => $data, // ለድሮዎቹ ሪፖርቶችህ ሲባል 'data' የሚለውም እንዳለ ተትቷል
             'departments'   => $departments,
             'genderSummary' => $genderSummary
         ]);
