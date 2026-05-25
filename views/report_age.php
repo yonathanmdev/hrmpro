@@ -31,17 +31,17 @@ $grand_all = 0;
 
   <table border="1" cellspacing="0" cellpadding="10" style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; border: 1px solid #aaa;">
     <thead>
-      <tr style="background-color: #6c757d; color: white;">
+      <tr style="background-color: #e2e3e5; color: black;">
         <th rowspan="3" style="text-align: center; border: 1px solid #5a6268;">ተ.ቁ</th>
         <th rowspan="3" style="text-align: center; border: 1px solid #5a6268;">የዕድሜ ክልል</th>
         <th colspan="6" style="text-align: center; border: 1px solid #5a6268;">ሠራተኞች በዕድሜ ክልል</th>
         <th rowspan="2" colspan="3" style="text-align: center; border: 1px solid #5a6268;">ጠቅላላ ድምር</th>
       </tr>
-      <tr style="background-color: #6c757d; color: white;">
+      <tr style="background-color: #e2e3e5; color: black;">
         <th colspan="3" style="text-align: center; border: 1px solid #5a6268;">ቋሚ</th>
         <th colspan="3" style="text-align: center; border: 1px solid #5a6268;">ጊዜያዊ /ኮንትራት/</th>
       </tr>
-      <tr style="background-color: #6c757d; color: white;">
+      <tr style="background-color: #e2e3e5; color: black;">
         <th style="text-align: center; border: 1px solid #5a6268;">ወንድ</th>
         <th style="text-align: center; border: 1px solid #5a6268;">ሴት</th>
         <th style="text-align: center; border: 1px solid #5a6268;">ድምር</th>

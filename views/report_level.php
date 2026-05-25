@@ -29,17 +29,17 @@ $levelLabels = [
 
   <table border="1" cellspacing="0" cellpadding="10" style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; border: 1px solid #aaa;">
     <thead>
-      <tr style="background-color: #6c757d; color: white;">
+     <tr style="background-color: #e2e3e5; color: black;">
         <th rowspan="3" style="text-align: center; border: 1px solid #5a6268;">ተ.ቁ</th>
         <th rowspan="3" style="text-align: center; border: 1px solid #5a6268;">የስራ ደረጃ</th>
         <th colspan="6" style="text-align: center; border: 1px solid #5a6268;">ጠቅላላ ያሉ ሠራተኞች ብዛት በስራ ደረጃ እና በፆታ</th>
         <th rowspan="2" colspan="3" style="text-align: center; border: 1px solid #5a6268;">ጠቅላላ ያሉ የቢሮው ሠራተኞች በስራ ደረጃ</th>
       </tr>
-      <tr style="background-color: #6c757d; color: white;">
+      <tr style="background-color: #e2e3e5; color: black;">
         <th colspan="3" style="text-align: center; border: 1px solid #5a6268;">ቋሚ</th>
         <th colspan="3" style="text-align: center; border: 1px solid #5a6268;">ጊዜያዊ</th>
       </tr>
-      <tr style="background-color: #6c757d; color: white;">
+      <tr style="background-color: #e2e3e5; color: black;">
         <th style="text-align: center; border: 1px solid #5a6268;">ወንድ</th>
         <th style="text-align: center; border: 1px solid #5a6268;">ሴት</th>
         <th style="text-align: center; border: 1px solid #5a6268;">ድምር</th>

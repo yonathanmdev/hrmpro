@@ -14,13 +14,14 @@ class ReportModel {
   // ─── 🔄 የሪፖርት አይነቶችን ወደየፈንክሽናቸው መምሪያ ───────────────────
   public function getReport(string $type, string $branchId, array $filters = []): array {
     return match($type) {
-      'employees' => $this->getEmployees($branchId, $filters),
-      'education' => $this->getEducationSummary($branchId, $filters),
-      'age'       => $this->getAgeSummary($branchId, $filters),
-      'level'     => $this->getLevelSummary($branchId, $filters),
-      'payroll'   => $this->getPayroll($branchId, $filters),
-      'despline'  => $this->getDisciplineSummary($branchId, $filters), // 💡 አዲስ የተጨመረ
-      default     => [],
+      'employees'   => $this->getEmployees($branchId, $filters),
+      'education'   => $this->getEducationSummary($branchId, $filters),
+      'age'         => $this->getAgeSummary($branchId, $filters),
+      'level'       => $this->getLevelSummary($branchId, $filters),
+      'payroll'     => $this->getPayroll($branchId, $filters),
+      'discipline'  => $this->getDisciplineSummary($branchId, $filters),
+      'performance' => $this->getPerformanceSummary($branchId, $filters), 
+      default       => [],
     };
   }
 
@@ -62,7 +63,7 @@ class ReportModel {
     return $formattedData;
   }
 
-  // ─── 📊 የእድሜ ክልል ማጠቃለያ ኩዌሪ (Today - Birth_Date) ───────────────────
+  // ─── 📊 የእድሜ ክልል ማጠቃለያ ኩዌሪ ───────────────────
   private function getAgeSummary(string $branchId, array $filters): array {
     $sql = "SELECT 
                 CASE 
@@ -100,7 +101,7 @@ class ReportModel {
     return $formattedData;
   }
 
-  // ─── 📊 የስራ ደረጃ ማጠቃለያ ኩዌሪ (በ INNER JOIN የተስተካከለ) ───────────────────
+  // ─── 📊 የስራ ደረጃ ማጠቃለያ ኩዌሪ ───────────────────
   private function getLevelSummary(string $branchId, array $filters): array {
     $sql = "SELECT TRIM(j.dereja) AS job_level,
                 SUM(CASE WHEN TRIM(LOWER(e.employment_situation)) IN ('permanent', 'ቋሚ') AND TRIM(LOWER(e.sex)) IN ('male', 'm', 'ወንድ') THEN 1 ELSE 0 END) as permanent_male,
@@ -114,7 +115,6 @@ class ReportModel {
     $params = [$branchId];
     if (!empty($filters['from'])) { $sql .= " AND e.date_of_employed >= ?"; $params[] = $filters['from']; }
     if (!empty($filters['to'])) { $sql .= " AND e.date_of_employed <= ?"; $params[] = $filters['to']; }
-    
     $sql .= " GROUP BY TRIM(j.dereja)";
     
     $results = $this->query($sql, $params);
@@ -130,15 +130,17 @@ class ReportModel {
     return $formattedData;
   }
 
-  // ─── 📊 የዲሲፕሊን ሁኔታ ማጠቃለያ ኩዌሪ (አዲስ የተጨመረ) ───────────────────
+  // ─── 📊 የዲሲፕሊን ሁኔታ ማጠቃለያ ኩዌሪ ───────────────────
   private function getDisciplineSummary(string $branchId, array $filters): array {
+    // 🛠️ የተስተካከለ፦ የ CASE ቁልፎች ከቪው ማፒንግ ቁልፎች ጋር 100% እንዲገጣጠሙ ተደርገዋል
     $sql = "SELECT 
                 CASE 
                     WHEN TRIM(LOWER(e.displin_situation)) IN ('ንፁህ', 'የለም', 'ምንም', 'no punishment', 'clean', '') OR e.displin_situation IS NULL THEN 'no_discipline'
                     WHEN TRIM(LOWER(e.displin_situation)) LIKE '%15%' OR TRIM(LOWER(e.displin_situation)) LIKE '%ደመወዝ%' THEN 'salary_cut_15'
                     WHEN TRIM(LOWER(e.displin_situation)) LIKE '%ማስጠንቀቂያ%' OR TRIM(LOWER(e.displin_situation)) LIKE '%warning%' THEN 'warning'
                     WHEN TRIM(LOWER(e.displin_situation)) LIKE '%ዕገዳ%' OR TRIM(LOWER(e.displin_situation)) LIKE '%suspension%' THEN 'suspension'
-                    ELSE 'dismissal'
+                    WHEN TRIM(LOWER(e.displin_situation)) LIKE '%ስንብት%' OR TRIM(LOWER(e.displin_situation)) LIKE '%dismiss%' THEN 'dismissal'
+                    ELSE 'no_discipline'
                 END AS discipline_status,
                 SUM(CASE WHEN TRIM(LOWER(e.employment_situation)) IN ('permanent', 'ቋሚ') AND TRIM(LOWER(e.sex)) IN ('male', 'm', 'ወንድ') THEN 1 ELSE 0 END) as permanent_male,
                 SUM(CASE WHEN TRIM(LOWER(e.employment_situation)) IN ('permanent', 'ቋሚ') AND TRIM(LOWER(e.sex)) IN ('female', 'f', 'ሴት') THEN 1 ELSE 0 END) as permanent_female,
@@ -175,6 +177,73 @@ class ReportModel {
     }
     return $formattedData;
   }
+
+  // ─── 📊 የBSC የአፈጻጸም ማጠቃለያ ኩዌሪ (የተስተካከለ) ───────────────────
+private function getPerformanceSummary(string $branchId, array $filters): array {
+    // 📊 3ቱን ደረጃዎች ብቻ ታሳቢ ያደረገው እና GROUP BY ላይ አስተማማኝ የሆነው ኪውሪ
+    $sql = "SELECT 
+                CASE 
+                    -- 1. ከፍተኛ (High)
+                    WHEN TRIM(LOWER(e.level_of_effeciency)) LIKE '%እጅግ ከፍተኛ%' 
+                      OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%outstanding%'
+                      OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%ከፍተኛ%' 
+                      OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%very good%' THEN 'high'
+                    
+                    -- 2. መካከለኛ (Medium)
+                    WHEN TRIM(LOWER(e.level_of_effeciency)) LIKE '%መካከለኛ%' 
+                      OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%good%' THEN 'medium'
+                    
+                    -- 3. ዝቅተኛ (Low)
+                    WHEN TRIM(LOWER(e.level_of_effeciency)) LIKE '%ዝቅተኛ%' 
+                      OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%satisfactory%'
+                      OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%poor%'
+                      OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%እጅግ ዝቅተኛ%' THEN 'low'
+                    
+                    ELSE 'low'
+                END AS perf_status,
+                SUM(CASE WHEN TRIM(LOWER(e.employment_situation)) IN ('permanent', 'ቋሚ') AND TRIM(LOWER(e.sex)) IN ('male', 'm', 'ወንድ') THEN 1 ELSE 0 END) as permanent_male,
+                SUM(CASE WHEN TRIM(LOWER(e.employment_situation)) IN ('permanent', 'ቋሚ') AND TRIM(LOWER(e.sex)) IN ('female', 'f', 'ሴት') THEN 1 ELSE 0 END) as permanent_female,
+                SUM(CASE WHEN TRIM(LOWER(e.employment_situation)) IN ('temporary', 'contract', 'ጊዜያዊ', 'ኮንትራት') AND TRIM(LOWER(e.sex)) IN ('male', 'm', 'ወንድ') THEN 1 ELSE 0 END) as temporary_male,
+                SUM(CASE WHEN TRIM(LOWER(e.employment_situation)) IN ('temporary', 'contract', 'ጊዜያዊ', 'ኮንትራት') AND TRIM(LOWER(e.sex)) IN ('female', 'f', 'ሴት') THEN 1 ELSE 0 END) as temporary_female
+            FROM employees_table e 
+            WHERE e.branch_id = ? AND e.status = 'Active'";
+
+    $params = [$branchId];
+    if (!empty($filters['from'])) { $sql .= " AND e.date_of_employed >= ?"; $params[] = $filters['from']; }
+    if (!empty($filters['to'])) { $sql .= " AND e.date_of_employed <= ?"; $params[] = $filters['to']; }
+    
+    // 🔥 እዚህ ጋር ሙሉውን የ CASE መዋቅር በ GROUP BY ውስጥ መደገም አለበት (ለደህንነት)
+    $sql .= " GROUP BY 
+                CASE 
+                    WHEN TRIM(LOWER(e.level_of_effeciency)) LIKE '%እጅግ ከፍተኛ%' OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%outstanding%' OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%ከፍተኛ%' OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%very good%' THEN 'high'
+                    WHEN TRIM(LOWER(e.level_of_effeciency)) LIKE '%መካከለኛ%' OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%good%' THEN 'medium'
+                    WHEN TRIM(LOWER(e.level_of_effeciency)) LIKE '%ዝቅተኛ%' OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%satisfactory%' OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%poor%' OR TRIM(LOWER(e.level_of_effeciency)) LIKE '%እጅግ ዝቅተኛ%' THEN 'low'
+                    ELSE 'low'
+                END";
+
+    $results = $this->query($sql, $params);
+    
+    // 🔄 ከቪው (`report_performance.php`) ጋር 100% የሚገጥመው አዲሱ አደረጃጀት
+    $formattedData = [
+        'high'   => ['permanent_male' => 0, 'permanent_female' => 0, 'temporary_male' => 0, 'temporary_female' => 0],
+        'medium' => ['permanent_male' => 0, 'permanent_female' => 0, 'temporary_male' => 0, 'temporary_female' => 0],
+        'low'    => ['permanent_male' => 0, 'permanent_female' => 0, 'temporary_male' => 0, 'temporary_female' => 0]
+    ];
+
+    foreach ($results as $row) {
+        $status = $row['perf_status'];
+        if (isset($formattedData[$status])) {
+            $formattedData[$status] = [
+                'permanent_male'   => (int)$row['permanent_male'],
+                'permanent_female' => (int)$row['permanent_female'],
+                'temporary_male'   => (int)$row['temporary_male'],
+                'temporary_female' => (int)$row['temporary_female']
+            ];
+        }
+    }
+    
+    return $formattedData;
+}
 
   // ─── Payroll Query ───────────────────────────────────────────
   private function getPayroll(string $branchId, array $filters): array {
