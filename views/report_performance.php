@@ -7,19 +7,17 @@ $grand_p_m = 0; $grand_p_f = 0; $grand_p_t = 0;
 $grand_t_m = 0; $grand_t_f = 0; $grand_t_t = 0;
 $grand_all_m = 0; $grand_all_f = 0; $grand_total = 0;
 
-// ለዲሲፕሊን ማጠቃለያ የሚሆኑ የረድፍ መለያዎች
-$disciplineRows = [
-    'no_discipline' => 'በዲሲፕሊን ምንም የቅጣት ሪኮርድ የሌለባቸው',
-    'salary_cut_15' => 'እስከ 15 ቀን የሚደርስ የደመወዝ ቅጣት የተቀጡ',
-    'warning'       => 'የፅሁፍ ማስጠንቀቂያ የተሰጣቸው',
-    'suspension'    => 'ከስራ የታገዱ',
-    'dismissal'     => 'ከስራ የተሰናበቱ'
+// ለBSC አፈጻጸም ማጠቃለያ የሚሆኑ የረድፍ መለያዎች
+$performanceRows = [
+    'high'   => 'ከፍተኛ አፈጻጸም ያሳዩ (High)',
+    'medium' => 'መካከለኛ አፈጻጸም ያሳዩ (Medium/Average)',
+    'low'    => 'ዝቅተኛ አፈጻጸም ያሳዩ (Low)'
 ];
 ?>
 
 <div style="font-family: Arial, sans-serif; margin: 20px;">
   <h3 style="text-align: center; color: #333; font-weight: bold; margin-bottom: 5px;">
-    <?= htmlspecialchars($reportTitle ?? 'የቢሮው ሠራተኞች የዲሲፕሊን ሁኔታ ማጠቃለያ ሪፖርት') ?>
+    <?= htmlspecialchars($reportTitle ?? 'የሰራተኞች የBSC አፈጻጸም ምዘና ማጠቃለያ ሪፖርት') ?>
   </h3>
   
   <p style="text-align: center; font-size: 15px; color: #444; font-weight: bold; margin-bottom: 20px;">
@@ -33,7 +31,7 @@ $disciplineRows = [
   <?php if (!empty($_GET['from']) || !empty($_GET['to'])): ?>
     <p style="text-align: center; font-size: 13px; color: #666; margin-top: -15px; margin-bottom: 20px;">
       <?php if (!empty($_GET['from'])) echo "ከ " . htmlspecialchars($_GET['from']) . " "; ?>
-      <?php if (!empty($_GET['to'])) echo "እስከ " . htmlspecialchars($_GET['to']) . " "; ?> የተደረገ ቅጥር ማጠቃለያ
+      <?php if (!empty($_GET['to'])) echo "እስከ " . htmlspecialchars($_GET['to']) . " "; ?> የተመዘነ የአፈጻጸም ማጠቃለያ
     </p>
   <?php endif; ?>
 
@@ -41,9 +39,9 @@ $disciplineRows = [
     <thead>
       <tr style="background-color: #e2e3e5; color: black;">
         <th rowspan="3" style="text-align: center; width: 50px; border: 1px solid #5a6268;">ተ.ቁ</th>
-        <th rowspan="3" style="text-align: left; padding-left: 15px; border: 1px solid #5a6268;">የዲሲፕሊን የቅጣት ሁኔታዎች</th>
+        <th rowspan="3" style="text-align: left; padding-left: 15px; border: 1px solid #5a6268;">የአፈጻጸም ደረጃ</th>
         <th colspan="6" style="text-align: center; border: 1px solid #5a6268;">ጠቅላላ ያሉ ሠራተኞች ብዛት በቅጥር ሁኔታ እና በፆታ</th>
-        <th rowspan="2" colspan="3" style="text-align: center; border: 1px solid #5a6268;">ጠቅላላ የዲሲፕሊን ማጠቃለያ ድምር</th>
+        <th rowspan="2" colspan="3" style="text-align: center; border: 1px solid #5a6268;">ጠቅላላ የአፈጻጸም ማጠቃለያ ድምር</th>
       </tr>
       <tr style="background-color: #e2e3e5; color: black;">
         <th colspan="3" style="text-align: center; border: 1px solid #5a6268;">ቋሚ</th>
@@ -64,8 +62,8 @@ $disciplineRows = [
     <tbody>
       <?php 
       $index = 1;
-      foreach ($disciplineRows as $key => $label):
-          // ከዳታቤዝ የመጣውን መረጃ በጥንቃቄ መለየት (ባዶ ከሆነ 0 ይሆናል)
+      foreach ($performanceRows as $key => $label):
+          // ከዳታቤዝ የመጣውን መረጃ መለየት (ባዶ ከሆነ 0 ይሆናል) - ቁልፎቹ: high, medium, low
           $p_male   = isset($reportData[$key]['permanent_male'])   ? (int)$reportData[$key]['permanent_male']   : 0;
           $p_female = isset($reportData[$key]['permanent_female']) ? (int)$reportData[$key]['permanent_female'] : 0;
           $t_male   = isset($reportData[$key]['temporary_male'])   ? (int)$reportData[$key]['temporary_male']   : 0;
@@ -138,12 +136,10 @@ $disciplineRows = [
   .no-print { display: none !important; }
   body { background: white; color: black; padding: 0; margin: 0; }
   
-  /* ማተሚያ ላይ የሰንጠረዡ የራስጌ ቀለሞች እንዳይጠፉ መከላከያ */
   table { width: 100% !important; border-collapse: collapse; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   th { background-color: #6c757d !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   
-  /* በገጽ ቅያሪ ወቅት ሰንጠረዡ እንዳይቆራረጥ ማድረጊያ */
   tr { page-break-inside: avoid; break-inside: avoid; }
 }
 </style>
