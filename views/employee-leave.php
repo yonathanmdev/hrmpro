@@ -1,5 +1,6 @@
 <?php
 use App\Helpers\EthiopianDateHelper; 
+
 $is_anual_rest_registration = true; ?>
 <!-- ሰንጠረዥ እና ዋና ይዘት -->
 <section class="content">
@@ -24,7 +25,7 @@ $is_anual_rest_registration = true; ?>
                     <thead class="thead-light">
                         <tr>
                             <th>#</th>
-                            <th>የስራ መደብ</th>
+                            <th>ሙሉ ስም</th>
                             <th>በጀት</th>
                             <th>የአመት እረፍት ብዛት (በቀን)</th>
                             <th>ሁኔታ</th>
@@ -32,7 +33,38 @@ $is_anual_rest_registration = true; ?>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- ዳታው በሉፕ እዚህ ውስጥ ይገባል -->
+                      <?php if (!empty($anualRestData)): $no =0;?>
+                            <?php 
+                            $no = 1;
+                            foreach ( $anualRestData as $rest):
+                                 ?>
+                                <tr>
+                                    <td><?= $no++ ?></td>
+                                    <td><?= htmlspecialchars($employee['first_name'] ?? '') . ' ' . htmlspecialchars($employee['father_name'] ?? '') ?></td>
+                                    <td><?= htmlspecialchars($rest['budget_year'] ?? 'N/A') ?></td>
+                                    <td><?= htmlspecialchars($rest['restaamout'] ?? 'N/A') ?></td>
+                                    <td>
+                                        <?php 
+                                            $status = $rest['status'] ?? 'unknown';
+                                            $badgeClass = match ($status) {
+                                                'approved' => 'success',
+                                                'pending' => 'warning',
+                                                'rejected' => 'danger',
+                                                default => 'secondary',
+                                            };
+                                        ?>
+                                        <span class="badge badge-<?= $badgeClass ?>">
+                                            <?= ucfirst(htmlspecialchars($status)) ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <!-- Action buttons (e.g., Edit, Delete) can go here -->
+                                        <button class="btn btn-sm btn-info">Edit</button>
+                                        <button class="btn btn-sm btn-danger">Delete</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach;?>
+                           <?php endif;?>
                     </tbody> 
                 </table>
             </div>
@@ -47,7 +79,7 @@ $is_anual_rest_registration = true; ?>
     <div class="modal-dialog modal-md modal-dialog-centered" role="document">
         <div class="modal-content shadow-lg border-0">
             
-            <form id="addAnnualLeaveForm" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-leave-store" method="post">
+            <form id="addAnnualLeaveForm" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-rest-store" method="post">
                 
                 <!-- 1. Modal Header -->
                 <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6;">
@@ -60,7 +92,7 @@ $is_anual_rest_registration = true; ?>
                 </div>
 
                 <!-- 2. Modal Body -->
-                <div class="modal-body py-3">
+                <div class="modal-body py-3">   
                     <!-- ሰራተኛውን ለመለየት የሚረዳ ድብቅ አይዲ -->
                     <input type="hidden" name="employee_uuid" id="employee_uuid" value="<?= htmlspecialchars($employee['uuid'] ?? '') ?>">
 

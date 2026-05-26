@@ -8,5 +8,5 @@ return [
     'register-developer'         => ['TeddyController', 'showdeveloper', true],
     'register-dev-process'       => ['TeddybackendContoller', 'handleDeveloperRegistration', true],
     'employee-leave'             => ['EmployeeOnleaveController', 'showOnLeavePage', true],
-    'employee-leave-store'       => ['AnualRestController', 'create', true],
+    'employee-rest-store' => ['EmployeeOnleaveController', 'anualRestRegstration', true],
 ];
