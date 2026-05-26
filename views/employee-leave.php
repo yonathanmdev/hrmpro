@@ -2,7 +2,7 @@
 use App\Helpers\EthiopianDateHelper; 
 
 $is_anual_rest_registration = true; ?>
-<!-- ሰንጠረዥ እና ዋና ይዘት -->
+<!-- ሰንጠረዥ እና ዋና ይዘት gyugy- -->
 <section class="content">
     <div class="container-fluid">
         <div class="card shadow-sm border-0 card-primary card-outline">
@@ -32,7 +32,7 @@ $is_anual_rest_registration = true; ?>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody> 
                       <?php if (!empty($anualRestData)): $no =0;?>
                             <?php 
                             $no = 1;
