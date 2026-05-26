@@ -2,19 +2,106 @@
 namespace App\Controllers;
 use App\Models\EmployeeRegistration;
 use App\Helpers\AuthHelper;
-
+use Ramsey\Uuid\Uuid; 
+use App\Models\Anual_rest_Model;
 class EmployeeOnleaveController extends BaseController {
     
-    public function showOnLeavePage() {
- AuthHelper::checkRole(['hr_director', 'hr_officer']);
-        $branch_id = $_SESSION['user']['branch_id'] ?? null;
-        
-            $employeeModel        = new EmployeeRegistration($this->db);
-        // Pass everything to the view package template
-        $data = [
-            'title'                => 'HRM - የሰራተኞች እረፍት',
-        ];
+ public function showOnLeavePage($params = null) {
+    AuthHelper::checkRole(['hr_director', 'hr_officer']);
+    $branch_id = $_SESSION['user']['branch_id'] ?? null;
 
-        $this->render('employee-leave', $data);
+    // 1. Extract the UUID from the parameters passed by your router
+    $uuid = null;
+    if (is_array($params)) {
+        $uuid = $params['uuid'] ?? ($params[0] ?? null);
+    } elseif (is_string($params)) {
+        $uuid = $params;
     }
+
+    // Fallback: If your router doesn't automatically pass params, extract it from the URL path manually
+    if (empty($uuid)) {
+        $uriSegments = explode('/', trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'));
+        // If URL is /HRM/employee-leave/8a5192f8..., the UUID is the last segment
+        $uuid = end($uriSegments);
+    }
+
+
+    $employeeModel = new EmployeeRegistration($this->db);
+    $employee = $employeeModel->getEmployeeByUuid($uuid);
+    $featchbyid= new Anual_rest_Model($this->db);
+    $anualRestData = $featchbyid->featchbyid($uuid);
+    
+    if (!$employee) {
+        header("Location: /HRM/dashboard?error=employee_not_found");
+        exit;
+    }
+
+    // 3. Inject the data into the array so the view can see it
+
+    $this->render('employee-leave', [
+        'title'         => 'HRM - የሰራተኞች እረፍት',        // Pass raw UUID string
+        'employee'      => $employee,         // Pass entire employee array dataset
+        'anualRestData' => $anualRestData     // Pass annual rest data
+    ]);
 }
+    public function anualRestRegstration() {
+    AuthHelper::checkRole(['hr_director', 'hr_officer']);
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+         $budget_year = $_POST['budget_year'] ?? null;
+         $leave_days = $_POST['leave_days'] ?? null;
+         $employee_UUID = $_POST['employee_uuid'] ?? null;
+         $registeredBy    = $_SESSION['user']['id']              ?? null;
+        // ✅ Fix — null when cloth disabled or empty
+        
+       // $organization_id = $_SESSION['user']['organization_id'] ?? null;
+       // $branch_id       = $_SESSION['user']['branch_id']       ?? null;
+        
+    }
+
+    if (empty($budget_year) || empty($leave_days) || empty($employee_UUID)) {
+        $_SESSION['error'] = "እባክዎ ሁሉንም አስፈላጊ መረጃዎች በትክክል ያስገቡ!"."employee id:".$employee_UUID."budget year:".$budget_year."leave days:".$leave_days;
+        header("Location: " . $_ENV['BASE_URL'] . "/employee-leave");
+        exit();
+    }
+
+    $id            = Uuid::uuid4()->toString();
+    $annualRestModel = new Anual_rest_Model($this->db);
+
+    try {
+        $result = $annualRestModel->insert(
+            $id,
+            $budget_year,
+            $leave_days,
+            $employee_UUID,
+            $registeredBy
+        );
+
+        if ($result) {
+            \App\Helpers\AuditHelper::log('anual_rest_registration', 'anual_rest', $id, null, [
+                'budget_year'     => $budget_year,
+                'leave_days'      => $leave_days,
+                'employee_id'     => $employee_UUID,
+                'registered_by'   => $registeredBy,
+            ]);
+
+                          
+
+            $_SESSION['success'] = " የአመት እረፈቱ በተሳካ ሁኔታ ተመዝግቧል!";
+        } else {
+            $_SESSION['error'] = "ምዝገባው አልተሳካም፤ እባክዎ እንደገና ይሞክሩ።";
+        }
+
+    } catch (\PDOException $e) {
+        $_SESSION["error"] = $e->getMessage();
+    }
+
+    header("Location: " . $_ENV['BASE_URL'] . "/employee-leave");
+    exit();
+} 
+ 
+
+}
+      
+       
+ 
