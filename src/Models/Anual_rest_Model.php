@@ -41,16 +41,15 @@ class Anual_rest_Model {
     }
 
 }
-public function featchbyid($id) {
+public function fetchById($id) {
     try {
         $sql = "SELECT * FROM anual_rest WHERE employee_id = :id";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$id]);
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     } catch (\PDOException $e) {
         error_log("Database Fetch Error in Anual_rest_Model: " . $e->getMessage());
         return false;
     }
-    
 }
 }
