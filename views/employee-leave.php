@@ -19,54 +19,50 @@ $is_anual_rest_registration = true; ?>
                 </div>
             </div>
 
-            <!-- Table -->
-            <div class="card-body p-0">
-                <table id="example1" data-empty-msg="ምንም የአመት እረፍት አልተመዘገበም።" class="table table-bordered table-striped table-hover small mb-0" style="color: #000;">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>#</th>
-                            <th>ሙሉ ስም</th>
-                            <th>በጀት</th>
-                            <th>የአመት እረፍት ብዛት (በቀን)</th>
-                            <th>ሁኔታ</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody> 
-                      <?php if (!empty($anualRestData)): $no =0;?>
-                            <?php 
-                            $no = 1;
-                            foreach ( $anualRestData as $rest):
-                                 ?>
-                                <tr>
-                                    <td><?= $no++ ?></td>
-                                    <td><?= htmlspecialchars($employee['first_name'] ?? '') . ' ' . htmlspecialchars($employee['father_name'] ?? '') ?></td>
-                                    <td><?= htmlspecialchars($rest['budget_year'] ?? 'N/A') ?></td>
-                                    <td><?= htmlspecialchars($rest['restaamout'] ?? 'N/A') ?></td>
-                                    <td>
-                                        <?php 
-                                            $status = $rest['status'] ?? 'unknown';
-                                            $badgeClass = match ($status) {
-                                                'approved' => 'success',
-                                                'pending' => 'warning',
-                                                'rejected' => 'danger',
-                                                default => 'secondary',
-                                            };
-                                        ?>
-                                        <span class="badge badge-<?= $badgeClass ?>">
-                                            <?= ucfirst(htmlspecialchars($status)) ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <!-- Action buttons (e.g., Edit, Delete) can go here -->
-                                        <button class="btn btn-sm btn-info">Edit</button>
-                                        <button class="btn btn-sm btn-danger">Delete</button>
-                                    </td>
-                                </tr>
-                            <?php endforeach;?>
-                           <?php endif;?>
-                    </tbody> 
-                </table>
+           <div class="card-body p-0">
+    <table id="example1" data-empty-msg="ምንም የአመት እረፍት አልተመዘገበም።" class="table table-bordered table-striped table-hover small mb-0" style="color: #000;">
+        <thead class="thead-light">
+            <tr>
+                <th>#</th>
+                <th>ሙሉ ስም</th>
+                <th>በጀት</th>
+                <th>የአመት እረፍት ብዛት (በቀን)</th>
+                <th>ሁኔታ</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($anualRestData)): ?>
+                <?php foreach ($anualRestData as $index => $rest): ?>
+                    <tr>
+                        <td><?= $index + 1 ?></td>
+                        <td><?= htmlspecialchars($employee['first_name'] ?? '') . ' ' . htmlspecialchars($employee['father_name'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($rest['budget_year'] ?? 'N/A') ?></td>
+                        <td><?= htmlspecialchars($rest['restaamout'] ?? 'N/A') ?></td>
+                        <td>
+                            <?php
+                                $status = $rest['status'] ?? 'unknown';
+                                $badgeClass = match ($status) {
+                                    'approved' => 'success',
+                                    'pending'  => 'warning',
+                                    'rejected' => 'danger',
+                                    default    => 'secondary',
+                                };
+                            ?>
+                            <span class="badge badge-<?= $badgeClass ?>">
+                                <?= ucfirst(htmlspecialchars($status)) ?>
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info">Edit</button>
+                            <button class="btn btn-sm btn-danger">Delete</button>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</div>
             </div>
         </div>
     </div>

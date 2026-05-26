@@ -10,7 +10,6 @@ class EmployeeOnleaveController extends BaseController {
     AuthHelper::checkRole(['hr_director', 'hr_officer']);
     $branch_id = $_SESSION['user']['branch_id'] ?? null;
 
-    // 1. Extract the UUID from the parameters passed by your router
     $uuid = null;
     if (is_array($params)) {
         $uuid = $params['uuid'] ?? ($params[0] ?? null);
@@ -18,30 +17,27 @@ class EmployeeOnleaveController extends BaseController {
         $uuid = $params;
     }
 
-    // Fallback: If your router doesn't automatically pass params, extract it from the URL path manually
     if (empty($uuid)) {
         $uriSegments = explode('/', trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'));
-        // If URL is /HRM/employee-leave/8a5192f8..., the UUID is the last segment
         $uuid = end($uriSegments);
     }
 
-
     $employeeModel = new EmployeeRegistration($this->db);
     $employee = $employeeModel->getEmployeeByUuid($uuid);
-    $featchbyid= new Anual_rest_Model($this->db);
-    $anualRestData = $featchbyid->featchbyid($uuid);
-    
+
+    // Check first before using $employee data
     if (!$employee) {
         header("Location: /HRM/dashboard?error=employee_not_found");
         exit;
     }
 
-    // 3. Inject the data into the array so the view can see it
+    $anualRestModel = new Anual_rest_Model($this->db);
+    $anualRestData = $anualRestModel->fetchById($uuid); // ← correct
 
     $this->render('employee-leave', [
-        'title'         => 'HRM - የሰራተኞች እረፍት',        // Pass raw UUID string
-        'employee'      => $employee,         // Pass entire employee array dataset
-        'anualRestData' => $anualRestData     // Pass annual rest data
+        'title'         => 'HRM - የሰራተኞች እረፍት',
+        'employee'      => $employee,
+        'anualRestData' => $anualRestData
     ]);
 }
     public function anualRestRegstration() {
