@@ -1,145 +1,122 @@
 <?php
 use App\Helpers\EthiopianDateHelper; 
 $is_anual_rest_registration = true; ?>
+<!-- ሰንጠረዥ እና ዋና ይዘት -->
 <section class="content">
-  <div class="container-fluid">
-    <div class="card shadow-sm border-0">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0 card-primary card-outline">
 
-      <!-- Header -->
-<div class="card-header bg-white d-flex align-items-center justify-content-between card-primary card-outline py-2">
-    <h6 class="m-0 font-weight-bold text-dark">
-    <?= htmlspecialchars(trim(($employee['first_name'] ?? '') . ' ' . ($employee['father_name'] ?? ''))) ?> የአመት እረፍት
-    </h6>
-    
-    <div class="ml-auto">
-        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#addExperienceModal">
-            <i class="fas fa-plus mr-1"></i> የአመት እረፍት መዝግብ
-        </button>
-    </div>
-</div>
+            <!-- Header -->
+            <div class="card-header bg-white d-flex align-items-center justify-content-between py-2">
+                <h6 class="m-0 font-weight-bold text-dark">
+                    <?= htmlspecialchars(trim(($employee['first_name'] ?? '') . ' ' . ($employee['father_name'] ?? ''))) ?> የአመት እረፍት
+                </h6>
+                <div class="ml-auto">
+                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#addannualRestModal">
+                        <i class="fas fa-plus mr-1"></i> የአመት እረፍት መዝግብ
+                    </button>
+                </div>
+            </div>
 
-      <!-- Table -->
-      <div class="card-body p-0">
-        <table id="example1" data-empty-msg="ምንም የአመት እረፍት አልተመዘገበም።" class="table table-bordered table-striped table-hover small mb-0" style="color: #000;">
-          <thead class="thead-light">
-  <tr>
-    <th>#</th>
-    <th>የስራ መደብ</th>
-    <th>በጀት</th>
-    <th>የአመት እረፍት ብዛት (በቀን)</th>     <!-- ← new -->
-    <th>ሁኔታ</th>
-    <th>Actions</th>
-  </tr>
-</thead>
-        
-<tbody>
-      
-</tbody> 
-</table>
-      </div>
+            <!-- Table -->
+            <div class="card-body p-0">
+                <table id="example1" data-empty-msg="ምንም የአመት እረፍት አልተመዘገበም።" class="table table-bordered table-striped table-hover small mb-0" style="color: #000;">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>የስራ መደብ</th>
+                            <th>በጀት</th>
+                            <th>የአመት እረፍት ብዛት (በቀን)</th>
+                            <th>ሁኔታ</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- ዳታው በሉፕ እዚህ ውስጥ ይገባል -->
+                    </tbody> 
+                </table>
+            </div>
+        </div>
     </div>
-  </div>
 </section>
-<?php include 'partials/edit-experience-modal.php'; ?>
-<!-- ===== Add Experience Modal ===== -->
-<div class="modal fade" id="addExperienceModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <!-- Form wraps everything to include the footer button -->
-      <form id="addExperienceForm" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-experience-store" method="post" enctype="multipart/form-data">
-        
-        <!-- 1. Modal Header -->
-        <div class="modal-header">
-          <h6 class="modal-title font-weight-bold">
-            <i class="fas fa-plus mr-1"></i> አዲስ የስራ ልምድ መዝግብ
-          </h6>
-          <button type="button" class="close" data-dismiss="modal">
-            <span>&times;</span>
-          </button>
+
+<?php // include 'partials/edit-experience-modal.php'; ?>
+
+<!-- ===== Add Annual Leave Modal ===== -->
+<div class="modal fade" id="addannualRestModal" tabindex="-1" role="dialog" aria-labelledby="addannualRestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0">
+            
+            <form id="addAnnualLeaveForm" action="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-leave-store" method="post">
+                
+                <!-- 1. Modal Header -->
+                <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+                    <h6 class="modal-title font-weight-bold text-dark" id="addannualRestModalLabel">
+                        <i class="fas fa-calendar-plus text-primary mr-1"></i> አዲስ ያልተጠቀመ የአመት እረፍት መዝግብ
+                    </h6>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- 2. Modal Body -->
+                <div class="modal-body py-3">
+                    <!-- ሰራተኛውን ለመለየት የሚረዳ ድብቅ አይዲ -->
+                    <input type="hidden" name="employee_uuid" id="employee_uuid" value="<?= htmlspecialchars($employee['uuid'] ?? '') ?>">
+
+                    <div class="row">
+                        <!-- በጀት አመት (Budget Year) -->
+                        <div class="col-md-6 form-group mb-3">
+                            <label for="budget_year" class="mb-1">
+                                <small class="font-weight-bold" style="color: #000;">የበጀት አመት (ዓ.ም)</small> <span class="text-danger">*</span>
+                            </label>
+                            <select name="budget_year" id="budget_year" class="form-control form-control-sm" style="color: #000;" required>
+                                <option value="">-- በጀት አመት ይምረጡ --</option>
+                                <?php 
+                                $current_year = 2018; 
+                                for ($i = 0; $i < 4; $i++) {
+                                    $year = $current_year - $i;
+                                    echo "<option value='{$year}'>{$year} በጀት አመት</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+
+                        <!-- ያልተጠቀመበት የእረፍት ቀን ብዛት -->
+                        <div class="col-md-6 form-group mb-3">
+                            <label for="leave_days" class="mb-1">
+                                <small class="font-weight-bold" style="color: #000;">የአመት እረፍት ብዛት (በቀን)</small> <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" name="leave_days" id="leave_days" class="form-control form-control-sm" 
+                                   min="1" max="30" placeholder="ከ 1 እስከ 30" autocomplete="off" style="color: #000;" required>
+                            <span id="days_error_msg" class="text-danger mt-1" style="display:none; font-size:11px; font-weight:bold;">
+                                <i class="fas fa-exclamation-circle mr-1"></i> በአንድ በጀት አመት ከ 30 ቀን መብለጥ አይችልም!
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- ጠቅላላ መረጃ ማሳያ ካርድ -->
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            <div class="p-2 rounded" style="background-color: #f1f3f5; border-left: 4px solid #17a2b8;">
+                                <small class="text-dark d-block" style="font-size: 11px; line-height: 1.4;">
+                                    <i class="fas fa-info-circle text-info mr-1"></i> <strong>የህግ ማሳሰቢያ፦</strong> 
+                                    በአንድ በጀት አመት የሚመዘገብ ከፍተኛው የእረፍት ቀን <strong>30 ቀን</strong> ሲሆን፣ የ3 ተከታታይ አመታት ድምር ከ <strong>90 ቀናት</strong> መብለጥ የለበትም።
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Modal Footer -->
+                <div class="modal-footer d-flex justify-content-between" style="background-color: #f8f9fa; border-top: 1px solid #dee2e6;">
+                    <button type="button" class="btn btn-default btn-sm font-weight-bold" data-dismiss="modal">ዝጋ</button>
+                    <button type="submit" class="btn btn-primary btn-sm font-weight-bold" id="submitLeaveBtn">
+                        <i class="fas fa-save mr-1"></i> መረጃውን መዝግብ
+                    </button>
+                </div>
+
+            </form>
         </div>
-
-        <!-- 2. Modal Body -->
-        <div class="modal-body">
-          <input type="hidden" name="employee_uuid" value="<?= htmlspecialchars($employee['uuid'] ?? '') ?>">
-
-          <div class="row">
-            <!-- Company Name -->
-            <div class="col-md-6 form-group mb-2 position-relative">
-              <label for="add_company_name" class="mb-1"><small class="font-weight-bold">የሰሩበት መስሪያ ቤት </small><span class="text-danger">*</span></label>
-              <input type="text" name="company_name" id="add_company_name" class="form-control form-control-sm" placeholder="የመስሪያ ቤቱን ስም ያስገቡ..." autocomplete="off" required>
-              <ul id="company_suggestions" class="list-group position-absolute w-100" style="z-index:9999; display:none;"></ul>
-            </div>
-
-            <!-- Job Title -->
-            <div class="col-md-6 form-group mb-2 position-relative">
-              <label for="add_job_title" class="mb-1"><small class="font-weight-bold">የስራ መደብ </small><span class="text-danger">*</span></label>
-              <input type="text" name="job_title" id="add_job_title" class="form-control form-control-sm" placeholder="የስራ መደቡን ያስገቡ..." autocomplete="off" required>
-              <ul id="job_suggestions" class="list-group position-absolute w-100" style="z-index:9999; display:none;"></ul>
-            </div>
-          </div>
-
-          <div class="row">
-            <!-- Employment Type -->
-            <div class="col-md-4 form-group">
-              <label for="add_employment_type" class="mb-1"><small class="font-weight-bold">የቅጥር አይነት </small><span class="text-danger">*</span></label>
-              <select name="employment_type" id="add_employment_type" class="form-control form-control-sm" required>
-                <option value="">-- ይምረጡ --</option>
-                <option value="Full-time">ሙሉ ጊዜ</option>
-                <option value="Part-time">ትርፍ ጊዜ</option>
-                <option value="Contract">ኮንትራት</option>
-                <option value="Freelance">ፍሪላንስ</option>
-              </select>
-            </div>
-
-<!-- Start Date -->
-    <div class="col-md-4 form-group">
-        <label class="mb-1"><small class="font-weight-bold">የጀመሩበት ቀን </small><span class="text-danger">*</span></label>
-        <input type="text" 
-               class="ethiopian-date form-control form-control-sm" 
-               id="add_eth_start_date" 
-               data-gregorian="#add_start_date" 
-               placeholder="ቀን/ወር/ዓ.ም ይምረጡ" 
-               readonly 
-               style="background-color: #fff; cursor: pointer;" required>
-        <input type="date" name="start_date" id="add_start_date" class="d-none" required>
-    <!-- Add Modal — below #add_eth_start_date input -->
-<span id="start_date_error_msg" class="text-danger mt-1" style="display:none; font-size:11px; font-weight:bold;">
-    <i class="fas fa-exclamation-circle mr-1"></i>
-</span>
-      </div>
-
-    <!-- End Date -->
-    <div class="col-md-4 form-group">
-        <label class="mb-1">
-            <small class="font-weight-bold">የጨረሱበት ቀን </small>
-            <span class="text-danger">*</span>
-        </label>
-        <input type="text" 
-               class="ethiopian-date form-control form-control-sm" 
-               id="add_eth_end_date"
-               data-gregorian="#add_end_date" 
-               placeholder="ቀን/ወር/ዓ.ም ይምረጡ" 
-               readonly 
-               style="background-color: #fff; cursor: pointer;" required>
-        <input type="date" name="end_date" id="add_end_date" class="d-none" required>
-        
-        <!-- Red Error Message -->
-        <span id="date_error_msg" class="text-danger mt-1" style="display: none; font-size: 11px; font-weight: bold;">
-            <i class="fas fa-exclamation-circle mr-1"></i> ስህተት፡ ስራ የጨረሱበት ቀን ከጀመሩበት ቀን ማነስ የለበትም።
-        </span>
     </div>
-          </div>
-        </div>
-
-        <!-- 3. Modal Footer -->
-        <div class="modal-footer justify-content-between">
-          <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">ዝጋ</button>
-          <button type="submit" class="btn btn-primary btn-sm" id="submitBtn">
-            <i class="fas fa-save mr-1"></i> መረጃውን መዝግብ
-          </button>
-        </div>
-
-      </form>
-    </div>
-  </div>
 </div>
