@@ -2,7 +2,7 @@
 use App\Helpers\EthiopianDateHelper; 
 
 $is_anual_rest_registration = true; ?>
-<!-- ሰንጠረዥ እና ዋና ይዘት gyugy- -->
+<!-- ሰንጠረዥ እና ዋና ይዘት gyugy fffddf - -->
 <section class="content">
     <div class="container-fluid">
         <div class="card shadow-sm border-0 card-primary card-outline">
