@@ -10,8 +10,8 @@ class Branch {
          }
 
     public function insertBranch($data) {
-        $sql = "INSERT INTO branches (id, organization_id, parent_id, name, alt_name, level, logo_url, registered_by) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO branches (id, organization_id, parent_id, name, alt_name, phone_number, postal_code, level, logo_url, registered_by) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             $data['id'], 
@@ -19,9 +19,12 @@ class Branch {
             $data['parent_id'], 
             $data['name'], 
             $data['alt_name'], 
+            $data['phone_number'],
+            $data['postal_code'],
             $data['level'], 
             $data['logo_url'], 
             $data['registered_by']
+            
         ]);
     }
 /**
@@ -58,7 +61,7 @@ public function getMainOfficeId($orgId) {
     }
 }
 public function getBranchById($branchId) {
-    $sql = "SELECT name, alt_name, level, logo_url FROM branches WHERE id = ? LIMIT 1";
+    $sql = "SELECT name, alt_name, phone_number, postal_code, level, logo_url FROM branches WHERE id = ? LIMIT 1";
     try {
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$branchId]);
@@ -78,8 +81,8 @@ public function isSubBranchOf($branchId, $parentBranchId) {
     ]);
     return $stmt->fetchColumn() !== false;
 }
-public function updateBranch($id, $name, $alt_name, $logo_url) {
-        $sql = "UPDATE branches SET name = ?, logo_url = ?, alt_name = ? WHERE id = ? AND status = 'active'";
+public function updateBranch($id, $name, $alt_name, $logo_url, $phone_number, $postal_code) {
+        $sql = "UPDATE branches SET name = ?, logo_url = ?, alt_name = ?, phone_number = ?, postal_code = ? WHERE id = ? AND status = 'active'";
         
         try {
             $stmt = $this->db->prepare($sql);
@@ -87,6 +90,8 @@ public function updateBranch($id, $name, $alt_name, $logo_url) {
                 $name,
                 $logo_url,
                 $alt_name,
+                $phone_number,
+                $postal_code,
                 $id
             ]);
         } catch (\PDOException $e) {

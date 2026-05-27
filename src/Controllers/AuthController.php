@@ -54,11 +54,15 @@ class AuthController extends BaseController {
         
         $_SESSION['user']['branch_name']     = !empty($branchData['name']) ? $branchData['name'] : 'Unknown Branch';
         $_SESSION['user']['alt_name'] = !empty($branchData['alt_name']) ? $branchData['alt_name'] : null;
+        $_SESSION['user']['phone_number'] = !empty($branchData['phone_number']) ? $branchData['phone_number'] : null;
+        $_SESSION['user']['postal_code'] = !empty($branchData['postal_code']) ? $branchData['postal_code'] : null;
         $_SESSION['user']['logo_url'] = !empty($branchData['logo_url']) ? $branchData['logo_url'] : null;
     } else {
         // Fallback defaults for system-wide/global administrators
         $_SESSION['user']['branch_name']     = 'ዋናው መስሪያ ቤት (Headquarters)';
         $_SESSION['user']['alt_name'] = null;
+        $_SESSION['user']['phone_number'] = null;
+        $_SESSION['user']['postal_code'] = null;
         $_SESSION['user']['logo_url'] = null; // Dashboard code falls back to icon cleanly
     }     
 // Log successful login

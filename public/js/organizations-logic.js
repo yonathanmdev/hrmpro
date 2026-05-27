@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const branch_id   = btn.getAttribute('data-branch-id');
         const name        = btn.getAttribute('data-name');
         const alt_name    = btn.getAttribute('data-alt-name')    || '';
+        const phone_number = btn.getAttribute('data-phone-number') || '';
+        const postal_code = btn.getAttribute('data-postal-code') || '';
         const logo_url    = btn.getAttribute('data-logo-url')    || '';
         const description = btn.getAttribute('data-description') || '';
 
@@ -19,6 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('edit_org_name').value        = name;
         document.getElementById('edit_org_alt_name').value    = alt_name;      // ✅ fixed
         document.getElementById('edit_org_description').value = description;   // ✅ fixed
+        document.getElementById('edit_org_phone_number').value = phone_number;   // ✅ fixed
+        document.getElementById('edit_org_postal_code').value = postal_code;   // ✅ fixed
 
         // Show current logo preview if available
         const preview = document.getElementById('current_logo_preview');

@@ -33,6 +33,32 @@
               placeholder="አማራጭ ስም ያስገቡ"
             >
           </div>
+
+          <div class="form-group mb-2">
+            <label for="edit_branch_phone_number" class="mb-1">
+              <small class="font-weight-bold">ስ.ቁ.</small>
+            </label>
+            <input 
+              type="text" 
+              id="edit_branch_phone_number"
+              name="branch_phone_number" 
+              class="form-control form-control-sm" 
+              placeholder="ስ.ቁ. ያስገቡ"
+            >
+          </div>
+
+          <div class="form-group mb-2">
+            <label for="edit_branch_postal_code" class="mb-1">
+              <small class="font-weight-bold">ፖ.ሳ.ቁ.</small>
+            </label>
+            <input 
+              type="text" 
+              id="edit_branch_postal_code"
+              name="branch_postal_code" 
+              class="form-control form-control-sm" 
+              placeholder="ፖ.ሳ.ቁ. ያስገቡ"
+            >
+          </div>
  <!-- Logo upload -->
           <div class="form-group mb-2">
             <label for="edit_branch_logo" class="mb-1">

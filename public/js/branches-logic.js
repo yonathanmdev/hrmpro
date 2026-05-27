@@ -10,11 +10,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const id   = btn.getAttribute('data-id');
             const name = btn.getAttribute('data-name');
             const alternateName = btn.getAttribute('data-alternate-name');
+            const phone_number = btn.getAttribute('data-phone-number');
+            const postal_code = btn.getAttribute('data-postal-code');
             const logo_url = btn.getAttribute('data-logo-url');
 
             document.getElementById('edit_branch_id').value  = id;
             document.getElementById('edit_branch_name').value = name;
             document.getElementById('edit_branch_alt_name').value = alternateName;
+            document.getElementById('edit_branch_phone_number').value = phone_number;
+            document.getElementById('edit_branch_postal_code').value = postal_code;
             document.getElementById('edit_branch_logo_url').value = logo_url;
 
 

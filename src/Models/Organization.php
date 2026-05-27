@@ -19,7 +19,7 @@ class Organization {
      * @param string $id በኮንትሮለር የተፈጠረ UUID
      * @param string $name የተመዘገበው የድርጅት ስም
      */
-   public function create($id, $orgName, $orgDescription, $registeredBy, $orgAlternateName, $imageName){
+   public function create($id, $orgName, $orgDescription, $registeredBy, $orgAlternateName, $imageName, $postal_code, $phone_number) {
     try {
         $this->db->beginTransaction();
 
@@ -42,6 +42,8 @@ class Organization {
             'parent_id' => null,
             'name' => $orgName,
             'alt_name' => $orgAlternateName,
+            'phone_number' => $phone_number,
+            'postal_code' => $postal_code,
             'level' => 1,
             'logo_url' => $imageName,
             'registered_by' => $registeredBy
@@ -69,6 +71,8 @@ class Organization {
                 b.id as branch_id,
                 b.organization_id,
                 b.alt_name,
+                b.phone_number,
+                b.postal_code,
                 b.logo_url
             FROM organizations o
             LEFT JOIN branches b ON b.organization_id = o.id
@@ -88,7 +92,7 @@ class Organization {
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-public function updateOrganization($id, $branchId, $name, $description, $orgAlternateName, $imageName) {
+public function updateOrganization($id, $branchId, $name, $description, $orgAlternateName, $imageName, $phone_number, $postal_code) {
     try {
         // Begin transaction — both updates must succeed or both rollback
         $this->db->beginTransaction();
@@ -108,7 +112,9 @@ public function updateOrganization($id, $branchId, $name, $description, $orgAlte
             $branchId,
             $name,
             $orgAlternateName,
-            $imageName
+            $imageName,
+            $phone_number,
+            $postal_code
         );
         // 3. Commit if both succeeded
         $this->db->commit();
