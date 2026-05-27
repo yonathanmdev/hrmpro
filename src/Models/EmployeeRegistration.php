@@ -176,6 +176,9 @@ $this->assignJob($data['job_property_id'], $data['branch_id']);            // In
             SELECT 
                 e.*,
                 jp.job_name,
+                jp.salary,
+                jp.dereja,
+                jp.job_identifier_no,
                 jp.status as job_status
             FROM employees_table e
             INNER JOIN job_property jp ON e.job_property_id = jp.id

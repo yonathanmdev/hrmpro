@@ -40,17 +40,28 @@ class OrgController extends BaseController {
         $orgName = isset($_POST['org_name']) ? trim($_POST['org_name']) : '';
         $orgAlternateName = isset($_POST['org_alternate_name']) ? trim($_POST['org_alternate_name']) : '';
         $orgDescription = isset($_POST['org_description']) ? trim($_POST['org_description']) : '';
-        
+        $postal_code = isset($_POST['postal_code']) ? trim($_POST['postal_code']) : '';
+        $phone_number = isset($_POST['phone_number']) ? trim($_POST['phone_number']) : '';
         // Session ውስጥ ተጠቃሚው መኖሩን ማረጋገጥ (ደህንነት)
         $registeredBy = isset($_SESSION['user']['id']) ? $_SESSION['user']['id'] : null;
 
         // 2. Validation
-        if (empty($orgName) || empty($orgDescription)) {
+        if (empty($orgName) || empty($orgDescription) || empty($postal_code) || empty($phone_number)) {
             $_SESSION['error'] = "እባክዎ ሁሉንም መስኮች በትክክል ይሙሉ!";
             header("Location: " . $_ENV['BASE_URL'] . "/register-organization");
             exit();
         }
+if (!preg_match('/^\d{10}$/', $phone_number)) {
+    $_SESSION['error'] = "ስልክ ቁጥር በትክክል 10 አሃዝ መሆን አለበት!";
+    header("Location: " . $_ENV['BASE_URL'] . "/register-organization");
+    exit();
+}
 
+if (!preg_match('/^\d{1,6}$/', $postal_code)) {
+    $_SESSION['error'] = "የፖስታ ኮድ ከ6 አሃዝ መብለጥ የለበትም!";
+    header("Location: " . $_ENV['BASE_URL'] . "/register-organization");
+    exit();
+}
         if (!$registeredBy) {
             $_SESSION['error'] = "ለዚህ ተግባር መጀመሪያ መግባት (Login) አለብዎት!";
             header("Location: " . $_ENV['BASE_URL'] . "/login");
@@ -86,13 +97,15 @@ if (!$imageName) {
 
         try {
             // 4. ሞዴሉን መጥራት (ይህ ድርጅቱን እና Main Officeን በአንድ ላይ ይመዘግባል)
-            $result = $orgModel->create($id, $orgName, $orgDescription, $registeredBy, $orgAlternateName, $imageName);
+            $result = $orgModel->create($id, $orgName, $orgDescription, $registeredBy, $orgAlternateName, $imageName, $postal_code, $phone_number);
 
             if ($result) {
                 // Log organization creation
                 \App\Helpers\AuditHelper::log('organization_created', 'organization', $id, null, [
                     'name' => $orgName,
                     'description' => $orgDescription,
+                    'postal_code' => $postal_code,
+                    'phone_number' => $phone_number,
                     'registered_by' => $registeredBy
                 ]);
 
@@ -122,56 +135,76 @@ if (!$imageName) {
     
     
 public function handleEditOrganization() {
-    // ለጃቫ ስክሪፕት ምላሽ ለመስጠት header ማስተካከል
-     AuthHelper::checkRole(['system_admin', 'org_admin']);
+    AuthHelper::checkRole(['system_admin', 'org_admin']);
     header('Content-Type: application/json');
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {        
-        $orgId = isset($_POST['id']) ? trim($_POST['id']) : '';
-        $branchId = isset($_POST['branch_id']) ? trim($_POST['branch_id']) : '';
-        $orgName = isset($_POST['org_name']) ? trim($_POST['org_name']) : '';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $orgId            = isset($_POST['id'])                 ? trim($_POST['id'])                 : '';
+        $branchId         = isset($_POST['branch_id'])          ? trim($_POST['branch_id'])          : '';
+        $orgName          = isset($_POST['org_name'])           ? trim($_POST['org_name'])           : '';
         $orgAlternateName = isset($_POST['org_alternate_name']) ? trim($_POST['org_alternate_name']) : '';
-        $orgDescription = isset($_POST['org_description']) ? trim($_POST['org_description']) : '';
-        if (empty($orgId) || empty($orgName) || empty($orgDescription)) {
+        $orgDescription   = isset($_POST['org_description'])    ? trim($_POST['org_description'])    : '';
+        $postal_code      = isset($_POST['postal_code'])        ? trim($_POST['postal_code'])        : '';
+        $phone_number     = isset($_POST['phone_number'])       ? trim($_POST['phone_number'])       : '';
+
+        if (empty($orgId) || empty($orgName) || empty($orgDescription) || empty($postal_code) || empty($phone_number)) {
             echo json_encode(['status' => 'error', 'message' => 'እባክዎ የተቋሙን መለያ እና ስም በትክክል ያስገቡ!']);
             exit();
         }
-
-        $imageName   = $this->uploadFile('logo', 'images');
-
-if (!$imageName) {
-    $messages = [];
-
-    if (!$imageName) {
-        $imageError  = $_FILES['logo']['error'] ?? UPLOAD_ERR_NO_FILE;
-        $messages[] = 'Photo: ' . $this->getUploadErrorMessage($imageError);
-    }
-
-    $_SESSION['error'] = !empty($messages)
-        ? 'ፋይል እንዲወርድ አልቻለም። ' . implode(' | ', $messages)
-        : 'ፋይል እንዲወርድ አልቻለም።';
-
-    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/register-organization");
+// ── Validation ────────────────────────────────────────────────────────────
+if (!preg_match('/^\d{10}$/', $phone_number)) {
+    echo json_encode(['status' => 'error', 'message' => 'ስልክ ቁጥር በትክክል 10 አሃዝ መሆን አለበት!']);
     exit();
 }
+
+if (!preg_match('/^\d{1,6}$/', $postal_code)) {
+    echo json_encode(['status' => 'error', 'message' => 'የፖስታ ኮድ ከ6 አሃዝ መብለጥ የለበትም!']);
+    exit();
+}
+// ─────────────────────────────────────────────────────────────────────────
+        // ── Logo handling ─────────────────────────────────────────────────────
+        // A file was actually chosen by the user
+        $fileSubmitted = isset($_FILES['logo']) && $_FILES['logo']['error'] !== UPLOAD_ERR_NO_FILE;
+
+        if ($fileSubmitted) {
+            // Attempt upload; bail out on failure
+            $imageName = $this->uploadFile('logo', 'images');
+
+            if (!$imageName) {
+                $imageError = $_FILES['logo']['error'] ?? UPLOAD_ERR_NO_FILE;
+                $_SESSION['error'] = 'ፋይል እንዲወርድ አልቻለም። Photo: ' . $this->getUploadErrorMessage($imageError);
+                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/register-organization");
+                exit();
+            }
+        } else {
+            // No new logo submitted — keep the existing one from the DB
+            $imageName = null;
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         $orgModel = new Organization($this->db);
 
         try {
-            // Get old data for logging
             $oldData = $orgModel->findById($orgId);
-            
-            $result = $orgModel->updateOrganization($orgId, $branchId, $orgName, $orgDescription, $orgAlternateName, $imageName);
+
+            // Pass null for $imageName so updateOrganization keeps the current logo
+            $result = $orgModel->updateOrganization(
+                $orgId, $branchId, $orgName, $orgDescription,
+                $orgAlternateName, $imageName, $phone_number, $postal_code
+            );
 
             if ($result) {
-                // Log organization update
-                \App\Helpers\AuditHelper::log('organization_updated', 'organization', $orgId, $oldData, ['name' => $orgName, 'organization_type' => $orgDescription]);
-
+                \App\Helpers\AuditHelper::log(
+                    'organization_updated', 'organization', $orgId,
+                    $oldData,
+                    ['name' => $orgName, 'organization_type' => $orgDescription]
+                );
                 echo json_encode(['status' => 'success', 'message' => 'ድርጅቱ በተሳካ ሁኔታ ተሻሽሏል!']);
-                exit();
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'ማስተካከያው አልተሳካም፤ ምንም የተቀየረ መረጃ የለም።']);
-                exit();
             }
+            exit();
+
         } catch (\PDOException $e) {
             if ($e->getCode() == 23000) {
                 echo json_encode(['status' => 'error', 'message' => 'ይህ ድርጅት ቀደም ብሎ ተመዝግቧል!']);
@@ -191,6 +224,8 @@ public function handleBranchRegistration() {
         $branchName = isset($_POST['branch_name']) ? trim($_POST['branch_name']) : '';
         $registeredBy = isset($_SESSION['user']) ? $_SESSION['user']['id'] : null;  
         $orgAlternateName = isset($_POST['branch_alternate_name']) ? trim($_POST['branch_alternate_name']) : '';
+        $phone_number = isset($_POST['branch_phone_number']) ? trim($_POST['branch_phone_number']) : '';
+        $postal_code = isset($_POST['branch_postal_code']) ? trim($_POST['branch_postal_code']) : '';
         $branchModel =  new Branch($this->db);
         $branchLevel = $branchModel->getBranchById($_SESSION['user']['branch_id']);
         if (!$branchLevel || !isset($branchLevel['level'])) {
@@ -207,7 +242,17 @@ public function handleBranchRegistration() {
             header("Location: " . $_ENV['BASE_URL'] . "/register-branch");
             exit();        
  }
+if (!preg_match('/^\d{10}$/', $phone_number)) {
+    $_SESSION['error'] = "ስልክ ቁጥር በትክክል 10 አሃዝ መሆን አለበት!";
+    header("Location: " . $_ENV['BASE_URL'] . "/register-organization");
+    exit();
+}
 
+if (!preg_match('/^\d{1,6}$/', $postal_code)) {
+    $_SESSION['error'] = "የፖስታ ኮድ ከ6 አሃዝ መብለጥ የለበትም!";
+    header("Location: " . $_ENV['BASE_URL'] . "/register-organization");
+    exit();
+}
  // In your handleCreate/registration method
 if (empty($_FILES['logo']['name']) || $_FILES['logo']['error'] === UPLOAD_ERR_NO_FILE) {
     $_SESSION['error'] = 'እባክዎ የድርጅት ሎጎ ይምረጡ።';
@@ -242,6 +287,8 @@ if (!$imageName) {
                 'parent_id' => $parentId,
                 'name' => $branchName,
                 'alt_name' => $orgAlternateName,
+                'phone_number' => $phone_number,
+                'postal_code' => $postal_code,
                 'level' => $level,
                 'logo_url' => $imageName,
                 'registered_by' => $registeredBy
@@ -284,13 +331,25 @@ public function handleEditBranch() {
         $orgId = isset($_POST['id']) ? trim($_POST['id']) : '';
         $orgName = isset($_POST['branch_name']) ? trim($_POST['branch_name']) : '';
         $orgAlternateName = isset($_POST['branch_alternate_name']) ? trim($_POST['branch_alternate_name']) : '';
+        $phone_number = isset($_POST['branch_phone_number']) ? trim($_POST['branch_phone_number']) : '';
+        $postal_code = isset($_POST['branch_postal_code']) ? trim($_POST['branch_postal_code']) : '';
         $existingLogoUrl = isset($_POST['existing_logo_url']) ? trim($_POST['existing_logo_url']) : '';
 
         if (empty($orgId) || empty($orgName)) {
             echo json_encode(['status' => 'error', 'message' => 'እባክዎ የተቋሙን መለያ እና ስም በትክክል ያስገቡ!']);
             exit();
         }
+// ── Validation ────────────────────────────────────────────────────────────
+if (!preg_match('/^\d{10}$/', $phone_number)) {
+    echo json_encode(['status' => 'error', 'message' => 'ስልክ ቁጥር በትክክል 10 አሃዝ መሆን አለበት!']);
+    exit();
+}
 
+if (!preg_match('/^\d{1,6}$/', $postal_code)) {
+    echo json_encode(['status' => 'error', 'message' => 'የፖስታ ኮድ ከ6 አሃዝ መብለጥ የለበትም!']);
+    exit();
+}
+// ─────────────────────────────────────────────────────────────────────────
         // Check if a brand new file was actually selected for upload
         $hasNewFile = isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK;
         $imageName = null;
@@ -318,7 +377,7 @@ public function handleEditBranch() {
             $oldData = $orgModel->getBranchById($orgId);
             
             // Pass the resolved image string to the model layer
-            $result = $orgModel->updateBranch($orgId, $orgName, $orgAlternateName, $imageName);
+            $result = $orgModel->updateBranch($orgId, $orgName, $orgAlternateName, $imageName, $phone_number, $postal_code);
 
             if ($result) {
                 // Log branch update

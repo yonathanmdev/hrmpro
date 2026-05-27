@@ -401,4 +401,17 @@ public function deleteRecord(string $id, string $userId, string $reason, string 
         return ['status' => 'error', 'message' => 'ስህተት ተፈጥሯል፤ እባክዎ በድጋሚ ይሞክሩ።'];
     }
 }
+public function getStudyLeavesByEmployeeId(string $empId): array
+{
+    $sql = "SELECT 
+                agreement_date  AS start_date,
+                end_date
+            FROM employee_scholarships
+            WHERE emp_id    = :emp_id
+              AND is_deleted = 0";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([':emp_id' => $empId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 }

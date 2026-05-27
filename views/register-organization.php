@@ -51,6 +51,8 @@
                       data-name="<?= htmlspecialchars($row['name']) ?>"
                       data-description="<?= htmlspecialchars($row['organization_type']) ?>"
                       data-alt-name="<?= htmlspecialchars($row['alt_name']) ?>"
+                      data-phone-number="<?= htmlspecialchars($row['phone_number']) ?>"
+                      data-postal-code="<?= htmlspecialchars($row['postal_code']) ?>"
                     data-logo-url="<?= rtrim($_ENV['BASE_URL'], '/') ?>?action=serve-file&file=<?= htmlspecialchars($row['logo_url']) ?>&type=image"
                       title="አስተካክል"  >
                 <i class="fas fa-edit"></i>
@@ -124,6 +126,28 @@
               class="form-control form-control-sm" 
               name="org_description" 
               placeholder="ዓይነት ያስገቡ" 
+              required
+            >
+          </div>
+          <div class="form-group mb-2">
+            <label for="phone_number" class="mb-1"><small class="font-weight-bold">ስ.ቁ</small></label>
+            <input 
+              type="text" 
+              id="phone_number" 
+              class="form-control form-control-sm" 
+              name="phone_number" 
+              placeholder="ስ.ቁ ያስገቡ" 
+              required
+            >
+          </div>
+          <div class="form-group mb-2">
+            <label for="postal_code" class="mb-1"><small class="font-weight-bold">ፖ.ሳ.ቁ.</small></label>
+            <input 
+              type="text" 
+              id="postal_code" 
+              class="form-control form-control-sm" 
+              name="postal_code" 
+              placeholder="ፖ.ሳ.ቁ. ያስገቡ" 
               required
             >
           </div>

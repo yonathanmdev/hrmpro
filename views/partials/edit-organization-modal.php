@@ -68,6 +68,35 @@
             >
           </div>
 
+          <div class="form-group mb-2">
+            <label for="edit_org_phone_number" class="mb-1">
+              <small class="font-weight-bold">ስ.ቁ.</small>
+            </label>
+            <input 
+              type="text" 
+              id="edit_org_phone_number"
+              name="phone_number" 
+              class="form-control form-control-sm" 
+              placeholder="ስ.ቁ. ያስገቡ" 
+              required
+            >
+          </div>
+          <div class="form-group mb-2">
+            <label for="edit_org_postal_code" class="mb-1">
+              <small class="font-weight-bold">ፖ.ሳ.ቁ.</small>
+            </label>
+            <input 
+              type="text" 
+              id="edit_org_postal_code"
+              name="postal_code" 
+              class="form-control form-control-sm" 
+              placeholder="ፖ.ሳ.ቁ. ያስገቡ" 
+              required
+            >
+          </div>
+
+          
+
           <!-- Logo upload -->
           <div class="form-group mb-2">
             <label for="edit_org_logo" class="mb-1">
