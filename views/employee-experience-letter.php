@@ -1418,7 +1418,6 @@ if ($hireStart) {
         </div>
     </div><!-- /.signature-block -->
 
-
     <!-- ══ PRINT FOOTER ══ -->
     <div class="print-footer">
         <div class="page-footer">
