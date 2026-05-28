@@ -275,14 +275,17 @@ $(document).ready(function() {
     $('#effeciency').on('input', function() {
         const value = parseFloat($(this).val());
         let level = '';
-        if (value >= 90) {
+        if (value >= 95 && value <= 100) {
+            level = 'በጣም ከፍተኛ';
+        }
+        else if (value >= 80) {
             level = 'ከፍተኛ';
-        } else if (value >= 70) {
+        } else if (value >= 65) {
             level = 'መካከለኛ';
         } else if (value >= 50) {
-            level = 'ያልተለመደ';
+            level = 'አጥጋቢ';
         } else {
-            level = 'ያልተለመደ';
+            level = 'ዝቅተኛ';
         }
         $('#level_of_effeciency').val(level);
     });
