@@ -1050,7 +1050,9 @@ if ($hireStart) {
     <div class="print-header">
         <div class="letterhead">
             <div class="letterhead-logo">
-                <img src="/HRM/serve-file?file=1779447746_bols.jpg&type=image" alt="Logo">
+                <img src="<?= rtrim($_ENV['BASE_URL'] ?? '', '/') ?>/serve-file?file=<?= htmlspecialchars($_SESSION['user']['logo_url']) ?>&type=image" 
+                   alt="<?= htmlspecialchars($_SESSION['user']['alt_name'] ?? '') ?>" 
+                   class="img-fluid">
             </div>
             <div class="letterhead-org">
                 <div class="org-name"><?= $_SESSION['user']['branch_name'] ?></div>
