@@ -1,4 +1,5 @@
 <?php
+use App\Helpers\EthiopianDateHelper; 
 $is_report_view_page = true;
 $branchId = $branchId ?? ($_SESSION['user']['branch_id'] ?? null);
 $reportType = $reportType ?? ($_GET['type'] ?? 'employees');
@@ -24,9 +25,10 @@ $sumg   = $giwend + $giset;
 $hr_firstnameu  = $_SESSION['user']['first_name'] ?? 'ያልታወቀ';
 $hr_middlenameu = $_SESSION['user']['father_name'] ?? 'ባለሙያ';
 
-$cuethday   = date('d');
-$cuethmonth = date('m');
-$cuethyear  = date('Y') - 8;
+$today      = date('Y-m-d');
+              $endParts   = explode('-', $today);
+              $endEth     = EthiopianDateHelper::toEthCalendar($endParts[2], $endParts[1], $endParts[0]);
+
 ?>
 
 <style>
@@ -59,7 +61,8 @@ $cuethyear  = date('Y') - 8;
     <div class="text-center mb-4 pt-2">
       <h4 class="font-weight-bold" style="color: #222;"><?= htmlspecialchars($reportTitle) ?></h4>
       <p class="text-muted small mb-1">የመስሪያ ቤቱ ስም፦ <b><?= htmlspecialchars($branchName) ?></b></p>
-      <p class="text-muted small">የተዘጋጀበት ቀን: <?= date('Y-m-d H:i') ?></p>
+      <p class="text-muted small">የተዘጋጀበት ቀን: <?= EthiopianDateHelper::getMonthName($endEth['month']) ?> <?= $endEth['day'] ?> <?= $endEth['year'] ?>
+</p>
       <hr style="border-top: 2px solid #333; width: 100%;">
     </div>
 
@@ -108,9 +111,10 @@ $cuethyear  = date('Y') - 8;
 
     <div class="mt-5 pt-4 clearfix" style="font-size: 14px; color: #000;">
       <div style="float: right; text-align: right; width: 100%;">
-        야ዘጋጀዉ ስም፦ <b><?= htmlspecialchars($hr_firstnameu . " " . $hr_middlenameu) ?></b> &nbsp;&nbsp;&nbsp;&nbsp;
+        ያዘጋጀዉ ስም፦ <b><?= htmlspecialchars($hr_firstnameu . " " . $hr_middlenameu) ?></b> &nbsp;&nbsp;&nbsp;&nbsp;
         ፊርማ፦ ......................... &nbsp;&nbsp;&nbsp;&nbsp;
-        ቀን፦ <b><?= htmlspecialchars($cuethday . "/" . $cuethmonth . "/" . $cuethyear) ?></b> ዓ.ም
+        ቀን፦ <b><?= EthiopianDateHelper::getMonthName($endEth['month']) ?> <?= $endEth['day'] ?> <?= $endEth['year'] ?>
+</b> ዓ.ም
       </div>
     </div>
 
