@@ -1,6 +1,8 @@
 <?php
 namespace App\Models;
 use App\Helpers\AmharicNormalizer;
+use App\Models\EmployeeGuarantor;
+use PDO;
 class EmployeeRegistration {
     private $db;
 
@@ -58,7 +60,7 @@ public function assignJob(string $newJobId, string $branchId, ?string $oldJobId 
     ");
     $stmt->execute([$newJobId]);
 }
- public function createEmployee(array $data): bool {
+ public function createEmployee(array $data, ?array $guarantorData = null): bool {
         try {
             $fullNameRaw = $data['first_name'] . ' ' . $data['father_name'] . ' ' . $data['g_father_name'];
             $normalizedFullName = AmharicNormalizer::normalize($fullNameRaw);
@@ -125,6 +127,10 @@ $this->assignJob($data['job_property_id'], $data['branch_id']);            // In
                 throw new \Exception("Failed to update job status");
             }
 */
+ if ($guarantorData !== null) {
+            $guarantorModel = new EmployeeGuarantor($this->db);
+            $guarantorModel->insertGurantor($guarantorData);
+        }
             // Commit transaction
             $this->db->commit();
             return true;
@@ -190,7 +196,7 @@ $this->assignJob($data['job_property_id'], $data['branch_id']);            // In
         return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function updateEmployee(string $uuid, array $data): bool {
+    public function updateEmployee(string $uuid, array $data, ?array $guarantorData = null): bool {
         try {
             // Start transaction
             $this->db->beginTransaction();
@@ -280,7 +286,10 @@ if ($oldJobId != $newJobId) {
             }
 */
             // Commit transaction
-            $this->db->commit();
+          if ($guarantorData !== null) {
+            $guarantorModel = new EmployeeGuarantor($this->db);
+            $guarantorModel->upsertWithinTransaction($guarantorData);
+        }  $this->db->commit();
             return true;
 
         } catch (\Exception $e) {
@@ -457,19 +466,27 @@ public function autoSearch(string $term, string $branchId, ?string $source = nul
             'approved_by' => $data['approved_by'],
         ]);
 
-        if ($stmt->rowCount() === 0) {
+       if ($stmt->rowCount() === 0) {
             throw new \Exception("Delete approval failed");
         }
 
         // ➖ 3. Decrease job counter
-       $stmt = $this->db->prepare("
-    UPDATE job_property
-    SET current_filled = GREATEST(current_filled - 1, 0)
-    WHERE id = ?
-");
-$stmt->execute([$employee['job_property_id']]);
+        $stmt = $this->db->prepare("
+            UPDATE job_property
+            SET current_filled = GREATEST(current_filled - 1, 0)
+            WHERE id = ?
+        ");
+        $stmt->execute([$employee['job_property_id']]);
 
-        // ✅ 4. Commit
+        // 🗑️ 4. Soft-delete guarantor if exists
+        $stmt = $this->db->prepare("
+            UPDATE employees_guarantors
+            SET deletion_source = 'CASCADE', is_deleted = 1
+            WHERE employee_id = ? AND is_deleted = 0
+        ");
+        $stmt->execute([$uuid]);
+
+        // ✅ 5. Commit
         $this->db->commit();
         return true;
 
@@ -478,6 +495,7 @@ $stmt->execute([$employee['job_property_id']]);
         error_log("Deletion approval failed: " . $e->getMessage());
         return false;
     }
+
 }
 
     // ================================================================

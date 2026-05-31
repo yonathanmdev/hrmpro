@@ -86,6 +86,16 @@ $(document).ready(function() {
             competency_situation: {
                 maxlength: 200
             },
+            // ── Guarantor (toggled dynamically) ──────────────────────────────
+guarantor_name: {
+    required: false,
+    minlength: 2,
+    maxlength: 255
+},
+guarantor_phone: {
+    required: false,
+    pattern: /^[0-9]{10}$/
+},
             remark: {
                 maxlength: 500
             }
@@ -154,7 +164,16 @@ $(document).ready(function() {
                 required: "የዲሲፕሊን ሁኔታ አስፈላጊ ነው።",
                 minlength: "የዲሲፕሊን ሁኔታ ቢያንስ 2  ፊደል መሆን አለበት።",
                 maxlength: "የዲሲፕሊን ሁኔታ ከ100 ፊደል መብለጥ የለበትም"
-            }
+            },
+            // ── Guarantor messages ────────────────────────────────────────────
+guarantor_name: {
+    required: "የተያዥ ሙሉ ስም አስፈላጊ ነው።",
+    minlength: "ስም ቢያንስ 2 ፊደል መሆን አለበት።"
+},
+guarantor_phone: {
+    required: "የተያዥ ስልክ ቁጥር አስፈላጊ ነው።",
+    pattern:  "ስልክ ቁጥሩ ትክክለኛ 10 አሃዝ መሆን አለበት።"
+}
         },
     errorElement: 'span',
 errorPlacement: function (error, element) {
@@ -321,4 +340,49 @@ $('#job_property_id').on('change', function() {
 
 // Set current job on page load
 $('#job_property_id').data('current-job', $('#job_property_id').val());
+});
+
+// ── 5. Guarantor toggle (vanilla JS) ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+    const jobSelect        = document.getElementById('job_property_id');
+    const guarantorSection = document.getElementById('guarantor-section');
+    const guarantorName    = document.getElementById('edit_guarantor_name');
+    const guarantorPhone   = document.getElementById('edit_guarantor_phone');
+    const guarantorLetter  = document.getElementById('edit_guarantor_letter');
+
+    const originalJobId        = jobSelect.value;
+    const hasExistingGuarantor = guarantorSection.dataset.hasGuarantor === '1';
+
+    window.toggleGuarantor = function () {
+        const selected   = jobSelect.options[jobSelect.selectedIndex];
+        const wastna     = selected?.dataset?.wastna?.trim();
+        const isRequired = wastna === 'ተያዥ የሚያስፈልገዉ';
+
+        const jobChanged         = jobSelect.value !== originalJobId;
+        const existingStillValid = hasExistingGuarantor && !jobChanged;
+
+        guarantorSection.style.display = isRequired ? 'block' : 'none';
+
+        guarantorName.required   = isRequired;
+        guarantorPhone.required  = isRequired;
+
+        // File required only if no existing file or job changed
+        guarantorLetter.required = isRequired && !existingStillValid;
+
+        // Sync required state with jQuery validate rules
+        const $validator = $('#employee-edit-form').data('validator');
+        if ($validator) {
+            $validator.settings.rules.guarantor_name  = { required: isRequired, minlength: 2, maxlength: 255 };
+            $validator.settings.rules.guarantor_phone = { required: isRequired, pattern: /^[0-9]{10}$/ };
+        }
+
+        if (!isRequired) {
+            guarantorName.value   = '';
+            guarantorPhone.value  = '';
+            guarantorLetter.value = '';
+        }
+    };
+
+    jobSelect.addEventListener('change', window.toggleGuarantor);
+    window.toggleGuarantor();
 });

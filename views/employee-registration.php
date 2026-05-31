@@ -212,7 +212,7 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                   <option value="">-- ይምረጡ --</option>
                   <?php if (!empty($jobs)): ?>
                     <?php foreach ($jobs as $job): ?>
-                      <option value="<?= htmlspecialchars($job['id']) ?>"><?= htmlspecialchars($job['job_name']) ?></option>
+                      <option value="<?= htmlspecialchars($job['id']) ?>" data-wastna="<?= htmlspecialchars($job['wastna']) ?>"><?= htmlspecialchars($job['job_name']) ?></option>
                     <?php endforeach; ?>
                   <?php endif; ?>
                 </select>
@@ -283,7 +283,6 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
              <select class="form-control form-control-sm"id="displin_situation" name="displin_situation" required>
                             <option selected="" disable="" value="">-- ይምረጡ --</option>   
                             <option value="ምንም የቅጣት ሪኮርድ የሌለባቸው">ምንም የቅጣት ሪኮርድ የሌለባቸው</option>
-                            <option value="ምንም የቅጣት ሪኮርድ የሌለባቸው">ምንም የቅጣት ሪኮርድ የሌለባቸው</option>
                              <option value="የጽሁፍ ማስጠንቀቂያ የተሰጣቸው" >የጽሁፍ ማስጠንቀቂያ የተሰጣቸው</option>
                              <option value="እስከ 15 ቀን የሚደርስ የደመወዝ ቅጣት የተቀጡ">እስከ 15 ቀን የሚደርስ የደመወዝ ቅጣት የተቀጡ</option>
                              <option value="እስከ 3 ወር የሚደርስ የደመወዝ ቅጣት የተቀጡ">እስከ 3 ወር የሚደርስ የደመወዝ ቅጣት የተቀጡ</option>
@@ -329,22 +328,64 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                 <input type="number" step="1" min="0" class="form-control form-control-sm" id="annual_rest" name="annual_rest" value="0">
               </div>
             </div>
-                    </div>  
+                    </div> 
+                    <!-- Guarantor fields - hidden by default -->
+<div id="guarantor-section" style="display: none;">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="form-group mb-2">
+        <label class="mb-1" for="guarantor_name">
+          <small class="font-weight-bold">የተያዥ ሙሉ ስም</small>
+        </label>
+        <input type="text" class="form-control form-control-sm" 
+               id="guarantor_name" name="guarantor_name"
+               placeholder="ሙሉ ስም ያስገቡ">
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group mb-2">
+        <label class="mb-1" for="guarantor_phone">
+          <small class="font-weight-bold">ስልክ</small>
+        </label>
+        <input type="text" class="form-control form-control-sm" 
+               id="guarantor_phone" name="guarantor_phone"
+               placeholder="ስልክ ቁጥር ያስገቡ">
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group mb-2">
+        <label class="mb-1" for="guarantor_letter">
+          <small class="font-weight-bold">የተያዥ ደብዳቤ</small>
+        </label>
+        <input type="file" class="form-control form-control-sm" 
+       id="guarantor_letter" name="guarantor_letter"
+       accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png">
+      </div>
+    </div>
+  </div>
+</div> 
                      <div class="row">
-         
-            <div class="col-md-4">
-              <div class="form-group">
-                <label class="mb-1" for="employee_image"><small class="font-weight-bold">ፎቶ</small></label>
-                <input type="file" class="form-control-file" id="employee_image" name="employee_image" accept="image/*" required>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label class="mb-1" for="employee_file201"><small class="font-weight-bold">የት/ት ማስረጃ እና ሌሎች</small></label>
-                <input type="file" class="form-control-file" id="employee_file201" name="employee_file201" required>
-              </div>
-            </div>
+<div class="col-md-4">
+  <div class="form-group">
+    <label class="mb-1" for="employee_image">
+      <small class="font-weight-bold">ፎቶ</small>
+    </label>
+    <input type="file" class="form-control-file" id="employee_image" name="employee_image"
+           accept="image/jpeg,image/png,.jpg,.jpeg,.png" required>
+  </div>
+</div>
+
+<div class="col-md-4">
+  <div class="form-group">
+    <label class="mb-1" for="employee_file201">
+      <small class="font-weight-bold">የት/ት ማስረጃ እና ሌሎች</small>
+    </label>
+    <input type="file" class="form-control-file" id="employee_file201" name="employee_file201"
+           accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png" required>
+  </div>
+</div>
           </div>
+
           <div class="row">
             <div class="col-md-6">
               <div class="form-group">

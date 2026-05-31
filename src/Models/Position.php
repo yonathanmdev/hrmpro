@@ -100,6 +100,7 @@ class Position {
             jp.job_name,
             jp.allow_multiple,
             jp.vacancy_count,
+            jp.wastna,
             jp.current_filled as filled_count
         FROM job_property jp
         WHERE 
