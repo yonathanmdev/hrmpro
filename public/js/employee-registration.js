@@ -266,7 +266,7 @@ $(document).ready(function() {
         submitHandler: function(form) {
             const submitBtn = $(form).find('button[type="submit"]');
             submitBtn.prop('disabled', true)
-                     .html('<i class="fas fa-spinner fa-spin"></i> በማስተካከል ላይ...');
+                     .html('<i class="fas fa-spinner fa-spin"></i> በመመዝገብ ላይ...');
             form.submit();
         }
     });
@@ -335,4 +335,47 @@ $('#employeeRegistrationModal').on('hidden.bs.modal', function() {
     $(this).find('.modal-dialog').removeAttr('style');
 });
 
+});
+document.addEventListener('DOMContentLoaded', function () {
+  const jobSelect        = document.getElementById('job_property_id');
+  const guarantorSection = document.getElementById('guarantor-section');
+
+  const guarantorName   = document.getElementById('guarantor_name');
+  const guarantorPhone  = document.getElementById('guarantor_phone');
+  const guarantorLetter = document.getElementById('guarantor_letter');
+
+  function validatePhone() {
+    const digits = guarantorPhone.value.replace(/\D/g, '');
+    if (guarantorPhone.required && digits.length !== 10) {
+      guarantorPhone.setCustomValidity('ስልክ ቁጥሩ ትክክለኛ 10 አሃዝ መሆን አለበት።');
+    } else {
+      guarantorPhone.setCustomValidity('');
+    }
+  }
+
+  function toggleGuarantor() {
+    const selected   = jobSelect.options[jobSelect.selectedIndex];
+    const wastna     = selected?.dataset?.wastna?.trim();
+    const isRequired = wastna === 'ተያዥ የሚያስፈልገዉ';
+
+    guarantorSection.style.display = isRequired ? 'block' : 'none';
+
+    guarantorName.required   = isRequired;
+    guarantorPhone.required  = isRequired;
+    guarantorLetter.required = isRequired;
+
+    if (!isRequired) {
+      guarantorName.value   = '';
+      guarantorPhone.value  = '';
+      guarantorLetter.value = '';
+      guarantorPhone.setCustomValidity(''); // clear any lingering error
+    }
+
+    validatePhone(); // re-evaluate when job changes
+  }
+
+  guarantorPhone.addEventListener('input', validatePhone);
+
+  jobSelect.addEventListener('change', toggleGuarantor);
+  toggleGuarantor();
 });

@@ -3,6 +3,7 @@ namespace App\Controllers;
 use App\Models\ScholarshipModel;
 use App\Models\EmployeeRegistration;
 use App\Models\User;
+use App\Models\EmployeeGuarantor;
 use App\Helpers\AuthHelper;
 use Ramsey\Uuid\Uuid;
 use \App\Traits\FileUploadTrait;
@@ -252,10 +253,15 @@ public function getScholarshipDetails($params = []) {
     // Directly passing the UUID string
     $documentData = $model->getDocumentByEmpId($uuid);
 
+     $guarantorModel = new EmployeeGuarantor($this->db);
+    // Directly passing the UUID string
+    $employeeGuarantor = $guarantorModel->getByEmployeeId($uuid);
+
     $data = [
         'title' => 'HRM - የሰራተኛ ማህደር',
         'documentData' => $documentData,
-        'employee' => $employee
+        'employee' => $employee,
+        'employeeGuarantor' => $employeeGuarantor,
     ];
 
     $this->render('employee-archive', $data);

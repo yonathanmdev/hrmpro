@@ -4,6 +4,7 @@ use DateTime;
 use App\Models\EmployeeRegistration;
 use App\Models\User;
 use App\Models\Position;
+use App\Models\EmployeeGuarantor;
 use App\Helpers\AuthHelper;
 use Ramsey\Uuid\Uuid;
 use \App\Traits\FileUploadTrait;
@@ -81,31 +82,33 @@ class EmployeeRegistrationController extends BaseController {
         // Get available jobs (active + current job)
         $availableJobs = $positionModel->getActiveJobsByBranch($branchId, $employee['job_property_id']);
 
+        $guarantorModel = new EmployeeGuarantor($this->db);
+    $guarantor      = $guarantorModel->getByEmployeeId($uuid); // null if no guarantor
+
           $data = [
         'title'         => 'HRM - የሰራተኛ ማስተካከያ',
         'user'          => $user,
         'employee'      => $employee,
         'availableJobs' => $availableJobs,
         'params'        => $params,   // ← add this
-        'source'        => $source,   // ← add this for convenience
+        'source'        => $source,   // ← add this for convenience,
+        'guarantor'     => $guarantor, // ← add guarantor data
     ];
 
         $this->render('employee-edit', $data);
     }
 
-   public function handleEdit($params = []) {
+public function handleEdit($params = []) {
     AuthHelper::checkRole(['hr_director', 'hr_officer']);
 
-    // Get source — from URL segment first, then POST hidden input, then default
-    $source = $_POST['source']?? '';  
-        $uuid = $_POST['uuid'] ?? null;
-    
-    // Whitelist allowed sources for security
+    $source = $_POST['source'] ?? '';
+    $uuid   = $_POST['uuid'] ?? null;
+
     $allowedSources = ['employee-registration', 'employee-active'];
     if (!in_array($source, $allowedSources)) {
         $source = 'employee-registration';
     }
-    
+
     $redirectUrl = rtrim($_ENV['BASE_URL'], '/') . '/' . $source;
 
     if (!$uuid) {
@@ -113,281 +116,449 @@ class EmployeeRegistrationController extends BaseController {
         exit();
     }
 
+    $user           = $_SESSION['user'] ?? [];
+    $organizationId = $user['organization_id'] ?? null;
+    $branchId       = $user['branch_id'] ?? null;
 
-        $user = $_SESSION['user'] ?? [];
-        $organizationId = $user['organization_id'] ?? null;
-        $branchId = $user['branch_id'] ?? null;
+    if (!$organizationId || !$branchId || empty($user['id'])) {
+        $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
+        header("Location: " . $redirectUrl);
+        exit();
+    }
 
-        if (!$organizationId || !$branchId || empty($user['id'])) {
-            $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
+    $validationErrors = $this->validateEmployeeData($_POST);
+    if (!empty($validationErrors)) {
+        $_SESSION['error'] = implode('<br>', $validationErrors);
+        header("Location: " . $redirectUrl);
+        exit();
+    }
+
+    $employeeModel   = new EmployeeRegistration($this->db);
+    $currentEmployee = $employeeModel->getEmployeeByUuid($uuid);
+
+    if (!$currentEmployee) {
+        $_SESSION['error'] = 'ሰራተኛ አልተገኘም።';
+        header("Location: " . $redirectUrl);
+        exit();
+    }
+
+    $oldJobId   = $currentEmployee['job_property_id'];
+    $newJobId   = trim($_POST['job_property_id'] ?? '');
+    $employeeId = trim($currentEmployee['employee_id']);
+
+    // ── Handle employee_image and file201 uploads (optional on edit) ─────────
+    $imageName   = $this->uploadFile('employee_image', 'images')   ?? $currentEmployee['employee_image'];
+    $file201Name = $this->uploadFile('employee_file201', 'documents') ?? $currentEmployee['employee_file201'];
+
+    try {
+        $positionModel = new Position($this->db);
+        $position      = $positionModel->getPositionById($newJobId);
+
+        if (!$position) {
+            $_SESSION['error'] = "የተመረጠው የስራ መደብ ሊገኝ አልቻለም።";
             header("Location: " . $redirectUrl);
             exit();
         }
 
-        // Server-side validation
-        $validationErrors = $this->validateEmployeeData($_POST);
-        if (!empty($validationErrors)) {
-            $_SESSION['error'] = implode('<br>', $validationErrors);
+        if (empty(trim($position['job_identifier_no'] ?? ''))) {
+            $_SESSION['error'] = "የስራ መደቡ መለያ ቁጥር አልተገኘም። እባክዎ መደቡን ያረጋግጡ።";
             header("Location: " . $redirectUrl);
             exit();
         }
 
-        // Get current employee to check for job change
-        $employeeModel = new EmployeeRegistration($this->db);
-        $currentEmployee = $employeeModel->getEmployeeByUuid($uuid);
+        // ── Guarantor handling ────────────────────────────────────────────────
+        $guarantorModel    = new EmployeeGuarantor($this->db);
+        $existingGuarantor = $guarantorModel->getByEmployeeId($uuid);
+        $guarantorData     = null;
 
-        if (!$currentEmployee) {
-            $_SESSION['error'] = 'ሰራተኛ አልተገኘም።';
-           header("Location: " . $redirectUrl);
-            exit();
-        }
+        if ($position['wastna'] === 'ተያዥ የሚያስፈልገዉ') {
+            $guarantorName  = trim($_POST['guarantor_name'] ?? '');
+            $guarantorPhone = trim($_POST['guarantor_phone'] ?? '');
 
-        $oldJobId    = $currentEmployee['job_property_id'];
-$newJobId    = trim($_POST['job_property_id'] ?? '');
-$employeeId  = trim($currentEmployee['employee_id']);
-      
-        // Handle file uploads (optional for editing)
-        $imageName = $this->uploadFile('employee_image', 'images');
-        $file201Name = $this->uploadFile('employee_file201', 'documents');
-
-        // Use existing files if no new files uploaded
-        if (!$imageName) {
-            $imageName = $currentEmployee['employee_image'];
-        }
-        if (!$file201Name) {
-            $file201Name = $currentEmployee['employee_file201'];
-        }
-
-try {
-    $positionModel = new Position($this->db);
-    $position = $positionModel->getPositionById(trim($_POST['job_property_id'] ?? ''));
-
-    if (!$position) {
-        $_SESSION['error'] = "የተመረጠው የስራ መደብ ሊገኝ አልቻለም።";
-        header("Location: " . $redirectUrl); // ← fixed
-        exit();
-    }
-
-    if (empty(trim($position['job_identifier_no'] ?? ''))) {
-        $_SESSION['error'] = "የስራ መደቡ መለያ ቁጥር አልተገኘም። እባክዎ መደቡን ያረጋግጡ።";
-        header("Location: " . $redirectUrl); // ← fixed
-        exit();
-    }
-
-} catch (\PDOException $e) {
-    error_log("Employee ID Validation Error: " . $e->getMessage());
-    $_SESSION['error'] = "የሰራተኛ መለያ ቁጥር ማረጋገጫ ላይ ስህተት አጋጥሟል።";
-    header("Location: " . $redirectUrl); // ← fixed
+            if (empty($guarantorName) || empty($guarantorPhone)) {
+                $_SESSION['error'] = "የተያዥ ሙሉ ስም እና ስልክ ቁጥር ያስገቡ።";
+                header("Location: " . $redirectUrl);
+                exit();
+            }
+// ── ADD: phone format check ───────────────────────────────────────
+if (!preg_match('/^[0-9]{10}$/', $guarantorPhone)) {
+    $_SESSION['error'] = 'የተያዥ ስልክ ቁጥር ትክክለኛ 10 አሃዝ መሆን አለበት።';
+    header("Location: " . $redirectUrl);
     exit();
 }
+            $newFileUploaded = !empty($_FILES['guarantor_letter']['name']) &&
+                               $_FILES['guarantor_letter']['error'] !== UPLOAD_ERR_NO_FILE;
 
-$data = [
-    'employee_id'    => ($oldJobId != $newJobId) 
-                            ? trim($position['job_identifier_no']) 
-                            : $employeeId, // ← keep existing if job unchanged
-            'pension_number' => trim($_POST['pension_number'] ?? null) ?: null,
-            'first_name' => trim($_POST['first_name'] ?? ''),
-            'father_name' => trim($_POST['father_name'] ?? ''),
-            'g_father_name' => trim($_POST['g_father_name'] ?? ''),
-            'mother_name' => trim($_POST['mother_name'] ?? ''),
-            'sex' => $_POST['sex'] ?? 'Male',
-            'birth_date' => trim($_POST['birth_date'] ?? null) ?: null,
-            'phone_number' => trim($_POST['phone_number'] ?? null) ?: null,
-            'yegabcha_huneta' => trim($_POST['yegabcha_huneta'] ?? ''),
-            'job_property_id' => $newJobId,
-            'date_of_employed' => trim($_POST['date_of_employed'] ?? null) ?: null,
-            'level_of_education' => trim($_POST['level_of_education'] ?? ''),
-            'department' => trim($_POST['department'] ?? null) ?: null,
-            'employment_situation' => trim($_POST['employment_situation'] ?? ''),
-            'immidate_boss' => trim($_POST['immidate_boss'] ?? null) ?: null,
-            'experience' => trim($_POST['experience'] ?? null) ?: null,
-            'annual_rest' => isset($_POST['annual_rest']) ? (int) $_POST['annual_rest'] : 0,
-            'displin_situation' => trim($_POST['displin_situation'] ?? ''),
-            'competency_situation' => trim($_POST['competency_situation'] ?? null) ?: null,
-            'effeciency' => $this->normalizeDecimal($_POST['effeciency'] ?? null),
-            'level_of_effeciency' => trim($_POST['level_of_effeciency'] ?? null) ?: null,
+            if ($newFileUploaded) {
+                // New file uploaded — replace old one
+                $guarantorLetter = $this->uploadFile('guarantor_letter', 'documents');
+
+                if (!$guarantorLetter) {
+                    $errorCode = $_FILES['guarantor_letter']['error'] ?? UPLOAD_ERR_NO_FILE;
+                    $_SESSION['error'] = 'የተያዥ ፋይል ሊያያዝ አልቻለም። ' . $this->getUploadErrorMessage($errorCode);
+                    header("Location: " . $redirectUrl);
+                    exit();
+                }
+
+                // Delete old file from disk
+                if (!empty($existingGuarantor['guarantor_letter'])) {
+                    $oldPath = dirname(__DIR__, 2) . '/storage/uploads/documents/' . $existingGuarantor['guarantor_letter'];
+                    if (file_exists($oldPath)) unlink($oldPath);
+                }
+
+            } elseif (!empty($existingGuarantor['guarantor_letter'])) {
+                // No new file — keep existing
+                $guarantorLetter = $existingGuarantor['guarantor_letter'];
+
+            } else {
+                // No new file and no existing file — required
+                $_SESSION['error'] = 'እባክዎ የዋስትና ደብዳቤ ያስገቡ።';
+                header("Location: " . $redirectUrl);
+                exit();
+            }
+
+            $guarantorData = [
+                'id'              => $existingGuarantor['id'] ?? Uuid::uuid4()->toString(),
+                'employee_id'     => $uuid,
+                'guarantor_name'  => $guarantorName,
+                'guarantor_phone' => $guarantorPhone,
+                'guarantor_letter'=> $guarantorLetter,
+            ];
+
+        } else {
+            // Job changed to non-guarantor — soft delete and remove file
+            if ($existingGuarantor) {
+                if (!empty($existingGuarantor['guarantor_letter'])) {
+                    $oldPath = dirname(__DIR__, 2) . '/storage/uploads/documents/' . $existingGuarantor['guarantor_letter'];
+                    if (file_exists($oldPath)) unlink($oldPath);
+                }
+                $guarantorModel->softDeleteByEmployeeId($uuid);
+            }
+        }
+
+        // ── Build $data ───────────────────────────────────────────────────────
+        $data = [
+            'employee_id'           => ($oldJobId != $newJobId)
+                                            ? trim($position['job_identifier_no'])
+                                            : $employeeId,
+            'pension_number'        => trim($_POST['pension_number'] ?? null) ?: null,
+            'first_name'            => trim($_POST['first_name'] ?? ''),
+            'father_name'           => trim($_POST['father_name'] ?? ''),
+            'g_father_name'         => trim($_POST['g_father_name'] ?? ''),
+            'mother_name'           => trim($_POST['mother_name'] ?? ''),
+            'sex'                   => $_POST['sex'] ?? 'Male',
+            'birth_date'            => trim($_POST['birth_date'] ?? null) ?: null,
+            'phone_number'          => trim($_POST['phone_number'] ?? null) ?: null,
+            'yegabcha_huneta'       => trim($_POST['yegabcha_huneta'] ?? ''),
+            'job_property_id'       => $newJobId,
+            'date_of_employed'      => trim($_POST['date_of_employed'] ?? null) ?: null,
+            'level_of_education'    => trim($_POST['level_of_education'] ?? ''),
+            'department'            => trim($_POST['department'] ?? null) ?: null,
+            'employment_situation'  => trim($_POST['employment_situation'] ?? ''),
+            'immidate_boss'         => trim($_POST['immidate_boss'] ?? null) ?: null,
+            'experience'            => trim($_POST['experience'] ?? null) ?: null,
+            'annual_rest'           => isset($_POST['annual_rest']) ? (int) $_POST['annual_rest'] : 0,
+            'displin_situation'     => trim($_POST['displin_situation'] ?? ''),
+            'competency_situation'  => trim($_POST['competency_situation'] ?? null) ?: null,
+            'effeciency'            => $this->normalizeDecimal($_POST['effeciency'] ?? null),
+            'level_of_effeciency'   => trim($_POST['level_of_effeciency'] ?? null) ?: null,
             'no_of_files_in_folder' => isset($_POST['no_of_files_in_folder']) ? (int) $_POST['no_of_files_in_folder'] : 0,
-            'employee_image' => $imageName,
-            'employee_file201' => $file201Name,
-            'remark' => trim($_POST['remark'] ?? null) ?: null,
+            'employee_image'        => $imageName,
+            'employee_file201'      => $file201Name,
+            'remark'                => trim($_POST['remark'] ?? null) ?: null,
         ];
 
-if ($employeeModel->updateEmployee($uuid, $data)) {
-
-    // ── Only reassign job if it actually changed
+        // ── Persist ───────────────────────────────────────────────────────────
+    if ($employeeModel->updateEmployee($uuid, $data, $guarantorData)) {
+    // ── Already there ─────────────────────────────────────────────
     if ($oldJobId != $newJobId) {
-        $employeeModel->assignJob($newJobId, $branchId, (string)$oldJobId);
+        $employeeModel->assignJob($newJobId, $branchId, (string) $oldJobId);
 
-        \App\Helpers\AuditHelper::log('employee_job_changed', 'employee', $uuid, null, [
-            'old_job_id'  => $oldJobId,
-            'new_job_id'  => $newJobId,
-            'employee_id' => $employeeId,
-            'changed_by'  => $user['id']
-        ], ['change_type' => 'job_assignment']);
+        \App\Helpers\AuditHelper::log(
+            action:     'employee_job_changed',
+            entityType: 'employee',
+            entityId:   $uuid,
+            oldValues:  null,
+            newValues:  [
+                'old_job_id'  => $oldJobId,
+                'new_job_id'  => $newJobId,
+                'employee_id' => $employeeId,
+                'changed_by'  => $user['id'],
+            ],
+            metadata: ['change_type' => 'job_assignment']
+        );
+    }
+
+    // ── ADD: Guarantor audit ──────────────────────────────────────
+    if ($guarantorData) {
+        $action = $existingGuarantor ? 'guarantor_updated' : 'guarantor_added';
+        \App\Helpers\AuditHelper::log(
+            action:     $action,
+            entityType: 'employee',
+            entityId:   $uuid,
+            oldValues:  $existingGuarantor ? [
+                'name'  => $existingGuarantor['guarantor_name'],
+                'phone' => $existingGuarantor['guarantor_phone'],
+            ] : null,
+            newValues:  [
+                'name'  => $guarantorData['guarantor_name'],
+                'phone' => $guarantorData['guarantor_phone'],
+            ],
+            metadata: ['changed_by' => $user['id']]
+        );
+    } elseif ($existingGuarantor && $position['wastna'] !== 'ተያዥ የሚያስፈልገዉ') {
+        \App\Helpers\AuditHelper::log(
+            action:     'guarantor_removed',
+            entityType: 'employee',
+            entityId:   $uuid,
+            oldValues:  ['name' => $existingGuarantor['guarantor_name']],
+            newValues:  null,
+            metadata:   ['reason' => 'job_no_longer_requires_guarantor', 'changed_by' => $user['id']]
+        );
+    }
+
+    // ── ADD: File replacement audit ───────────────────────────────
+    if ($imageName !== $currentEmployee['employee_image']) {
+        \App\Helpers\AuditHelper::log(
+            action:     'employee_image_replaced',
+            entityType: 'employee',
+            entityId:   $uuid,
+            oldValues:  ['file' => $currentEmployee['employee_image']],
+            newValues:  ['file' => $imageName],
+            metadata:   ['changed_by' => $user['id']]
+        );
+    }
+
+    if ($file201Name !== $currentEmployee['employee_file201']) {
+        \App\Helpers\AuditHelper::log(
+            action:     'employee_file201_replaced',
+            entityType: 'employee',
+            entityId:   $uuid,
+            oldValues:  ['file' => $currentEmployee['employee_file201']],
+            newValues:  ['file' => $file201Name],
+            metadata:   ['changed_by' => $user['id']]
+        );
     }
 
     $_SESSION['success'] = 'ሰራተኛው መረጃ በትክክል ተስተካከለ።';
 
 } else {
     $_SESSION['error'] = 'የሰራተኛ ማስተካከያ ሂደት አልተሳካም።';
-}
-        header("Location: " . $redirectUrl);
-        exit();
+} 
+    } catch (\PDOException $e) {
+        error_log("Employee Edit Error: " . $e->getMessage());
+        $_SESSION['error'] = "ማስተካከያው አልተሳካም። እንደገና ይሞክሩ።";
     }
 
+    header("Location: " . $redirectUrl);
+    exit();
+}
     public function handleRegistration() {
-           AuthHelper::checkRole(['hr_director', 'hr_officer']);
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
-            exit();
-        }
+    AuthHelper::checkRole(['hr_director', 'hr_officer']);
 
-        $user = $_SESSION['user'] ?? [];
-        $organizationId = $user['organization_id'] ?? null;
-        $branchId = $user['branch_id'] ?? null;
-
-        if (!$organizationId || !$branchId || empty($user['id'])) {
-            $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
-            exit();
-        }
-
-        // Server-side validation
-        $validationErrors = $this->validateEmployeeData($_POST);
-        if (!empty($validationErrors)) {
-            $_SESSION['error'] = implode('<br>', $validationErrors);
-            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
-            exit();
-        }
-// In your handleCreate/registration method
-if (empty($_FILES['employee_image']['name']) || $_FILES['employee_image']['error'] === UPLOAD_ERR_NO_FILE) {
-    $_SESSION['error'] = 'እባክዎ የሰራተኛ ፎቶ ይምረጡ።';
-    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
-    exit();
-}
-// ADD THIS
-if (empty($_FILES['employee_file201']['name']) || $_FILES['employee_file201']['error'] === UPLOAD_ERR_NO_FILE) {
-    $_SESSION['error'] = 'እባክዎ የሰራተኛ የ201 ፋይል ይምረጡ።';
-    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
-    exit();
-}
-       $imageName   = $this->uploadFile('employee_image', 'images');
-$file201Name = $this->uploadFile('employee_file201', 'documents');
-
-if (!$imageName || !$file201Name) {
-    $messages = [];
-
-    if (!$imageName) {
-        $imageError  = $_FILES['employee_image']['error'] ?? UPLOAD_ERR_NO_FILE;
-        $messages[] = 'Photo: ' . $this->getUploadErrorMessage($imageError);
-    }
-
-    if (!$file201Name) {
-        $file201Error = $_FILES['employee_file201']['error'] ?? UPLOAD_ERR_NO_FILE;
-        $messages[]   = 'File201: ' . $this->getUploadErrorMessage($file201Error);
-    }
-
-    $_SESSION['error'] = !empty($messages)
-        ? 'ፋይል እንዲወርድ አልቻለም። ' . implode(' | ', $messages)
-        : 'ፋይል እንዲወርድ አልቻለም።';
-
-    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
-    exit();
-}
-try {
-    $positionModel = new Position($this->db);
-    $position = $positionModel->getPositionById(trim($_POST['job_property_id'] ?? ''));
-
-    if (!$position) {
-        $_SESSION['error'] = "የተመረጠው የስራ መደብ ሊገኝ አልቻለም።";
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
         exit();
     }
 
-    if (empty(trim($position['job_identifier_no'] ?? ''))) {
-        $_SESSION['error'] = "የስራ መደቡ መለያ ቁጥር አልተገኘም። እባክዎ መደቡን ያረጋግጡ።";
+    $user           = $_SESSION['user'] ?? [];
+    $organizationId = $user['organization_id'] ?? null;
+    $branchId       = $user['branch_id'] ?? null;
+
+    if (!$organizationId || !$branchId || empty($user['id'])) {
+        $_SESSION['error'] = 'የሰራተኛውን የድርጅት እና የቅርንጫፍ መረጃ ከስር ያስገቡ።';
         header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
         exit();
     }
 
-} catch (\PDOException $e) {
-    error_log("Employee ID Validation Error: " . $e->getMessage());
-    $_SESSION['error'] = "የሰራተኛ መለያ ቁጥር ማረጋገጫ ላይ ስህተት አጋጥሟል።";
+    // ── 1. Server-side validation ────────────────────────────────────────────
+    $validationErrors = $this->validateEmployeeData($_POST);
+    if (!empty($validationErrors)) {
+        $_SESSION['error'] = implode('<br>', $validationErrors);
+        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+        exit();
+    }
+
+    // ── 2. Required file presence checks ────────────────────────────────────
+    if (empty($_FILES['employee_image']['name']) || $_FILES['employee_image']['error'] === UPLOAD_ERR_NO_FILE) {
+        $_SESSION['error'] = 'እባክዎ የሰራተኛ ፎቶ ይምረጡ።';
+        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+        exit();
+    }
+
+    if (empty($_FILES['employee_file201']['name']) || $_FILES['employee_file201']['error'] === UPLOAD_ERR_NO_FILE) {
+        $_SESSION['error'] = 'እባክዎ የሰራተኛ የ201 ፋይል ይምረጡ።';
+        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+        exit();
+    }
+
+    // ── 3. Upload required files ─────────────────────────────────────────────
+    $imageName   = $this->uploadFile('employee_image', 'images');
+    $file201Name = $this->uploadFile('employee_file201', 'documents');
+
+    if (!$imageName || !$file201Name) {
+        $messages = [];
+
+        if (!$imageName) {
+            $messages[] = 'Photo: ' . $this->getUploadErrorMessage($_FILES['employee_image']['error'] ?? UPLOAD_ERR_NO_FILE);
+        }
+        if (!$file201Name) {
+            $messages[] = 'File201: ' . $this->getUploadErrorMessage($_FILES['employee_file201']['error'] ?? UPLOAD_ERR_NO_FILE);
+        }
+
+        $_SESSION['error'] = 'ፋይል ሊያያዝ አልቻለም። ' . implode(' | ', $messages);
+        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+        exit();
+    }
+
+    // ── 4. Position fetch + guarantor handling ───────────────────────────────
+    try {
+        $positionModel = new Position($this->db);
+        $position      = $positionModel->getPositionById(trim($_POST['job_property_id'] ?? ''));
+
+        if (!$position) {
+            $_SESSION['error'] = "የተመረጠው የስራ መደብ ሊገኝ አልቻለም።";
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        if (empty(trim($position['job_identifier_no'] ?? ''))) {
+            $_SESSION['error'] = "የስራ መደቡ መለያ ቁጥር አልተገኘም። እባክዎ መደቡን ያረጋግጡ።";
+            header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+            exit();
+        }
+
+        $guarantorName   = null;
+        $guarantorPhone  = null;
+        $guarantorLetter = null;
+
+        if ($position['wastna'] === 'ተያዥ የሚያስፈልገዉ') {
+            $guarantorName  = trim($_POST['guarantor_name'] ?? '');
+            $guarantorPhone = trim($_POST['guarantor_phone'] ?? '');
+
+            if (empty($guarantorName) || empty($guarantorPhone)) {
+                $_SESSION['error'] = "የተያዥ ሙሉ ስም እና ስልክ ቁጥር ያስገቡ።";
+                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+                exit();
+            }
+                        // ── ADD: phone format check ───────────────────────────────────────
+if (!preg_match('/^[0-9]{10}$/', $guarantorPhone)) {
+    $_SESSION['error'] = 'የተያዥ ስልክ ቁጥር ትክክለኛ 10 አሃዝ መሆን አለበት።';
     header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
     exit();
 }
 
-$data = [
-    'uuid'        => Uuid::uuid4()->toString(),
-    'employee_id' => trim($position['job_identifier_no']), // ← guaranteed non-null here
-            'pension_number' => trim($_POST['pension_number'] ?? null) ?: null,
-            'first_name' => trim($_POST['first_name'] ?? ''),
-            'father_name' => trim($_POST['father_name'] ?? ''),
-            'g_father_name' => trim($_POST['g_father_name'] ?? ''),
-            'mother_name' => trim($_POST['mother_name'] ?? ''),
-            'sex' => $_POST['sex'] ?? 'Male',
-            'birth_date' => trim($_POST['birth_date'] ?? null) ?: null,
-            'phone_number' => trim($_POST['phone_number'] ?? null) ?: null,
-            'yegabcha_huneta' => trim($_POST['yegabcha_huneta'] ?? ''),
-            'organization_id' => $organizationId,
-            'branch_id' => $branchId,
-            'job_property_id' => trim($_POST['job_property_id'] ?? ''),
-            'date_of_employed' => trim($_POST['date_of_employed'] ?? null) ?: null,
-            'level_of_education' => trim($_POST['level_of_education'] ?? ''),
-            'department' => trim($_POST['department'] ?? null) ?: null,
-            'employment_situation' => trim($_POST['employment_situation'] ?? ''),
-            'immidate_boss' => trim($_POST['immidate_boss'] ?? null) ?: null,
-            'experience' => trim($_POST['experience'] ?? null) ?: null,
-            'annual_rest' => isset($_POST['annual_rest']) ? (int) $_POST['annual_rest'] : 0,
-            'displin_situation' => trim($_POST['displin_situation'] ?? ''),
-            'competency_situation' => trim($_POST['competency_situation'] ?? null) ?: null,
-            'effeciency' => $this->normalizeDecimal($_POST['effeciency'] ?? null),
-            'level_of_effeciency' => trim($_POST['level_of_effeciency'] ?? null) ?: null,
+            if (empty($_FILES['guarantor_letter']['name']) || $_FILES['guarantor_letter']['error'] === UPLOAD_ERR_NO_FILE) {
+                $_SESSION['error'] = 'እባክዎ የሰራተኛ ተያዥ ፋይል ይምረጡ።';
+                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+                exit();
+            }
+
+            $guarantorLetter = $this->uploadFile('guarantor_letter', 'documents');
+
+            if (!$guarantorLetter) {
+                $errorCode = $_FILES['guarantor_letter']['error'] ?? UPLOAD_ERR_NO_FILE;
+                $_SESSION['error'] = 'የተያዥ ፋይል ሊያያዝ አልቻለም። ' . $this->getUploadErrorMessage($errorCode);
+                header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+                exit();
+            }
+
+        }
+
+        // ── 5. Build data arrays ─────────────────────────────────────────────
+        $employeeUuid = Uuid::uuid4()->toString();
+
+        $data = [
+            'uuid'                  => $employeeUuid,
+            'employee_id'           => trim($position['job_identifier_no']),
+            'pension_number'        => trim($_POST['pension_number'] ?? null) ?: null,
+            'first_name'            => trim($_POST['first_name'] ?? ''),
+            'father_name'           => trim($_POST['father_name'] ?? ''),
+            'g_father_name'         => trim($_POST['g_father_name'] ?? ''),
+            'mother_name'           => trim($_POST['mother_name'] ?? ''),
+            'sex'                   => $_POST['sex'] ?? 'Male',
+            'birth_date'            => trim($_POST['birth_date'] ?? null) ?: null,
+            'phone_number'          => trim($_POST['phone_number'] ?? null) ?: null,
+            'yegabcha_huneta'       => trim($_POST['yegabcha_huneta'] ?? ''),
+            'organization_id'       => $organizationId,
+            'branch_id'             => $branchId,
+            'job_property_id'       => trim($_POST['job_property_id'] ?? ''),
+            'date_of_employed'      => trim($_POST['date_of_employed'] ?? null) ?: null,
+            'level_of_education'    => trim($_POST['level_of_education'] ?? ''),
+            'department'            => trim($_POST['department'] ?? null) ?: null,
+            'employment_situation'  => trim($_POST['employment_situation'] ?? ''),
+            'immidate_boss'         => trim($_POST['immidate_boss'] ?? null) ?: null,
+            'experience'            => trim($_POST['experience'] ?? null) ?: null,
+            'annual_rest'           => isset($_POST['annual_rest']) ? (int) $_POST['annual_rest'] : 0,
+            'displin_situation'     => trim($_POST['displin_situation'] ?? ''),
+            'competency_situation'  => trim($_POST['competency_situation'] ?? null) ?: null,
+            'effeciency'            => $this->normalizeDecimal($_POST['effeciency'] ?? null),
+            'level_of_effeciency'   => trim($_POST['level_of_effeciency'] ?? null) ?: null,
             'no_of_files_in_folder' => isset($_POST['no_of_files_in_folder']) ? (int) $_POST['no_of_files_in_folder'] : 0,
-            'employee_image' => $imageName,
-            'employee_file201' => $file201Name,
-            'remark' => trim($_POST['remark'] ?? null) ?: null,
-            'reg_by' => $user['id'],
+            'employee_image'        => $imageName,
+            'employee_file201'      => $file201Name,
+            'remark'                => trim($_POST['remark'] ?? null) ?: null,
+            'reg_by'                => $user['id'],
         ];
 
+        $guarantorData = null;
+        if ($position['wastna'] === 'ተያዥ የሚያስፈልገዉ') {
+            $guarantorData = [
+                'id'              => Uuid::uuid4()->toString(),
+                'employee_id'     => $employeeUuid,
+                'guarantor_name'  => $guarantorName,
+                'guarantor_phone' => $guarantorPhone,
+                'guarantor_letter'=> $guarantorLetter,
+            ];
+        }
 
+        // ── 6. Persist ───────────────────────────────────────────────────────
         $employeeModel = new EmployeeRegistration($this->db);
-        if ($employeeModel->createEmployee($data)) {
-            \App\Helpers\AuditHelper::log('employee_registered', 'employee', $data['uuid'], null, [
-                'employee_id' => $data['employee_id'],
-                'first_name' => $data['first_name'],
-                'father_name' => $data['father_name'],
-                'g_father_name' => $data['g_father_name'],
+
+        if ($employeeModel->createEmployee($data, $guarantorData)) {
+            \App\Helpers\AuditHelper::log('employee_registered', 'employee', $employeeUuid, null, [
+                'employee_id'     => $data['employee_id'],
+                'first_name'      => $data['first_name'],
+                'father_name'     => $data['father_name'],
+                'g_father_name'   => $data['g_father_name'],
                 'job_property_id' => $data['job_property_id'],
                 'organization_id' => $data['organization_id'],
-                'branch_id' => $data['branch_id'],
+                'branch_id'       => $data['branch_id'],
             ]);
 
             $_SESSION['success'] = 'ሰራተኛው መረጃ በትክክል ተመዝግቧል።';
         } else {
-            // Clean up uploaded files on failure
-            if ($imageName) {
-                $imagePath = dirname(__DIR__, 2) . '/storage/uploads/images/' . $imageName;
-                if (file_exists($imagePath)) {
-                    unlink($imagePath);
-                }
-            }
-            if ($file201Name) {
-                $file201Path = dirname(__DIR__, 2) . '/storage/uploads/documents/' . $file201Name;
-                if (file_exists($file201Path)) {
-                    unlink($file201Path);
-                }
-            }
-
+            $this->cleanupFiles($imageName, $file201Name, $guarantorLetter);
             $_SESSION['error'] = 'የሰራተኛ መመዝገቢያ ሂደት አልተሳካም።';
         }
 
-        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
-        exit();
+    } catch (\PDOException $e) {
+        $this->cleanupFiles($imageName, $file201Name, $guarantorLetter ?? null);
+        error_log("Employee Registration Error: " . $e->getMessage());
+        $_SESSION['error'] = "ምዝገባው አልተሳካም። እንደገና ይሞክሩ።";
     }
 
-    
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
+    exit();
+}
 
+// ── Helper: delete uploaded files on failure ─────────────────────────────────
+private function cleanupFiles(?string $imageName, ?string $file201Name, ?string $guarantorLetter): void {
+    $map = [
+        'images'    => $imageName,
+        'documents' => $file201Name,
+        'documents' => $guarantorLetter,
+    ];
+
+    foreach ($map as $folder => $fileName) {
+        if (!empty($fileName)) {
+            $path = dirname(__DIR__, 2) . '/storage/uploads/' . $folder . '/' . $fileName;
+            if (file_exists($path)) {
+                unlink($path);
+            }
+        }
+    }
+}
 
     private function normalizeDecimal($value): ?string {
         if ($value === null || trim($value) === '') {
@@ -515,8 +686,13 @@ $data = [
 
         // Remark length validation
         if (!empty($data['remark']) && strlen(trim($data['remark'])) > 500) {
-            $errors[] = "Remark 500  ፊደል ከመብለጫ ቀር መሆን አለበት።";
+            $errors[] = "Remark 500  ፊደል መብለጥ የለበትም።";
         }
+        if (!empty($_POST['guarantor_phone'])) {
+    if (!preg_match('/^[0-9]{10}$/', trim($_POST['guarantor_phone']))) {
+        $errors[] = 'የተያዥ ስልክ ቁጥር ትክክለኛ 10 አሃዝ መሆን አለበት።';
+    }
+}
 
         return $errors;
     }
@@ -546,11 +722,14 @@ $data = [
             header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
             exit();
         }
+$guarantorModel = new EmployeeGuarantor($this->db);
+    $guarantor      = $guarantorModel->getByEmployeeId($uuid); // null if no guarantor
 
         $data = [
             'title' => 'HRM - የሰራተኛ ማስተካከያ',
             'user'  => $user,
             'employee' => $employee,
+            'guarantor' => $guarantor,
         ];
 
         $this->render('employee-views', $data);
@@ -618,11 +797,14 @@ public function showOnBoardingForm($params = []) {
             header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/employee-registration");
             exit();
         }
+ $guarantorModel = new EmployeeGuarantor($this->db);
+    $guarantor      = $guarantorModel->getByEmployeeId($uuid); // null if no guarantor
 
         $data = [
             'title' => 'HRM - የሰራተኛ ማስተካከያ',
             'user'  => $user,
             'employee' => $employee,
+            'guarantor' => $guarantor,
         ];
 
         $this->render('employee-onboarding-views', $data);

@@ -138,7 +138,7 @@ use App\Helpers\EthiopianDateHelper;
               </p>
             </div>
             <div class="col-md-6 text-md-right">
-              <label class="text-muted small d-block">ተያያዥ ፋይሎች</label>
+              <label class="text-muted small d-block">ተያያዘ ፋይል</label>
               <?php if (!empty($employee['employee_file201'])): ?>
                 <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($employee['employee_file201']) ?>&type=document" 
                    target="_blank" class="btn btn-sm btn-danger shadow-sm mt-1">
@@ -149,6 +149,38 @@ use App\Helpers\EthiopianDateHelper;
               <?php endif; ?>
             </div>
           </div>
+          <!-- ── Guarantor Section (outside the status row, properly placed) ── -->
+          <?php if (!empty($guarantor)): ?>
+          <div class="row mt-3 bg-light p-3 rounded">
+            <div class="col-12 mb-2">
+              <label class="text-muted small d-block font-weight-bold">
+                <i class="fas fa-user-shield mr-1 text-warning"></i> የተያዥ መረጃ
+              </label>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="text-muted small d-block">ሙሉ ስም</label>
+              <div class="border-bottom py-1"><?= htmlspecialchars($guarantor['guarantor_name'] ?? '---') ?></div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="text-muted small d-block">ስልክ</label>
+              <div class="border-bottom py-1">
+                <i class="fas fa-phone mr-1 text-success"></i>
+                <?= htmlspecialchars($guarantor['guarantor_phone'] ?? '---') ?>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3 text-md-right">
+              <label class="text-muted small d-block">የተያዥ ደብዳቤ</label>
+              <?php if (!empty($guarantor['guarantor_letter'])): ?>
+                <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= urlencode($guarantor['guarantor_letter']) ?>&type=guarantor"
+                   target="_blank" class="btn btn-sm btn-danger shadow-sm mt-1">
+                  <i class="fas fa-file-pdf"></i> ተመልከት
+                </a>
+              <?php else: ?>
+                <span class="text-muted small italic">ምንም ፋይል የለም</span>
+              <?php endif; ?>
+            </div>
+          </div>
+          <?php endif; ?>
 
       </div>
     </div>

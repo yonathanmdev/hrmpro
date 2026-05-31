@@ -110,21 +110,23 @@ $ethDate = EthiopianDateHelper::toEthCalendar($dateParts[2], $dateParts[1], $dat
               </div>
             </div>
             <div class="col-md-4">
-              <div class="form-group">
-                <label for="job_property_id">የስራ መደብ</label>
-                <select class="form-control" id="job_property_id" name="job_property_id" required>
-                  <?php if (!empty($availableJobs)): ?>
-                    <?php foreach ($availableJobs as $job): ?>
-                      <option value="<?= htmlspecialchars($job['id']) ?>"
-                              <?= ($employee['job_property_id'] ?? '') == $job['id'] ? 'selected' : '' ?>>
+    <div class="form-group">
+        <label for="job_property_id">የስራ መደብ</label>
+        <select class="form-control" id="job_property_id" name="job_property_id"
+                data-current-job="<?= htmlspecialchars($employee['job_property_id'] ?? '') ?>"
+                required>
+            <?php if (!empty($availableJobs)): ?>
+                <?php foreach ($availableJobs as $job): ?>
+                    <option value="<?= htmlspecialchars($job['id']) ?>"
+                            data-wastna="<?= htmlspecialchars($job['wastna']) ?>"
+                            <?= ($employee['job_property_id'] ?? '') == $job['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($job['job_name']) ?>
-                      </option>
-                    <?php endforeach; ?>
-                  <?php endif; ?>
-                </select>
-              </div>
-            </div>
-          
+                    </option>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </select>
+    </div>
+</div>
             <div class="col-md-4">
               <div class="form-group">
                 <label for="date_of_employed">የቅጥር ቀን</label>
@@ -259,7 +261,38 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
               </div>
             </div>
           </div>
-
+<div id="guarantor-section" data-has-guarantor="<?= !empty($guarantor) ? '1' : '0' ?>" style="display: none;">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="edit_guarantor_name">የተያዥ ሙሉ ስም</label>
+                <input type="text" class="form-control" id="edit_guarantor_name" name="guarantor_name"
+                       value="<?= htmlspecialchars($guarantor['guarantor_name'] ?? '') ?>">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="edit_guarantor_phone">ስልክ</label>
+                <input type="text" class="form-control" id="edit_guarantor_phone" name="guarantor_phone"
+                       value="<?= htmlspecialchars($guarantor['guarantor_phone'] ?? '') ?>">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="edit_guarantor_letter">የተያዥ ደብዳቤ</label>
+                <input type="file" class="form-control-file" id="edit_guarantor_letter" name="guarantor_letter"
+                       accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png">
+                <?php if (!empty($guarantor['guarantor_letter'])): ?>
+                    <small class="form-text text-muted">አሁን ያለው ፋይል:
+                        <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>?action=serve-file&file=<?= urlencode($guarantor['guarantor_letter']) ?>&type=guarantor"
+                           target="_blank">ተመልከት</a>
+                    </small>
+                <?php endif; ?>
+                <small class="form-text text-muted">አዲስ ፋይል ካልመረጡ ያለው ይቆያል።</small>
+            </div>
+        </div>
+    </div>
+</div>
           <div class="row">
             <div class="col-md-4">
               <div class="form-group">

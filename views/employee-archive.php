@@ -49,6 +49,20 @@ $uuid = end($url_parts);
             </tr>
           <?php endif; ?>
 
+          <?php if (!empty($employeeGuarantor['guarantor_letter'])): ?>
+            <tr>
+              <td><?= $counter++ ?></td>
+              <td>የተያዥ ፋይል</td>
+              <td>
+                <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($employeeGuarantor['guarantor_letter']) ?>&type=document"
+                   target="_blank" class="btn btn-xs btn-outline-primary">
+                  <i class="fas fa-file-pdf"></i> ክፈት
+                </a>
+              </td>
+              <td>—</td>
+            </tr>
+          <?php endif; ?>
+
        <?php if (!empty($documentData)): ?>
   <?php foreach ($documentData as $document): ?>
     <?php
