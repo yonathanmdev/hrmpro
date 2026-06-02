@@ -98,6 +98,7 @@ $initials       = $first_initial . $father_initial ?: 'GU';
             <p>ድርጅት</p>
           </a>
         </li>
+        
       <?php elseif ($userRole === 'org_admin'): ?>
         <li class="nav-item">
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/register-branch" class="nav-link">
@@ -112,7 +113,14 @@ $initials       = $first_initial . $father_initial ?: 'GU';
             <p>ተቆጣጣሪ</p>
           </a>
         </li>
-        
+         <?php if ($userRole === 'system_admin'): ?>
+<li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/evaluation-settings" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>BSC Calendar</p>
+          </a>
+        </li>
+<?php endif; ?>
 
     </ul>
   </li>

@@ -72,9 +72,9 @@ $action = $segments[0] ?? 'login';
 
 /* ---------------- PARAMS ---------------- */
 $params = [
-    'uuid' => $segments[1] ?? null,
-    'record_id' => $segments[2] ?? null,
-    'extra' => array_slice($segments, 3)
+    'uuid'      => isset($segments[1]) ? urldecode($segments[1]) : null,
+    'record_id' => isset($segments[2]) ? urldecode($segments[2]) : null,
+    'extra'     => array_map('urldecode', array_slice($segments, 3))
 ];
 
 /* ---------------- ROUTE CHECK ---------------- */

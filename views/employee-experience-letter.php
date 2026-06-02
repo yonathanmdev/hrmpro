@@ -252,7 +252,7 @@ if ($hireStart) {
         }
         .org-name {
             font-family: 'Noto Serif Ethiopic', serif;
-            font-size: 17pt;
+            font-size: 14pt;
             font-weight: 700;
             color: var(--brand);
             line-height: 1.3;
@@ -364,7 +364,7 @@ if ($hireStart) {
         }
         .employee-name {
             font-family: 'Noto Serif Ethiopic', serif;
-            font-size: 13pt;
+            font-size: 12pt;
             font-weight: 700;
             color: var(--brand);
         }
@@ -1050,12 +1050,19 @@ if ($hireStart) {
     <div class="print-header">
         <div class="letterhead">
             <div class="letterhead-logo">
-                <img src="<?= rtrim($_ENV['BASE_URL'] ?? '', '/') ?>/serve-file?file=<?= htmlspecialchars($_SESSION['user']['logo_url']) ?>&type=image" 
-                   alt="<?= htmlspecialchars($_SESSION['user']['alt_name'] ?? '') ?>" 
-                   class="img-fluid">
+                <img src="<?= rtrim($_ENV['BASE_URL'] ?? '', '/') ?>/images/region-logo.png"
+     
+     class="img-fluid">
             </div>
             <div class="letterhead-org">
-                <div class="org-name"><?= $_SESSION['user']['branch_name'] ?></div>
+                <div class="org-name">በአማራ ብሔራዊ ክልላዊ መንግስት <?= $_SESSION['user']['branch_name'] ?></div>
+                <div class="org-name">AMHARA NATIONAL REGIONAL STATE <?= htmlspecialchars(mb_strtoupper($_SESSION['user']['alt_name'] ?? '', 'UTF-8')) ?></div>
+              
+               
+            </div>
+        <div class="letterhead-logo">
+                <img src="<?= rtrim($_ENV['BASE_URL'] ?? '', '/') ?>/serve-file?file=<?= htmlspecialchars($_SESSION['user']['logo_url']) ?>&type=image" 
+                   class="img-fluid">
             </div>
         </div>
         <div class="letterhead-accent"></div>
@@ -1403,7 +1410,7 @@ if ($hireStart) {
     <div class="total-exp-box">
         <span class="label">በአጠቃላይ
 
-        <?= formatDurationBadges($netYMD) ?> ገለገሉ መሆናቸውን እንገልጻለን። ያገለገሉ እና አሁንም በማገልገል ላይ ያሉ መሆናቸውን እንገልጻለን።
+        <?= formatDurationBadges($netYMD) ?> ያገለገሉ መሆናቸውን እንገልጻለን። ያገለገሉ እና አሁንም በማገልገል ላይ ያሉ መሆናቸውን እንገልጻለን።
         </span>
     </div>
 

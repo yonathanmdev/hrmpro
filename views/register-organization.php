@@ -109,13 +109,13 @@
             >
           </div>
           <div class="form-group mb-2">
-            <label for="org_alternate_name" class="mb-1"><small class="font-weight-bold">አማራጭ ስም</small></label>
+            <label for="org_alternate_name" class="mb-1"><small class="font-weight-bold">English Name</small></label>
             <input 
               type="text" 
               id="org_alternate_name" 
               class="form-control form-control-sm" 
               name="org_alternate_name" 
-              placeholder="አማራጭ ስም ያስገቡ" 
+              placeholder="English Name" 
             >
           </div>
           <div class="form-group mb-2">
