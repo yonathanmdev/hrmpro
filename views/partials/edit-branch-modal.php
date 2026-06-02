@@ -23,14 +23,14 @@
           <!-- Alternate name -->
           <div class="form-group mb-2">
             <label for="edit_branch_alt_name" class="mb-1">
-              <small class="font-weight-bold">አማራጭ ስም</small>
+              <small class="font-weight-bold">English Name</small>
             </label>
             <input 
               type="text" 
               id="edit_branch_alt_name"
               name="branch_alternate_name" 
               class="form-control form-control-sm" 
-              placeholder="አማራጭ ስም ያስገቡ"
+              placeholder="English Name"
             >
           </div>
 

@@ -493,5 +493,18 @@ public function getTotalBranchesCount($branch_id = null) {
         return 0;
     }
 }
-
+public function getActiveBranches(): array
+{
+    $sql = "SELECT id, name FROM branches
+            WHERE is_deleted = 0 AND status = 'active'
+            ORDER BY name ASC";
+    try {
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    } catch (\PDOException $e) {
+        error_log("Branch::getActiveBranches - " . $e->getMessage());
+        return [];
+    }
+}
 }

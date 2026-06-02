@@ -22,7 +22,28 @@ return [
     'purge-organization'    => ['OrgController', 'purge', true],
     'archived-organizations' => ['OrgController', 'archiveList', true],
     'restore-from-archive' => ['OrgController', 'restoreFromArchive', true],
-
+ // ── Settings dashboard (GET) ──────────────────────────────────────
+    //   /evaluation-settings
+    //   /evaluation-settings?season={uuid}   ← season selected via query string
+    'evaluation-settings'
+        => ['EvaluationSettingsController', 'index', true],
+ 
+    // ── Create season (POST) ──────────────────────────────────────────
+    //   Form action: POST /save-season
+    'save-season'
+        => ['EvaluationSettingsController', 'saveSeason', true],
+ 
+    // ── Save branch windows (POST) ────────────────────────────────────
+    //   Form action: POST /save-branch-settings
+    'save-branch-settings'
+        => ['EvaluationSettingsController', 'saveBranchSettings', true],
+ 
+    // ── Delete season (GET, optional) ─────────────────────────────────
+    //   Link: GET /delete-season?id={uuid}
+    'delete-season'
+        => ['EvaluationSettingsController', 'deleteSeason', true],
+        
+    // Branch Management
     'register-branch'               => ['OrgController', 'showRegisterForm', true],
     'register-branch-process'       => ['OrgController', 'handleBranchRegistration', true],
     'update-branch-process'   => ['OrgController', 'handleEditBranch', true],
