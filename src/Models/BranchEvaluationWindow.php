@@ -193,4 +193,133 @@ class BranchEvaluationWindow
 
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
+
+public function isEvaluationOpen(
+    string $branchId,
+    string $seasonId
+): bool
+{
+    $window = $this->findByBranchAndSeason(
+        $branchId,
+        $seasonId
+    );
+
+    if (!$window) {
+        return false;
+    }
+
+    // Locked by system admin
+    if ((int)$window['is_locked'] === 1) {
+        return false;
+    }
+
+    // Always open
+    if ($window['mode'] === 'always_open') {
+        return true;
+    }
+
+    $today = date('Y-m-d');
+
+    // Custom branch dates
+    if ($window['mode'] === 'custom') {
+
+        if (
+            empty($window['custom_start']) ||
+            empty($window['custom_end'])
+        ) {
+            return false;
+        }
+
+        return (
+            $today >= $window['custom_start'] &&
+            $today <= $window['custom_end']
+        );
+    }
+
+    // Default season dates
+    $seasonModel = new EvaluationSeason($this->db);
+
+    $season = $seasonModel->find($seasonId);
+
+    if (!$season) {
+        return false;
+    }
+
+    $year = date('Y');
+
+    $startDate = $year . '-' . $season['default_start'];
+    $endDate   = $year . '-' . $season['default_end'];
+
+    return (
+        $today >= $startDate &&
+        $today <= $endDate
+    );
 }
+
+public function getOpenSeasonsForBranch(
+    string $branchId
+): array
+{
+    $today = date('Y-m-d');
+
+    $sql = "
+        SELECT
+            w.*,
+            s.season_name,
+            s.season_label,
+            s.default_start,
+            s.default_end
+        FROM branch_evaluation_windows w
+        INNER JOIN evaluation_seasons s
+            ON s.id = w.season_id
+        WHERE w.branch_id = ?
+    ";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([$branchId]);
+
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $openSeasons = [];
+
+    foreach ($rows as $row) {
+
+        if ((int)$row['is_locked'] === 1) {
+            continue;
+        }
+
+        if ($row['mode'] === 'always_open') {
+            $openSeasons[] = $row;
+            continue;
+        }
+
+        if ($row['mode'] === 'custom') {
+
+            if (
+                !empty($row['custom_start']) &&
+                !empty($row['custom_end']) &&
+                $today >= $row['custom_start'] &&
+                $today <= $row['custom_end']
+            ) {
+                $openSeasons[] = $row;
+            }
+
+            continue;
+        }
+
+        $year = date('Y');
+
+        $start = $year . '-' . $row['default_start'];
+        $end   = $year . '-' . $row['default_end'];
+
+        if (
+            $today >= $start &&
+            $today <= $end
+        ) {
+            $openSeasons[] = $row;
+        }
+    }
+
+    return $openSeasons;
+}
+    }
