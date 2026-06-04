@@ -42,6 +42,10 @@ return [
     //   Link: GET /delete-season?id={uuid}
     'delete-season'
         => ['EvaluationSettingsController', 'deleteSeason', true],
+
+        'bsc-plan-management' => ['HrBscPlanController', 'index', true],
+        'bsc-plan-mark-confirmed' => ['HrBscPlanController', 'markConfirmed', true],
+        'bsc-plan-upload' => ['HrBscPlanController', 'upload', true],
         
     // Branch Management
     'register-branch'               => ['OrgController', 'showRegisterForm', true],

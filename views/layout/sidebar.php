@@ -117,7 +117,7 @@ $initials       = $first_initial . $father_initial ?: 'GU';
 <li class="nav-item">
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/evaluation-settings" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
-            <p>BSC Calendar</p>
+            <p>BSC and Efficency Calendar</p>
           </a>
         </li>
 <?php endif; ?>
@@ -194,6 +194,32 @@ $initials       = $first_initial . $father_initial ?: 'GU';
                 <p>መመዝገብ/መረጃ</p>
             </a>
         </li>
+    </ul>
+</li>
+<li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link">
+        <i class="nav-icon fas fa-edit"></i>
+        <p>
+            BSC እቅድ እና አፈጻጸም
+            <i class="fas fa-angle-left right"></i>
+        </p>
+    </a>
+    <ul class="nav nav-treeview">
+
+        <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/bsc-plan-management" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>እቅድ ማያያዝ</p>
+          </a>
+        </li>
+
+        <!-- <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/efficency-management" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>አፈጻጻም</p>
+          </a>
+        </li> -->
+
     </ul>
 </li>
 
