@@ -1,4 +1,11 @@
 <?php
+use App\Helpers\EthiopianDateHelper; 
+$is_report_view_page = true;
+$branchId = $branchId ?? ($_SESSION['user']['branch_id'] ?? null);
+
+// የቢሮ ስም
+$branchName = $genderSummary['branch_name'] ?? '$branchName';
+$reportTitle = 'የሠራተኞች የእድሜ ክልል ማጠቃለያ ሪፖርት';
 // ከኮንትሮለር የሚመጣው ዳታ $reportData በሚል አሬይ ነው
 $reportData = $reportData ?? [];
 
@@ -19,15 +26,24 @@ $orderedRanges = [
 $grand_p_m = 0; $grand_p_f = 0;
 $grand_t_m = 0; $grand_t_f = 0;
 $grand_all = 0;
+
+
+// የባለሙያ መረጃ
+$hr_firstnameu  = $_SESSION['user']['first_name'] ?? 'ያልታወቀ';
+$hr_middlenameu = $_SESSION['user']['father_name'] ?? 'ባለሙያ';
+
+$today      = date('Y-m-d');
+              $endParts   = explode('-', $today);
+              $endEth     = EthiopianDateHelper::toEthCalendar($endParts[2], $endParts[1], $endParts[0]);
 ?>
 
 <div style="font-family: Arial, sans-serif; margin: 20px;">
   <h3 style="text-align: center; color: #333; font-weight: bold;"><?= htmlspecialchars($reportTitle ?? 'የዕድሜ ክልል ሪፖርት') ?></h3>
   
   <p style="text-align: center; font-size: 15px; color: #444; font-weight: bold;">
-    <i class="fas fa-code-branch mr-1"></i> የቅርንጫፍ ስም፦ 
-    <span style="color: #0056b3;"><?= htmlspecialchars($genderSummary['branch_name'] ?? 'ያልተገኘ ቅርንጫፍ') ?></span>
-  </p>
+    <center><p class="text-muted small mb-1">የመስሪያ ቤቱ ስም፦ <b><?= htmlspecialchars($branchName) ?></b></p>
+      <p class="text-muted small">የተዘጋጀበት ቀን: <?= EthiopianDateHelper::getMonthName($endEth['month']) ?> <?= $endEth['day'] ?> /<?= $endEth['year'] ?> ዓ.ም</p>
+  </p></center>
 
   <table border="1" cellspacing="0" cellpadding="10" style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; border: 1px solid #aaa;">
     <thead>
@@ -116,4 +132,9 @@ $grand_all = 0;
       </tr>
     </tbody>
   </table>
+  
 </div>
+<center>ያዘጋጀዉ ባለሙያ ስም፦ <b><?= htmlspecialchars($hr_firstnameu . " " . $hr_middlenameu) ?></b> &nbsp;&nbsp;&nbsp;&nbsp;
+        ፊርማ፦ ......................... &nbsp;&nbsp;&nbsp;&nbsp;
+        ቀን፦ <b><?= EthiopianDateHelper::getMonthName($endEth['month']) ?> <?= $endEth['day'] ?>/ <?= $endEth['year'] ?>
+</b> ዓ.ም</center>
