@@ -65,7 +65,7 @@ $today      = date('Y-m-d');
 
     <div class="text-center mb-4 pt-2">
       <h4 class="font-weight-bold" style="color: #222;"><?= htmlspecialchars($reportTitle) ?></h4>
-      <p class="text-muted small mb-1">የመስሪያ ቤቱ ስም፦ <b><?= htmlspecialchars($branchName) ?></b></p>
+      <p class="text-muted small mb-1">የቢሮው ስም፦ <b><?= htmlspecialchars($branchName) ?></b></p>
       <p class="text-muted small">የተዘጋጀበት ቀን: <?= EthiopianDateHelper::getMonthName($endEth['month']) ?> <?= $endEth['day'] ?> /<?= $endEth['year'] ?> ዓ.ም</p>
       <hr style="border-top: 2px solid #333; width: 100%;">
     </div>
