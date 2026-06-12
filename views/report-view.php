@@ -7,7 +7,7 @@ $reportType = $reportType ?? ($_GET['type'] ?? 'employees');
 // ─── ከባክኤንድ የመጣውን የብራንች ስም መውሰጃ ───
 $branchName = $genderSummary['branch_name'] ?? 'የሥራና ሥልጠና ቢሮ';
 $reportTitle = match($reportType) {
-    'employees' => 'የሰራተኞች ብዛት ማጠቃለያ ሪፖርት (በፆታ እና ቅጥር ሁኔታ)',
+    'employees' => 'የሰራተኞች ብዛት ማጠቃለያ ሪፖርት (በጾታ እና ቅጥር ሁኔታ)',
     'payroll'   => 'የደመወዝ ሪፖርት ማጠቃለያ',
     default     => 'ሪፖርት'
 };
