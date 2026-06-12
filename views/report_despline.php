@@ -1,4 +1,11 @@
 <?php
+use App\Helpers\EthiopianDateHelper; 
+$is_report_view_page = true;
+$branchId = $branchId ?? ($_SESSION['user']['branch_id'] ?? null);
+
+// የቢሮ ስም
+$branchName = $genderSummary['branch_name'] ?? '$branchName';
+$reportTitle = 'የሠራተኞች የዲስፕሊን ሁኔታ ማጠቃለያ ሪፖርት';
 // የሪፖርት ዳታው ባዶ ከሆነ ባዶ Array እንዲሆን ማድረግ
 $reportData = $reportData ?? [];
 
@@ -15,6 +22,14 @@ $disciplineRows = [
     'suspension'    => 'ከስራ የታገዱ',
     'dismissal'     => 'ከስራ የተሰናበቱ'
 ];
+
+// የባለሙያ መረጃ
+$hr_firstnameu  = $_SESSION['user']['first_name'] ?? 'ያልታወቀ';
+$hr_middlenameu = $_SESSION['user']['father_name'] ?? 'ባለሙያ';
+
+$today      = date('Y-m-d');
+              $endParts   = explode('-', $today);
+              $endEth     = EthiopianDateHelper::toEthCalendar($endParts[2], $endParts[1], $endParts[0]);
 ?>
 
 <div style="font-family: Arial, sans-serif; margin: 20px;">
@@ -22,13 +37,9 @@ $disciplineRows = [
     <?= htmlspecialchars($reportTitle ?? 'የቢሮው ሠራተኞች የዲሲፕሊን ሁኔታ ማጠቃለያ ሪፖርት') ?>
   </h3>
   
-  <p style="text-align: center; font-size: 15px; color: #444; font-weight: bold; margin-bottom: 20px;">
-    <i class="fas fa-code-branch mr-1"></i> የቅርንጫፍ ስም፦ 
-    <span style="color: #0056b3;"><?= htmlspecialchars($genderSummary['branch_name'] ?? 'ያልተገኘ ቅርንጫፍ') ?></span>
-    <?php if (!empty($_GET['department'])): ?>
-        <span style="margin-left: 15px; color: #555;">| ክፍል፦ <span style="color: #0056b3;"><?= htmlspecialchars($_GET['department']) ?></span></span>
-    <?php endif; ?>
-  </p>
+  <center><p class="text-muted small mb-1">የመስሪያ ቤቱ ስም፦ <b><?= htmlspecialchars($branchName) ?></b></p>
+      <p class="text-muted small">የተዘጋጀበት ቀን: <?= EthiopianDateHelper::getMonthName($endEth['month']) ?> <?= $endEth['day'] ?> /<?= $endEth['year'] ?> ዓ.ም</p>
+      <hr style="border-top: 2px solid #333; width: 100%;"></center>
 
   <?php if (!empty($_GET['from']) || !empty($_GET['to'])): ?>
     <p style="text-align: center; font-size: 13px; color: #666; margin-top: -15px; margin-bottom: 20px;">
@@ -127,23 +138,11 @@ $disciplineRows = [
   </table>
 
   <div style="margin-top: 20px; text-align: right;" class="no-print">
-    <button onclick="window.print();" style="background: #4e73df; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      <i class="fas fa-print mr-2"></i> ሪፖርቱን አትም (Print)
-    </button>
+    
   </div>
 </div>
 
-<style>
-@media print {
-  .no-print { display: none !important; }
-  body { background: white; color: black; padding: 0; margin: 0; }
-  
-  /* ማተሚያ ላይ የሰንጠረዡ የራስጌ ቀለሞች እንዳይጠፉ መከላከያ */
-  table { width: 100% !important; border-collapse: collapse; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  th { background-color: #6c757d !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  
-  /* በገጽ ቅያሪ ወቅት ሰንጠረዡ እንዳይቆራረጥ ማድረጊያ */
-  tr { page-break-inside: avoid; break-inside: avoid; }
-}
-</style>
+<center>ያዘጋጀዉ ባለሙያ ስም፦ <b><?= htmlspecialchars($hr_firstnameu . " " . $hr_middlenameu) ?></b> &nbsp;&nbsp;&nbsp;&nbsp;
+        ፊርማ፦ ......................... &nbsp;&nbsp;&nbsp;&nbsp;
+        ቀን፦ <b><?= EthiopianDateHelper::getMonthName($endEth['month']) ?> <?= $endEth['day'] ?>/ <?= $endEth['year'] ?>
+</b> ዓ.ም</center>

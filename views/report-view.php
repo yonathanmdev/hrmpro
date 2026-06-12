@@ -61,9 +61,9 @@ $today      = date('Y-m-d');
     <div class="text-center mb-4 pt-2">
       <h4 class="font-weight-bold" style="color: #222;"><?= htmlspecialchars($reportTitle) ?></h4>
       <p class="text-muted small mb-1">የመስሪያ ቤቱ ስም፦ <b><?= htmlspecialchars($branchName) ?></b></p>
-      <p class="text-muted small">የተዘጋጀበት ቀን: <?= EthiopianDateHelper::getMonthName($endEth['month']) ?> <?= $endEth['day'] ?> <?= $endEth['year'] ?>
+      <p class="text-muted small">የተዘጋጀበት ቀን: <?= EthiopianDateHelper::getMonthName($endEth['month']) ?> <?= $endEth['day'] ?> /<?= $endEth['year'] ?> ዓ.ም
 </p>
-      <hr style="border-top: 2px solid #333; width: 100%;">
+      
     </div>
 
     <table border="1" cellspacing="0" cellpadding="12" id="customers">
@@ -71,8 +71,8 @@ $today      = date('Y-m-d');
         <tr>
           <th rowspan="3">ተ.ቁ</th>
           <th rowspan="3">የመስሪያ ቤቱ ሥም</th>
-          <th colspan="6">በክልሉ የሚገኙ ሠራተኞች ብዛት</th>
-          <th rowspan="2" colspan="3">በክልሉ የሚገኙ ጠቅላላ ሠራተኞች</th>
+          <th colspan="6">በቢሮው ውስጥ የሚገኙ ቋሚና ጊዚያዊ እንዲሁም የኩንትራት ሠራተኞች ብዛት</th>
+          <th rowspan="2" colspan="3">በቢሮው የሚገኙ ጠቅላላ ሠራተኞች ብዛት</th>
         </tr>
         <tr>
           <th colspan="3">ቋሚ</th>
@@ -111,10 +111,10 @@ $today      = date('Y-m-d');
 
     <div class="mt-5 pt-4 clearfix" style="font-size: 14px; color: #000;">
       <div style="float: right; text-align: right; width: 100%;">
-        ያዘጋጀዉ ስም፦ <b><?= htmlspecialchars($hr_firstnameu . " " . $hr_middlenameu) ?></b> &nbsp;&nbsp;&nbsp;&nbsp;
+        <center>ያዘጋጀዉ ባለሙያ ስም፦ <b><?= htmlspecialchars($hr_firstnameu . " " . $hr_middlenameu) ?></b> &nbsp;&nbsp;&nbsp;&nbsp;
         ፊርማ፦ ......................... &nbsp;&nbsp;&nbsp;&nbsp;
-        ቀን፦ <b><?= EthiopianDateHelper::getMonthName($endEth['month']) ?> <?= $endEth['day'] ?> <?= $endEth['year'] ?>
-</b> ዓ.ም
+        ቀን፦ <b><?= EthiopianDateHelper::getMonthName($endEth['month']) ?> <?= $endEth['day'] ?>/ <?= $endEth['year'] ?>
+</b> ዓ.ም</center>
       </div>
     </div>
 
