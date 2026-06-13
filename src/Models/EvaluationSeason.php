@@ -23,34 +23,37 @@ class EvaluationSeason
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function create($data)
-    {
-        $sql = "
-            INSERT INTO evaluation_seasons
-            (
-                id,
-                season_name,
-                season_label,
-                default_start,
-                default_end,
-                created_by
-            )
-            VALUES
-            (
-                :id,
-                :season_name,
-                :season_label,
-                :default_start,
-                :default_end,
-                :created_by
-            )
-        ";
+    public function create(array $data): bool
+{
+    $sql = "
+        INSERT INTO evaluation_seasons
+            (id, fiscal_year, season_name, season_label,
+             default_start, default_end, created_by)
+        VALUES
+            (:id, :fiscal_year, :season_name, :season_label,
+             :default_start, :default_end, :created_by)
+    ";
 
-        $stmt = $this->db->prepare($sql);
+    return $this->db->prepare($sql)->execute($data);
+}
 
-        return $stmt->execute($data);
-    }
+public function update(string $id, array $data): bool
+{
+    $sql = "
+        UPDATE evaluation_seasons
+        SET
+            fiscal_year   = :fiscal_year,
+            season_name   = :season_name,
+            season_label  = :season_label,
+            default_start = :default_start,
+            default_end   = :default_end,
+            updated_by    = :updated_by,
+            updated_at    = NOW()
+        WHERE id = :id
+    ";
 
+    return $this->db->prepare($sql)->execute(array_merge($data, ['id' => $id]));
+}
     public function find($id)
     {
         $stmt = $this->db->prepare("

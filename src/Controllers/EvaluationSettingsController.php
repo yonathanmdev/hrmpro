@@ -74,6 +74,7 @@ class EvaluationSettingsController extends BaseController
 
         try {
             $seasonName   = trim($_POST['season_name']   ?? '');
+            $fiscalYear   = (int) trim($_POST['fiscal_year']   ?? 0);
             $seasonLabel ='S1';
             $defaultStart = trim($_POST['default_start'] ?? '');
             $defaultEnd   = trim($_POST['default_end']   ?? '');
@@ -108,12 +109,16 @@ class EvaluationSettingsController extends BaseController
                 $_SESSION['error'] = implode(' ', $errors);
                 $this->redirectToSettings();
             }
-
+// add to $errors checks:
+if ($fiscalYear < 2018 || $fiscalYear > 2100) {
+    $errors[] = 'Valid fiscal year is required (e.g. 2026).';
+}
             // ── Persist ───────────────────────────────────────────────
             $seasonModel = new EvaluationSeason($this->db);
 
             $seasonModel->create([
                 'id'            => Uuid::uuid4()->toString(),
+                'fiscal_year'   => $fiscalYear,
                 'season_name'   => $seasonName,
                 'season_label'  => $seasonLabel,
                 'default_start' => $defaultStart,
@@ -130,7 +135,90 @@ class EvaluationSettingsController extends BaseController
 
         $this->redirectToSettings();
     }
+public function updateSeason(): void
+{
+    AuthHelper::checkRole(['system_admin']);
 
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        $this->redirectToSettings();
+    }
+
+    try {
+        $seasonId     = trim($_POST['season_id']    ?? '');
+        $seasonName   = trim($_POST['season_name']  ?? '');
+        $seasonLabel  = trim($_POST['season_label'] ?? '');
+        $defaultStart = trim($_POST['default_start'] ?? '');
+        $defaultEnd   = trim($_POST['default_end']   ?? '');
+
+        // ── Validation ────────────────────────────────────────────
+        $errors = [];
+
+        if ($seasonId === '') {
+            $errors[] = 'Season ID is missing.';
+        }
+
+        if ($seasonName === '') {
+            $errors[] = 'Season Name is required.';
+        }
+
+        // Re-derive label from name (same logic as saveSeason)
+        if ($seasonName === 'ሁለተኛው በጀት ዓመት') {
+            $seasonLabel = 'S2';
+        } elseif ($seasonName === 'የመጀመሪያው በጀት ዓመት') {
+            $seasonLabel = 'S1';
+        }
+
+        if ($seasonLabel === '') {
+            $errors[] = 'Season Label could not be determined.';
+        }
+
+        if ($defaultStart === '') {
+            $errors[] = 'Default Start is required.';
+        } elseif (!preg_match('/^\d{2}-\d{2}$/', $defaultStart)) {
+            $errors[] = 'Default Start must be in MM-DD format.';
+        }
+
+        if ($defaultEnd === '') {
+            $errors[] = 'Default End is required.';
+        } elseif (!preg_match('/^\d{2}-\d{2}$/', $defaultEnd)) {
+            $errors[] = 'Default End must be in MM-DD format.';
+        }
+
+        if (!empty($errors)) {
+            $_SESSION['error'] = implode(' ', $errors);
+            $this->redirectToSettings();
+        }
+$fiscalYear = (int) trim($_POST['fiscal_year'] ?? 0);
+
+// add to $errors checks:
+if ($fiscalYear < 2018 || $fiscalYear > 2100) {
+    $errors[] = 'Valid fiscal year is required (e.g. 2026).';
+}
+        // ── Persist ───────────────────────────────────────────────
+        $seasonModel = new EvaluationSeason($this->db);
+        $updated = $seasonModel->update($seasonId, [
+            'season_name'   => $seasonName,
+            'season_label'  => $seasonLabel,
+            'default_start' => $defaultStart,
+            'default_end'   => $defaultEnd,
+            'fiscal_year'   => $fiscalYear,
+            'updated_by'    => $_SESSION['user']['id'],
+        ]);
+
+        if (!$updated) {
+            $_SESSION['error'] = 'Season not found or no changes were made.';
+            $this->redirectToSettings();
+        }
+
+        $_SESSION['success'] = 'Evaluation season updated successfully.';
+
+    } catch (\Exception $e) {
+        error_log('EvaluationSettingsController::updateSeason — ' . $e->getMessage());
+        $_SESSION['error'] = 'Unable to update season. Please try again.';
+    }
+
+    $this->redirectToSettings();
+}
     // ──────────────────────────────────────────────────────────────────
     //  Save Branch Configuration
     // ──────────────────────────────────────────────────────────────────

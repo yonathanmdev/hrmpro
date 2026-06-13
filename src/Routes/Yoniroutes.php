@@ -32,11 +32,12 @@ return [
     //   Form action: POST /save-season
     'save-season'
         => ['EvaluationSettingsController', 'saveSeason', true],
- 
+ 'update-season' => ['EvaluationSettingsController', 'updateSeason', true],
     // ── Save branch windows (POST) ────────────────────────────────────
     //   Form action: POST /save-branch-settings
     'save-branch-settings'
         => ['EvaluationSettingsController', 'saveBranchSettings', true],
+
  
     // ── Delete season (GET, optional) ─────────────────────────────────
     //   Link: GET /delete-season?id={uuid}
