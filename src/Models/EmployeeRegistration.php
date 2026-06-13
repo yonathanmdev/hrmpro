@@ -433,12 +433,18 @@ public function autoSearch(string $term, string $branchId, ?string $source = nul
 // ================================================================
     // STAGE 2 — Director approves deletion
     // ================================================================
-    public function approveDeletion(string $uuid, array $data): bool
+   public function approveDeletion(string $uuid, array $data): bool
 {
     try {
-        $this->db->beginTransaction();
 
-        // 🔒 1. Lock employee row
+        // Only start a transaction if one doesn't already exist
+        if (!$this->db->inTransaction()) {
+            $this->db->beginTransaction();
+            $startedTransaction = true;
+        } else {
+            $startedTransaction = false;
+        }
+
         $stmt = $this->db->prepare("
             SELECT job_property_id, branch_id
             FROM employees_table
@@ -446,56 +452,59 @@ public function autoSearch(string $term, string $branchId, ?string $source = nul
             FOR UPDATE
         ");
         $stmt->execute([$uuid]);
+
         $employee = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if (!$employee) {
             throw new \Exception("Employee not found");
         }
 
-        // 🔒 2. Mark as deleted
-        $sql = "UPDATE employees_table SET
-                    is_deleted           = 2,
-                    deletion_approved_by = :approved_by,
-                    deletion_approved_at = NOW()
-                WHERE uuid = :uuid
-                AND is_deleted = 1";
+        $stmt = $this->db->prepare("
+            UPDATE employees_table
+            SET
+                is_deleted = 2,
+                deletion_approved_by = :approved_by,
+                deletion_approved_at = NOW()
+            WHERE uuid = :uuid
+              AND is_deleted = 1
+        ");
 
-        $stmt = $this->db->prepare($sql);
         $stmt->execute([
             'uuid' => $uuid,
-            'approved_by' => $data['approved_by'],
+            'approved_by' => $data['approved_by']
         ]);
 
-       if ($stmt->rowCount() === 0) {
+        if ($stmt->rowCount() === 0) {
             throw new \Exception("Delete approval failed");
         }
 
-        // ➖ 3. Decrease job counter
-        $stmt = $this->db->prepare("
-            UPDATE job_property
-            SET current_filled = GREATEST(current_filled - 1, 0)
-            WHERE id = ?
-        ");
-        $stmt->execute([$employee['job_property_id']]);
-
-        // 🗑️ 4. Soft-delete guarantor if exists
         $stmt = $this->db->prepare("
             UPDATE employees_guarantors
-            SET deletion_source = 'CASCADE', is_deleted = 1
-            WHERE employee_id = ? AND is_deleted = 0
+            SET
+                deletion_source = 'CASCADE',
+                is_deleted = 1
+            WHERE employee_id = ?
+              AND is_deleted = 0
         ");
+
         $stmt->execute([$uuid]);
 
-        // ✅ 5. Commit
-        $this->db->commit();
+        if ($startedTransaction) {
+            $this->db->commit();
+        }
+
         return true;
 
-    } catch (\Exception $e) {
-        $this->db->rollBack();
+    } catch (\Throwable $e) {
+
+        if ($this->db->inTransaction()) {
+            $this->db->rollBack();
+        }
+
         error_log("Deletion approval failed: " . $e->getMessage());
+
         return false;
     }
-
 }
 
     // ================================================================

@@ -922,8 +922,6 @@ public function showOnBoardingForm($params = []) {
             return;
         }
 
-        // Begin transaction
-        $this->db->beginTransaction();
 
         try {
             $success = $model->requestDeletion($uuid, [
@@ -959,7 +957,6 @@ public function showOnBoardingForm($params = []) {
                 ]
             );
 
-            $this->db->commit();
 
             echo json_encode([
                 'status'  => 'success',
@@ -967,7 +964,7 @@ public function showOnBoardingForm($params = []) {
             ]);
 
         } catch (\Exception $e) {
-            $this->db->rollBack();
+       
             echo json_encode([
                 'status'  => 'error',
                 'message' => $e->getMessage()
@@ -1055,7 +1052,6 @@ function countPendingDeletions() {
             return;
         }
 
-        $this->db->beginTransaction();
 
         try {
             $success = $model->approveDeletion($uuid, [
@@ -1089,15 +1085,13 @@ function countPendingDeletions() {
                 ]
             );
 
-            $this->db->commit();
-
+           
             echo json_encode([
                 'status'  => 'success',
                 'message' => 'ሰራተኛው በቋሚነት ተሰርዟል።'
             ]);
 
         } catch (\Exception $e) {
-            $this->db->rollBack();
             echo json_encode([
                 'status'  => 'error',
                 'message' => $e->getMessage()
@@ -1150,7 +1144,6 @@ function countPendingDeletions() {
             return;
         }
 
-        $this->db->beginTransaction();
 
         try {
             $success = $model->rejectDeletion($uuid, [
@@ -1185,7 +1178,6 @@ function countPendingDeletions() {
                 ]
             );
 
-            $this->db->commit();
 
             echo json_encode([
                 'status'  => 'success',
@@ -1193,7 +1185,6 @@ function countPendingDeletions() {
             ]);
 
         } catch (\Exception $e) {
-            $this->db->rollBack();
             echo json_encode([
                 'status'  => 'error',
                 'message' => $e->getMessage()
