@@ -113,15 +113,29 @@ $initials       = $first_initial . $father_initial ?: 'GU';
             <p>ተቆጣጣሪ</p>
           </a>
         </li>
-         <?php if ($userRole === 'system_admin'): ?>
+         
+
+    </ul>
+  </li>
+  <?php endif; ?>
+  <?php if ($userRole === 'system_admin'): ?>
+  <li class="nav-item small">
+    <a href="javascript:void(0)" class="nav-link">
+      <i class="nav-icon fas fa-edit"></i>
+      <p>
+        BSC / Efficiency Settings
+        <i class="fas fa-angle-left right"></i>
+      </p>
+    </a>
+    <ul class="nav nav-treeview">
+       <?php if ($userRole === 'system_admin'): ?>
 <li class="nav-item">
           <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/evaluation-settings" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
-            <p>BSC and Efficency Calendar</p>
+            <p>BSC / Efficiency Settings</p>
           </a>
         </li>
 <?php endif; ?>
-
     </ul>
   </li>
   <?php endif; ?>
