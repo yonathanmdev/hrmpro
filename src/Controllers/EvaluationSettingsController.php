@@ -112,7 +112,7 @@ class EvaluationSettingsController extends BaseController
                 $this->redirectToSettings();
             }
 // add to $errors checks:
-if ($fiscalYear < 2018 || $fiscalYear > 2100) {
+if ($fiscalYear < 2010 || $fiscalYear > 2100) {
     $errors[] = 'Valid fiscal year is required (e.g. 2026).';
 }
             // ── Persist ───────────────────────────────────────────────

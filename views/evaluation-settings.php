@@ -434,6 +434,7 @@ $baseUrl = rtrim($_ENV['BASE_URL'], '/');
                         <tr>
                             <th>Season name</th>
                             <th width="90">Label</th>
+                            <th>በጀት ዓመት</th>
                             <th width="170">Default period</th>
                             <th width="150" style="text-align:center">Actions</th>
                         </tr>
@@ -462,6 +463,11 @@ $baseUrl = rtrim($_ENV['BASE_URL'], '/');
                                 <td class="es-cell-label">
                                     <span class="es-badge es-badge-gray">
                                         <?= htmlspecialchars($season['season_label']) ?>
+                                    </span>
+                                </td>
+                                 <td class="es-cell-label">
+                                    <span class="es-badge es-badge-fiscal_year">
+                                        <?= htmlspecialchars($season['fiscal_year']) ?>
                                     </span>
                                 </td>
                                 <td class="es-cell-period" style="font-family:monospace; font-size:12px;">
