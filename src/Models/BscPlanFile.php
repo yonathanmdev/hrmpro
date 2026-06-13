@@ -92,6 +92,8 @@ class BscPlanFile
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+
+
 /**
      * Insert a manually confirmed BSC plan record
      * file_name, file_path, file_size are null

@@ -7,6 +7,8 @@ use App\Models\BranchEvaluationWindow;
 use App\Models\BscPlanFile;
 use Ramsey\Uuid\Uuid;
 use \App\Traits\FileUploadTrait;
+use  App\Models\EfficiencyFileModel;
+
 class HrBscPlanController extends BaseController
 {
      use FileUploadTrait;
@@ -107,56 +109,7 @@ class HrBscPlanController extends BaseController
     | Shows employees WITH a plan
     |--------------------------------------------------------------------------
     */
-    public function indexEfficency(array $params = [])
-    {
-        AuthHelper::checkRole([
-            'hr_officer',
-            'hr_director'
-        ]);
-
-        $branchId = $_SESSION['user']['branch_id'];
-
-        $windowModel = new BranchEvaluationWindow($this->db);
-
-        $openSeasons = $windowModel->getOpenSeasonsForBranch($branchId);
-
-        $seasonId = $params['uuid'] ?? null;
-
-        $selectedSeason = $this->resolveSelectedSeason(
-            $openSeasons,
-            $seasonId
-        );
-
-        $employees        = [];
-        $totalEmployees   = 0;
-        $withPlanCount    = 0;
-        $withoutPlanCount = 0;
-
-        if ($selectedSeason) {
-
-            $planModel = new BscPlanFile($this->db);
-
-            $employees = $planModel->getEmployeesWithPlanStatus(
-                $branchId,
-                $selectedSeason['season_id']
-            );
-
-            $withPlanCount    = count($employees);
-            $totalEmployees   = $withPlanCount;
-        }
-
-        $this->render(
-            'bsc-efficiency',
-            [
-                'openSeasons'    => $openSeasons,
-                'selectedSeason' => $selectedSeason,
-                'employees'      => $employees,
-                'totalEmployees' => $totalEmployees,
-                'withPlanCount'  => $withPlanCount
-            ]
-        );
-    }
-
+   
 public function markConfirmed(): void
 {
     AuthHelper::checkRole([
@@ -264,6 +217,151 @@ $seasonId     = $params['record_id'] ?? '';
     }
 
     header("Location: " . $redirectBack);
+    exit();
+}
+public function indexEfficency(array $params = [])
+{
+    AuthHelper::checkRole([
+        'hr_officer',
+        'hr_director'
+    ]);
+
+    $branchId = $_SESSION['user']['branch_id'];
+
+    $windowModel = new BranchEvaluationWindow($this->db);
+    $openSeasons = $windowModel->getOpenSeasonsForBranch($branchId);
+
+    $seasonId       = $params['uuid'] ?? null;
+    $selectedSeason = $this->resolveSelectedSeason($openSeasons, $seasonId);
+
+    $employees        = [];
+    $totalEmployees   = 0;
+    $withFileCount    = 0;
+    $withoutFileCount = 0;
+
+    if ($selectedSeason) {
+
+        $planModel       = new BscPlanFile($this->db);
+        $efficiencyModel = new EfficiencyFileModel($this->db);
+
+        $sid = $selectedSeason['season_id'];
+
+        // Total eligible = all employees with a BSC file this season
+        $bscEmployees   = $planModel->getEmployeesWithPlanStatus($branchId, $sid);
+        $totalEmployees = count($bscEmployees);
+
+        // Already have efficiency attached — for stats
+        $withEfficiency = $efficiencyModel->getEmployeesWithEfficiency($branchId, $sid);
+        $withFileCount  = count($withEfficiency);
+
+        // Only employees whose BSC file has NO efficiency yet — shown in table
+        $employees        = $efficiencyModel->getEmployeesWithoutEfficiency($branchId, $sid);
+        $withoutFileCount = count($employees);
+    }
+
+    $this->render(
+        'efficiency-management',
+        [
+            'openSeasons'      => $openSeasons,
+            'selectedSeason'   => $selectedSeason,
+            'employees'        => $employees,
+            'totalEmployees'   => $totalEmployees,
+            'withPlanCount'    => $withFileCount,
+            'withoutPlanCount' => $withoutFileCount,
+        ]
+    );
+}
+public function efficiencyRegistration(array $params = []): void
+{
+    AuthHelper::checkRole([
+        'hr_officer',
+        'hr_director'
+    ]);
+
+    $employeeUuid = $params['uuid']      ?? '';
+    $seasonId     = $params['record_id'] ?? '';
+
+    $redirectBack = rtrim($_ENV['BASE_URL'], '/') . '/efficiency-management/' . $seasonId;
+
+    // ── 1. Param check ────────────────────────────────────────────────────────
+    if (empty($employeeUuid) || empty($seasonId)) {
+        $_SESSION['error'] = 'ያልተሟላ መረጃ ተልኳል።';
+        header('Location: ' . $redirectBack);
+        exit();
+    }
+
+    // ── 2. BSC file ID ────────────────────────────────────────────────────────
+    $bscFileId = trim($_POST['bsc_file_id'] ?? '');
+
+    if (empty($bscFileId)) {
+        $_SESSION['error'] = 'የBSC ፋይል መለያ አልተገኘም።';
+        header('Location: ' . $redirectBack);
+        exit();
+    }
+
+    // ── 3. Mark validation ────────────────────────────────────────────────────
+    $mark = trim($_POST['efficiency_mark'] ?? '');
+
+    if ($mark === '' || !is_numeric($mark) || (float)$mark < 0 || (float)$mark > 100) {
+        $_SESSION['error'] = 'እባክዎ ትክክለኛ ነጥብ (0–100) ያስገቡ።';
+        header('Location: ' . $redirectBack);
+        exit();
+    }
+
+    // ── 4. File check ─────────────────────────────────────────────────────────
+    if (
+        empty($_FILES['efficiency_file']['name']) ||
+        $_FILES['efficiency_file']['error'] === UPLOAD_ERR_NO_FILE
+    ) {
+        $_SESSION['error'] = 'እባክዎ የብቃት ምዘና ፋይል ይምረጡ።';
+        header('Location: ' . $redirectBack);
+        exit();
+    }
+
+    $efficiencyModel = new EfficiencyFileModel($this->db);
+
+    // ── 5. Duplicate check — per BSC file ID ─────────────────────────────────
+    if ($efficiencyModel->efficiencyExistsForBscFile($bscFileId)) {
+        $_SESSION['error'] = 'ለዚህ BSC ፋይል አስቀድሞ የብቃት ምዘና ፋይል ተያይዟል።';
+        header('Location: ' . $redirectBack);
+        exit();
+    }
+
+    // ── 6. Upload file ────────────────────────────────────────────────────────
+    $fileName = $this->uploadFile('efficiency_file', 'efficiency');
+
+    if (!$fileName) {
+        $fileError = $_FILES['efficiency_file']['error'] ?? UPLOAD_ERR_NO_FILE;
+        $_SESSION['error'] = 'ፋይሉን መጫን አልተቻለም። ስህተት፡ ' . $this->getUploadErrorMessage($fileError);
+        header('Location: ' . $redirectBack);
+        exit();
+    }
+
+    // ── 7. Insert record ──────────────────────────────────────────────────────
+    $branchId   = $_SESSION['user']['branch_id'];
+    $uploadedBy = $_SESSION['user']['id'];
+    $fileSize   = $_FILES['efficiency_file']['size'] ?? 0;
+
+    $result = $efficiencyModel->uploadEfficiency(
+        Uuid::uuid4()->toString(),
+        $employeeUuid,
+        $branchId,
+        $seasonId,
+        $bscFileId,
+        (float) $mark,
+        $fileName,
+        $fileName,
+        (int) $fileSize,
+        $uploadedBy
+    );
+
+    if ($result) {
+        $_SESSION['success'] = 'የብቃት ምዘና ፋይል በተሳካ ሁኔታ ተያይዟል!';
+    } else {
+        $_SESSION['error'] = 'የብቃት ምዘና ፋይል ማያያዝ አልተቻለም።';
+    }
+
+    header('Location: ' . $redirectBack);
     exit();
 }
 }

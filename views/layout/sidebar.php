@@ -227,12 +227,12 @@ $initials       = $first_initial . $father_initial ?: 'GU';
           </a>
         </li>
 
-        <!-- <li class="nav-item">
-          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/efficency-management" class="nav-link">
+        <li class="nav-item">
+          <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/efficiency-management" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
             <p>አፈጻጻም</p>
           </a>
-        </li> -->
+        </li> 
 
     </ul>
 </li>

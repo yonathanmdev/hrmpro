@@ -212,7 +212,7 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                   <option value="">-- ይምረጡ --</option>
                   <?php if (!empty($jobs)): ?>
                     <?php foreach ($jobs as $job): ?>
-                      <option value="<?= htmlspecialchars($job['id']) ?>" data-wastna="<?= htmlspecialchars($job['wastna']) ?>"><?= htmlspecialchars($job['job_name']) ?></option>
+                      <option value="<?= htmlspecialchars($job['id']) ?>" data-wastna="<?= htmlspecialchars($job['wastna']) ?>"><?= htmlspecialchars($job['job_name']) ?> (<?= htmlspecialchars($job['job_identifier_no']) ?>)</option>
                     <?php endforeach; ?>
                   <?php endif; ?>
                 </select>

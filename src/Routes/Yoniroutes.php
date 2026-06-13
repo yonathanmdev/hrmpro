@@ -47,8 +47,11 @@ return [
         'bsc-plan-management' => ['HrBscPlanController', 'index', true],
         'bsc-plan-mark-confirmed' => ['HrBscPlanController', 'markConfirmed', true],
         'bsc-plan-upload' => ['HrBscPlanController', 'upload', true],
-        
-    // Branch Management
+        // efficency management
+
+        'efficiency-management' => ['HrBscPlanController', 'indexEfficency', true],
+    'efficiency-file-upload' => ['HrBscPlanController', 'efficiencyRegistration', true],
+        // Branch Management
     'register-branch'               => ['OrgController', 'showRegisterForm', true],
     'register-branch-process'       => ['OrgController', 'handleBranchRegistration', true],
     'update-branch-process'   => ['OrgController', 'handleEditBranch', true],
