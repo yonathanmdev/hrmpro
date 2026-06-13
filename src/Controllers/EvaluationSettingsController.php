@@ -188,8 +188,9 @@ public function updateSeason(): void
             $_SESSION['error'] = implode(' ', $errors);
             $this->redirectToSettings();
         }
-$fiscalYear = (int) trim($_POST['fiscal_year'] ?? 0);
 
+        
+$fiscalYear = (int) trim($_POST['fiscal_year'] ?? 0);
 // add to $errors checks:
 if ($fiscalYear < 2018 || $fiscalYear > 2100) {
     $errors[] = 'Valid fiscal year is required (e.g. 2026).';
