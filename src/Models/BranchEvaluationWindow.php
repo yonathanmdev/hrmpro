@@ -24,7 +24,8 @@ class BranchEvaluationWindow
                 w.*,
                 b.name AS branch_name,
                 s.season_name,
-                s.season_label
+                s.fiscal_year
+                
             FROM branch_evaluation_windows w
             INNER JOIN branches b
                 ON b.id = w.branch_id
@@ -268,7 +269,8 @@ public function getOpenSeasonsForBranch(
             s.season_name,
             s.season_label,
             s.default_start,
-            s.default_end
+            s.default_end,
+            s.fiscal_year
         FROM branch_evaluation_windows w
         INNER JOIN evaluation_seasons s
             ON s.id = w.season_id

@@ -109,7 +109,7 @@
                             <option
                                 value="<?= htmlspecialchars($season['season_id']); ?>"
                                 <?= ($selectedSeason && $selectedSeason['season_id'] === $season['season_id']) ? 'selected' : ''; ?>>
-                                <?= htmlspecialchars($season['season_name'] . ' (' . $season['season_label'] . ')'); ?>
+                                <?= htmlspecialchars($season['season_name'] . ' (' . $season['fiscal_year'] . ')'); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -122,7 +122,7 @@
             <div class="season-card-header">
                 <div>
                     <div class="text-muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;">Active Season</div>
-                    <strong><?= htmlspecialchars($selectedSeason['season_name']); ?></strong>
+                    <strong><?= htmlspecialchars($selectedSeason['season_name']).' (' . $selectedSeason['fiscal_year'] . ')'; ?></strong>
                 </div>
                 <span class="season-badge">
                     <i class="fas fa-check-circle mr-1"></i> የሰራተኞች አፈጻጻም መመዝገቢያ
@@ -153,7 +153,7 @@
                     <div class="card bsc-stat-card stat-pending">
                         <div class="card-body text-center py-4">
                             <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                            <h6>አፈጻጸም ያልተሞላላቸው</h6>
+                            <h6>አፈጻጸም ያልተሞላቸው</h6>
                             <h3><?= $withoutPlanCount; ?></h3>
                         </div>
                     </div>
@@ -284,7 +284,16 @@
 </div>
 
 <script nonce="<?= htmlspecialchars($GLOBALS['nonce']); ?>">
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
+
+    const seasonSelect = document.getElementById('seasonSelect');
+    if (seasonSelect) {
+        seasonSelect.addEventListener('change', function () {
+            if (!this.value) return;
+            window.location.href = '<?= rtrim($_ENV['BASE_URL'], '/'); ?>/efficiency-management/' + this.value;
+        });
+    }
+
 
     document.querySelectorAll('.eff-file-input').forEach(function (input) {
         input.addEventListener('change', function () {

@@ -109,7 +109,7 @@
                             <option
                                 value="<?= htmlspecialchars($season['season_id']); ?>"
                                 <?= ($selectedSeason && $selectedSeason['season_id'] === $season['season_id']) ? 'selected' : ''; ?>>
-                                <?= htmlspecialchars($season['season_name'] . ' (' . $season['season_label'] . ')'); ?>
+                                <?= htmlspecialchars($season['season_name'] . ' (' . $season['fiscal_year'] . ')'); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
