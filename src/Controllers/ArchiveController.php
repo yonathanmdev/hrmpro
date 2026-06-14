@@ -2,8 +2,10 @@
 namespace App\Controllers;
 use App\Helpers\AuthHelper;
 use App\Models\ArchiveModel;
+use App\Models\User;
 use Ramsey\Uuid\Uuid;
 use \App\Traits\FileUploadTrait;
+
 
 class ArchiveController extends BaseController {
     use FileUploadTrait;
@@ -82,11 +84,16 @@ class ArchiveController extends BaseController {
                     'cert_type'    => $cert_type,
                     'file_url'     => $newFileName,   // null = keep old file in model
                     'updated_by'   => $registered_by,
+                    'employee_id'  => $employee_uuid, // for discipline update
                 ];
 
                 $result = $model->update($editData);
 
                 if ($result) {
+    $model->updateDisciplineIfNeeded(
+        $editData['employee_id'],  // this key exists
+        $editData['cert_type']
+    );
                     // ─── UPDATE AUDIT LOG ─────────────────────────────────
                     \App\Helpers\AuditHelper::log('archive_document_updated', 'archive', $document_id, null, [
                         'document_id'   => $document_id,
@@ -146,7 +153,11 @@ class ArchiveController extends BaseController {
 
             $result = $model->create($archiveData);
 
-            if ($result) {
+           if ($result) {
+    $model->updateDisciplineIfNeeded(
+        $archiveData['employee_id'],  // this key exists
+        $archiveData['cert_type']
+    );
                 // ─── CREATE AUDIT LOG ─────────────────────────────────
                 \App\Helpers\AuditHelper::log('archive_document_created', 'archive', $generatedId, null, [
                     'document_id'      => $generatedId,
@@ -185,4 +196,80 @@ class ArchiveController extends BaseController {
             exit();
         }
     }
+
+public function delete(): void
+{
+    AuthHelper::checkRole(['hr_director', 'hr_officer']);
+    header('Content-Type: application/json');
+
+    $data    = json_decode(file_get_contents('php://input'), true);
+    $id      = trim((string) ($data['id'] ?? ''));
+    $employeeId = trim((string) ($data['employeeId'] ?? ''));
+    $reason = trim($data['reason']      ?? '');
+    $password = $data['confirm_password'] ?? '';
+    $source = 'INDIVIDUAL';
+    $adminId = (string) ($_SESSION['user']['id'] ?? '');
+
+     // Validate input
+        if (!$id || !$reason || !$password || !$source) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ሁሉም መስኮች አስፈላጊ ናቸው።'
+            ]);
+            return;
+        }
+
+        $user           = $_SESSION['user'] ?? [];
+        $organizationId = $user['organization_id'] ?? null;
+        $branchId = $user['branch_id'] ?? null;
+
+        if (!$organizationId || !$branchId) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ያልተፈቀደ ድርጊት።'
+            ]);
+            return;
+        }
+
+        // Verify password
+        $userModel = new User($this->db);
+        if (!$userModel->verifyPassword($user['id'], $password)) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ፓስዋርዱ ትክክል አይደለም።'
+            ]);
+            return;
+        }
+
+    try {
+        $model  = new ArchiveModel($this->db);
+        $result = $model->deleteRecord($id, $employeeId, $adminId, $reason, $source);
+
+        if ($result['status'] === 'success') {
+            \App\Helpers\AuditHelper::log(
+                action:     'document_deleted',
+                entityType: 'document',
+                entityId:   $id,
+                oldValues:  $result['oldRecord'],   // snapshot of deleted record
+                newValues:  null,                   // nothing after delete
+                metadata:   [
+                    'deleted_type'          => 'soft',
+                    'deleted_documents'     => $result['deletedDocumentCount'] ?? 0,
+                    'deletion_source'       => 'INDIVIDUAL_ACTION',
+                    'reason'          => $reason,
+                    'performed_by'          => $adminId,
+                ]
+            );
+
+            // strip internal fields before sending to client
+            unset($result['oldRecord'], $result['deletedDocumentCount']);
+        }
+
+        echo json_encode($result);
+
+    } catch (\Exception $e) {
+        error_log('ArchiveController::delete - ' . $e->getMessage());
+        echo json_encode(['status' => 'error', 'message' => 'ስህተት ተፈጥሯል፤ እባክዎ በድጋሚ ይሞክሩ።']);
+    }
 }
+    }

@@ -274,7 +274,7 @@ public function getOpenSeasonsForBranch(
         FROM branch_evaluation_windows w
         INNER JOIN evaluation_seasons s
             ON s.id = w.season_id
-        WHERE w.branch_id = ?
+        WHERE w.branch_id = ? ORDER BY s.fiscal_year ASC, s.season_label ASC
     ";
 
     $stmt = $this->db->prepare($sql);

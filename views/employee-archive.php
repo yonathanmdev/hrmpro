@@ -22,7 +22,7 @@ $uuid = end($url_parts);
       </div>
     </div>
 
-    <div class="card-body">
+    <div class="card-body"><strong>የ<?= htmlspecialchars(trim(($employee['first_name'] ?? '') . ' ' . ($employee['father_name'] ?? '') . ' ' . ($employee['g_father_name'] ?? ''))) ?> ማህደር</strong>
       <table id="example1" data-empty-msg="ምንም የተያያዘ ፋይል አልተገኘም።" class="table table-bordered table-striped">
         <thead class="thead-light">
           <tr>
@@ -83,22 +83,51 @@ $uuid = end($url_parts);
         <?php endif; ?>
       </td>
       <td>
-        <?php if (isset($document['owner_type']) && $document['owner_type'] === 'employee'): ?>
-          <button
-            type="button"
-            class="btn btn-xs btn-outline-warning btn-edit-document"
-            data-toggle="modal"
-            data-target="#fileAttachmentModal"
-            data-mode="edit"
-            data-id="<?= htmlspecialchars($document['id']) ?>"
-            data-type="<?= htmlspecialchars($document['entity_type']) ?>"
-          >
-            <i class="fas fa-edit"></i> አስተካክል
-          </button>
-        <?php else: ?>
-          <span class="text-muted">—</span>
-        <?php endif; ?>
-      </td>
+  <?php if (isset($document['owner_type']) && $document['owner_type'] === 'employee'): ?>
+    
+    <button
+      type="button"
+      class="btn btn-xs btn-outline-warning btn-edit-document"
+      data-toggle="modal"
+      data-target="#fileAttachmentModal"
+      data-mode="edit"
+      data-id="<?= htmlspecialchars($document['id']) ?>"
+      data-type="<?= htmlspecialchars($document['entity_type']) ?>"
+    >
+      <i class="fas fa-edit"></i> አስተካክል
+    </button>
+
+    <?php
+  $disciplineTypes = [
+      'የጽሁፍ ማስጠንቀቂያ የተሰጣቸው',
+      'እስከ 15 ቀን የሚደርስ የደመወዝ ቅጣት የተቀጡ',
+      'እስከ 3 ወር የሚደርስ የደመወዝ ቅጣት የተቀጡ',
+      'እስከ 2 ዓመት ለሚደርስ ጊዜ ከደረጃና ከደመወዝ ዝቅ የተደረጉ',
+  ];
+  $isDiscipline = in_array($document['entity_type'], $disciplineTypes);
+?>
+
+<button
+  type="button"
+  class="btn btn-xs <?= $isDiscipline ? 'btn-outline-danger' : 'btn-outline-secondary' ?> btn-sm shadow archive-delete-btn"
+  data-id="<?= htmlspecialchars($document['id']) ?>"
+  data-type="<?= htmlspecialchars($document['entity_type']) ?>"
+  data-uuid="<?= htmlspecialchars($employee['uuid']) ?>"
+  data-discipline="<?= $isDiscipline ? '1' : '0' ?>"
+  data-employee-id="<?= htmlspecialchars($employee['uuid']) ?>"
+  data-name="<?= htmlspecialchars(trim(
+      ($employee['first_name']  ?? '') . ' ' .
+      ($employee['father_name'] ?? '') . ' ' .
+      ($employee['g_father_name'] ?? '')
+  )) ?>"
+>
+  <i class="fas fa-trash-alt me-1"></i> <?= $isDiscipline ? 'ማንሳት' : 'ሰርዝ' ?>
+</button>
+
+  <?php else: ?>
+    <span class="text-muted">—</span>
+  <?php endif; ?>
+</td>
     </tr>
   <?php endforeach; ?>
 <?php endif; ?>
@@ -141,7 +170,7 @@ $uuid = end($url_parts);
           <!-- Employee UUID display -->
           <div class="form-group">
             <label>የሰራተኛ መለያ</label>
-            <input type="text" class="form-control" value="<?= htmlspecialchars($uuid) ?>" readonly>
+            <input type="text" class="form-control" value="<?= htmlspecialchars($employee['employee_id'] ?? '') ?>" readonly>
           </div>
 
           <!-- Certificate Type select -->
@@ -154,6 +183,12 @@ $uuid = end($url_parts);
               <option value="የስልጠና ምስክር ወረቀት">የስልጠና ምስክር ወረቀት</option>
               <option value="የስኮላርሺፕ ምስክር ወረቀት">የስኮላርሺፕ ምስክር ወረቀት</option>
               <option value="የዕድገት ምስክር ወረቀት">የዕድገት ምስክር ወረቀት</option>
+          
+              <option value="የጽሁፍ ማስጠንቀቂያ የተሰጣቸው" >የጽሁፍ ማስጠንቀቂያ የተሰጣቸው</option>
+              <option value="እስከ 15 ቀን የሚደርስ የደመወዝ ቅጣት የተቀጡ">እስከ 15 ቀን የሚደርስ የደመወዝ ቅጣት የተቀጡ</option>
+              <option value="እስከ 3 ወር የሚደርስ የደመወዝ ቅጣት የተቀጡ">እስከ 3 ወር የሚደርስ የደመወዝ ቅጣት የተቀጡ</option>
+              <option value="እስከ 2 ዓመት ለሚደርስ ጊዜ ከደረጃና ከደመወዝ ዝቅ የተደረጉ">እስከ 2 ዓመት ለሚደርስ ጊዜ ከደረጃና ከደመወዝ ዝቅ የተደረጉ</option>
+
               <option value="ሌላ">ሌላ</option>
             </select>
           </div>
@@ -200,7 +235,7 @@ $uuid = end($url_parts);
         <!-- Modal Footer -->
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">
-            <i class="fas fa-times mr-1"></i> ሰርዝ
+            <i class="fas fa-times mr-1"></i> 
           </button>
           <button type="submit" class="btn btn-primary" id="submitBtn">
             <i class="fas fa-save mr-1"></i> መዝግብ

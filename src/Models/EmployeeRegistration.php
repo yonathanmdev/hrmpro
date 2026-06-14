@@ -188,7 +188,7 @@ $this->assignJob($data['job_property_id'], $data['branch_id']);            // In
                 jp.status as job_status
             FROM employees_table e
             INNER JOIN job_property jp ON e.job_property_id = jp.id
-            WHERE e.uuid = ?
+            WHERE e.uuid = ? AND e.is_deleted != 1
         ";
 
         $stmt = $this->db->prepare($sql);

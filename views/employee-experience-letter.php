@@ -1137,9 +1137,13 @@ if ($hireStart) {
                     <?= EthiopianDateHelper::getMonthName($hireEth['month']) ?> <?= $hireEth['day'] ?> <?= $hireEth['year'] ?>
                 </li>
                 <?php endif; ?>
-                <?php if (!empty($employee['education_level'])): ?>
-                <li><span>የት/ት ደረጃ፡</span> <?= htmlspecialchars($employee['education_level']) ?></li>
+                <?php if (!empty($employee['level_of_education'])): ?>
+                <li>
+        <span>የት/ት ደረጃ፡</span>
+        <?= htmlspecialchars(str_replace('_', ' ', $employee['level_of_education'])) ?>
+    </li>
                 <?php endif; ?>
+                
                 <?php if (!empty($employee['department'])): ?>
                 <li><span>የሰለጠኑበት ሙያ፡</span> <?= htmlspecialchars($employee['department']) ?></li>
                 <?php endif; ?>
@@ -1157,6 +1161,9 @@ if ($hireStart) {
                 <?php endif; ?>
                 <?php if (isset($employee['salary'])): ?>
                 <li><span>የደመወዝ መጠን፡</span> <?= number_format((float)($employee['salary']), 2) ?></li>
+                <?php endif; ?>
+                <?php if (!empty($employee['displin_situation'])): ?>
+                <li><span>የዲሲፕሊን ክስ፡</span> <?= htmlspecialchars(($employee['displin_situation']), 2) ?></li>
                 <?php endif; ?>
             </ul>
 

@@ -162,6 +162,7 @@ function myAsset($path) {
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
     <script src="<?= myAsset('js/file-attachment.js') ?>"></script>
     <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
+    <script src="<?= myAsset('js/delete-attached-files.js') ?>"></script>
     
     <?php endif; ?>
    

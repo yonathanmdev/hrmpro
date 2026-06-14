@@ -101,10 +101,10 @@
             <div class="card border-0 shadow-sm rounded-lg mb-4">
                 <div class="card-body py-3">
                     <label for="seasonSelect" class="text-uppercase font-weight-bold text-muted" style="font-size:.72rem;letter-spacing:.07em;">
-                        <i class="fas fa-calendar-alt mr-1"></i> Season ይምረጡ
+                        <i class="fas fa-calendar-alt mr-1"></i> በጀት ዓመት ይምረጡ
                     </label>
                     <select id="seasonSelect" class="form-control mt-1" style="border-radius:8px;">
-                        <option value="">-- Season ይምረጡ --</option>
+                       <option value="" disabled selected>-- በጀት ዓመት ይምረጡ --</option>
                         <?php foreach ($openSeasons as $season): ?>
                             <option
                                 value="<?= htmlspecialchars($season['season_id']); ?>"
@@ -132,16 +132,21 @@
             <!-- Statistics -->
             <div class="row mb-4">
                 <div class="col-md-4 mb-3">
-                    <div class="card bsc-stat-card stat-total">
-                        <div class="card-body text-center py-4">
-                            <div class="stat-icon"><i class="fas fa-users"></i></div>
-                            <h6>ጠቅላላ ሰራተኛ</h6>
-                            <h3><?= $totalEmployees; ?></h3>
-                        </div>
-                    </div>
-                </div>
+    <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-active" style="text-decoration:none;">
+        <div class="card bsc-stat-card stat-total" style="cursor:pointer;">
+            <div class="card-body text-center py-4">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <h6>ጠቅላላ ሰራተኛ</h6>
+                <h3><?= $totalEmployees; ?></h3>
+            </div>
+        </div>
+    </a>
+</div>
                 <div class="col-md-4 mb-3">
-                    <div class="card bsc-stat-card stat-done">
+                    <div class="card bsc-stat-card stat-done"
+                         id="toggle-with-plan"
+                         style="cursor:pointer;"
+                         title="ዝርዝር ለማየት ጠቅ ያድርጉ">
                         <div class="card-body text-center py-4">
                             <div class="stat-icon"><i class="fas fa-paperclip"></i></div>
                             <h6>BSC እቅድ ያያያዙ</h6>
@@ -160,7 +165,7 @@
                 </div>
             </div>
 
-            <!-- Table -->
+            <!-- ── Without Plan Table (always visible) ── -->
             <div class="card border-0 shadow-sm" style="border-radius:12px;overflow:hidden;">
                 <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4">
                     <span class="font-weight-700" style="font-size:.9rem;font-weight:600;color:#2d3748;">
@@ -172,87 +177,168 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table bsc-table mb-0">
+                        <table class="table bsc-table mb-0" id="example1" data-empty-msg="BSC እቅድ ያልተያያዘለት ሰራተኛ አልተገኘም።">
                             <thead>
                                 <tr>
                                     <th style="width:60px;">#</th>
                                     <th>የሰራተኛ ሙሉ ስም</th>
-                                    <th style="width:240px;">ድርጊት</th>
+                                    <th style="width:240px;">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($employees)): ?>
+                                <?php foreach ($employees as $index => $employee): ?>
+                                    <?php
+                                        $initials = strtoupper(
+                                            mb_substr($employee['first_name'], 0, 1) .
+                                            mb_substr($employee['father_name'], 0, 1)
+                                        );
+                                    ?>
                                     <tr>
-                                        <td colspan="3">
-                                            <div class="empty-state">
-                                                <i class="fas fa-check-circle text-success"></i>
-                                                <p>ሁሉም ሰራተኞች BSC እቅድ አያይዘዋል።</p>
+                                        <td class="text-muted" style="font-size:.85rem;"><?= $index + 1; ?></td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="emp-avatar"><?= htmlspecialchars($initials); ?></div>
+                                                <span class="emp-name">
+                                                    <?= htmlspecialchars(trim(
+                                                        $employee['first_name'] . ' ' .
+                                                        $employee['father_name'] . ' ' .
+                                                        $employee['g_father_name']
+                                                    )); ?>
+                                                </span>
                                             </div>
                                         </td>
+                                        <td>
+                                            <!--
+                                            <form
+                                                method="POST"
+                                                enctype="multipart/form-data"
+                                                id="bsc-upload-form-<?= $employee['uuid']; ?>"
+                                                action="<?= $_ENV['BASE_URL']; ?>/bsc-plan-upload/<?= urlencode($employee['uuid']); ?>/<?= urlencode($selectedSeason['season_id']); ?>"
+                                                style="display:inline;">
+                                                <input
+                                                    type="file"
+                                                    name="bsc_plan"
+                                                    id="bsc_plan_<?= $employee['uuid']; ?>"
+                                                    accept=".pdf,.doc,.docx,.xls,.xlsx"
+                                                    style="display:none;">
+                                                <label
+                                                    for="bsc_plan_<?= $employee['uuid']; ?>"
+                                                    class="btn-attach">
+                                                    <i class="fas fa-upload"></i> BSC አያይዝ
+                                                </label>
+                                            </form>
+                                -->
+                                            <button
+                                                type="button"
+                                                class="btn-confirm btn-mark-confirmed"
+                                                data-uuid="<?= htmlspecialchars($employee['uuid']); ?>"
+                                                data-season="<?= htmlspecialchars($selectedSeason['season_id']); ?>">
+                                                <i class="fas fa-check"></i> ተያይዟል
+                                            </button>
+                                        </td>
                                     </tr>
-                                <?php else: ?>
-                                    <?php foreach ($employees as $index => $employee): ?>
-                                        <?php
-                                            $initials = strtoupper(
-                                                mb_substr($employee['first_name'], 0, 1) .
-                                                mb_substr($employee['father_name'], 0, 1)
-                                            );
-                                        ?>
-                                        <tr>
-                                            <td class="text-muted" style="font-size:.85rem;"><?= $index + 1; ?></td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="emp-avatar"><?= htmlspecialchars($initials); ?></div>
-                                                    <span class="emp-name">
-                                                        <?= htmlspecialchars(trim(
-                                                            $employee['first_name'] . ' ' .
-                                                            $employee['father_name'] . ' ' .
-                                                            $employee['g_father_name']
-                                                        )); ?>
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <form
-                                                    method="POST"
-                                                    enctype="multipart/form-data"
-                                                    id="bsc-upload-form-<?= $employee['uuid']; ?>"
-                                                    action="<?= $_ENV['BASE_URL']; ?>/bsc-plan-upload/<?= urlencode($employee['uuid']); ?>/<?= urlencode($selectedSeason['season_id']); ?>"
-                                                    style="display:inline;">
-                                                    <input
-                                                        type="file"
-                                                        name="bsc_plan"
-                                                        id="bsc_plan_<?= $employee['uuid']; ?>"
-                                                        accept=".pdf,.doc,.docx,.xls,.xlsx"
-                                                        style="display:none;">
-                                                    <label
-                                                        for="bsc_plan_<?= $employee['uuid']; ?>"
-                                                        class="btn-attach">
-                                                        <i class="fas fa-upload"></i> BSC አያይዝ
-                                                    </label>
-                                                </form>
-
-                                                <button
-                                                    type="button"
-                                                    class="btn-confirm btn-mark-confirmed"
-                                                    data-uuid="<?= htmlspecialchars($employee['uuid']); ?>"
-                                                    data-season="<?= htmlspecialchars($selectedSeason['season_id']); ?>">
-                                                    <i class="fas fa-check"></i> ተያይዟል
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
+            <!-- ── With Plan Table (toggled by stat card) ── -->
+            <div id="with-plan-section" style="display:none;" class="mt-4">
+                <div class="card border-0 shadow-sm" style="border-radius:12px;overflow:hidden;">
+                    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4">
+                        <span style="font-size:.9rem;font-weight:600;color:#2d3748;">
+                            <i class="fas fa-check-circle mr-2 text-success"></i> BSC እቅድ ያያያዙ ሰራተኞች
+                        </span>
+                        <div class="d-flex align-items-center" style="gap:8px;">
+                            <span class="badge badge-success px-3 py-2" style="border-radius:20px;font-size:.75rem;">
+                                <?= $withPlanCount; ?> ሰራተኞች
+                            </span>
+                            <button type="button" id="close-with-plan"
+                                class="btn btn-sm btn-outline-secondary"
+                                style="border-radius:8px;font-size:.78rem;">
+                                <i class="fas fa-times"></i> ዝጋ
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table bsc-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width:60px;">#</th>
+                                        <th>የሰራተኛ ሙሉ ስም</th>
+                                        <th style="width:100px;">ፋይል</th>
+                                        <th style="width:130px;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($employeesWithPlan)): ?>
+                                        <?php foreach ($employeesWithPlan as $index => $emp): ?>
+                                            <?php
+                                                $initials = strtoupper(
+                                                    mb_substr($emp['first_name'], 0, 1) .
+                                                    mb_substr($emp['father_name'], 0, 1)
+                                                );
+                                                $fullName = htmlspecialchars(trim(
+                                                    ($emp['first_name']    ?? '') . ' ' .
+                                                    ($emp['father_name']   ?? '') . ' ' .
+                                                    ($emp['g_father_name'] ?? '')
+                                                ));
+                                            ?>
+                                            <tr>
+                                                <td class="text-muted" style="font-size:.85rem;"><?= $index + 1 ?></td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="emp-avatar"><?= htmlspecialchars($initials) ?></div>
+                                                        <span class="emp-name"><?= $fullName ?></span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <?php if (!empty($emp['file_path'])): ?>
+                                                        <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/serve-file?file=<?= htmlspecialchars($emp['file_path']) ?>&type=document"
+                                                           target="_blank"
+                                                           class="btn btn-sm btn-outline-primary"
+                                                           style="border-radius:8px;font-size:.78rem;">
+                                                            <i class="fas fa-file-pdf"></i> ክፈት
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <span class="badge badge-secondary" style="border-radius:8px;font-size:.75rem;">ተያይዟል</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    
+<button
+    type="button"
+    class="btn btn-sm btn-delete-bsc-plan"
+    style="background:#c0392b;color:#fff;border-radius:8px;font-size:.78rem;padding:5px 12px;"
+    data-id="<?= htmlspecialchars($emp['file_id']) ?>"
+    data-uuid="<?= htmlspecialchars($emp['uuid']) ?>"
+    data-name="<?= $fullName ?>"
+>
+    <i class="fas fa-trash-alt"></i> ሰርዝ
+</button>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-4">ምንም አልተገኘም።</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
         <?php else: ?>
             <div class="alert alert-info border-0 rounded-lg">
                 <i class="fas fa-info-circle mr-2"></i>
-                BSC እቅድ ለማያያዝ መጀመሪያ Season ይምረጡ።
+                BSC እቅድ ለማያያዝ መጀመሪያ በጀት ዓመት ይምረጡ።
             </div>
         <?php endif; ?>
 
@@ -263,6 +349,7 @@
 <script nonce="<?= htmlspecialchars($GLOBALS['nonce']); ?>">
 document.addEventListener('DOMContentLoaded', function () {
 
+    // ── Season select redirect
     const seasonSelect = document.getElementById('seasonSelect');
     if (seasonSelect) {
         seasonSelect.addEventListener('change', function () {
@@ -271,6 +358,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // ── Mark confirmed
     document.querySelectorAll('.btn-mark-confirmed').forEach(function (btn) {
         btn.addEventListener('click', function () {
             const uuid   = this.dataset.uuid;
@@ -299,32 +387,82 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
-
+/*
+    // ── File upload confirm
     document.querySelectorAll('input[id^="bsc_plan_"]').forEach(function (input) {
-    input.addEventListener('change', function () {
-        if (this.files.length === 0) return;
+        input.addEventListener('change', function () {
+            if (this.files.length === 0) return;
 
-        const form     = this.closest('form');
-        const fileName = this.files[0].name;
+            const form     = this.closest('form');
+            const fileName = this.files[0].name;
 
-        Swal.fire({
-            title: 'ፋይሉን ያያይዙ?',
-            text: fileName + ' የሚለውን ፋይል ለዚህ ሰራተኛ ማያያዝ ይፈልጋሉ?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'አዎ፣ አያይዝ',
-            cancelButtonText: 'ይቅር',
-            confirmButtonColor: '#1a7abf',
-            cancelButtonColor: '#6c757d'
-        }).then(function (result) {
-            if (result.isConfirmed) {
-                form.submit();
-            } else {
-                input.value = '';
-            }
+            Swal.fire({
+                title: 'ፋይሉን ያያይዙ?',
+                text: fileName + ' የሚለውን ፋይል ለዚህ ሰራተኛ ማያያዝ ይፈልጋሉ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'አዎ፣ አያይዝ',
+                cancelButtonText: 'ይቅር',
+                confirmButtonColor: '#1a7abf',
+                cancelButtonColor: '#6c757d'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    form.submit();
+                } else {
+                    input.value = '';
+                }
+            });
         });
     });
-});
+*/
+    // ── Toggle with-plan table on stat card click
+    const toggleCard = document.getElementById('toggle-with-plan');
+    const planSection = document.getElementById('with-plan-section');
 
+    if (toggleCard && planSection) {
+        toggleCard.addEventListener('click', function () {
+            const isHidden = planSection.style.display === 'none';
+            planSection.style.display = isHidden ? 'block' : 'none';
+            if (isHidden) planSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
+    document.getElementById('close-with-plan')?.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (planSection) planSection.style.display = 'none';
+    });
+
+    // ── Pre-fill edit BSC plan modal
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-edit-bsc-plan');
+        if (!btn) return;
+        document.getElementById('edit-bsc-plan-id').value        = btn.dataset.id;
+        document.getElementById('edit-bsc-plan-uuid').value      = btn.dataset.uuid;
+        document.getElementById('edit-bsc-plan-name').textContent = btn.dataset.name;
+        document.getElementById('edit-bsc-plan-file').value      = '';
+    });
+
+   document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-delete-bsc-plan');
+    if (!btn) return;
+
+    const name = btn.dataset.name;
+
+    confirmDelete({
+        endpoint:    'bsc-plan-remove',
+        id:          btn.dataset.id,
+        uuid:        btn.dataset.uuid,
+        name:        btn.dataset.name,
+        type:        'bsc_plan',
+        task:        'delete',
+        title:       'እቅድ ማጥፋት?',
+        warning:     `<strong>${name}</strong> - እርግጠኛ ነዎት? እቅዱ በስህተት ነው የተያያዘው?`,
+        confirmText: '<i class="fas fa-trash-alt"></i> አዎ፣ ሰርዝ!',
+        successText: `${name} - እቅዱ ተሰርዟል።`,
+        requireReason:   true,
+        requirePassword: true,
+        onSuccess: () => btn.closest('tr')?.remove()
+    });
+});
 });
 </script>

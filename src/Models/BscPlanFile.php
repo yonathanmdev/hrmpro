@@ -278,4 +278,57 @@ public function uploadPlan(
         'uploaded_by' => $uploadedBy
     ]);
 }
+
+public function findById(string $id) {
+    $sql = "SELECT * FROM bsc_plan_files WHERE id = ? ";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([$id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+public function deleteRecord(string $id, string $employeeId, string $userId, string $reason, string $deletionSource): array
+{
+    try {
+        $this->db->beginTransaction();
+
+        $oldRecord = $this->findById($id);
+        if (!$oldRecord) {
+            $this->db->rollBack();
+            return ['status' => 'error', 'message' => 'አልተገኘም።'];
+        }
+
+        // ✅ Get employee UUID from oldRecord
+        $empId = $oldRecord['employee_id'] ?? null; // ← adjust key to match your column name
+
+        if (!$empId) {
+            $this->db->rollBack();
+            return ['status' => 'error', 'message' => 'የሰራተኛ መለያ አልተገኘም።'];
+        }
+
+
+        // Delete attached documents
+        $stmt = $this->db->prepare(
+            "UPDATE bsc_plan_files SET
+                is_deleted      = 1
+             WHERE id   = ?
+             AND   is_deleted = 0"
+        );
+        $stmt->execute([$id]);
+        $deletedDocumentCount = $stmt->rowCount();
+
+        $this->db->commit();
+
+        return [
+            'status'               => 'success',
+            'deleted_type'         => 'soft',
+            'message'              => 'በትክክል ተሰርዟል።',
+            'oldRecord'            => $oldRecord,
+            'deletedDocumentCount' => $deletedDocumentCount,
+        ];
+
+    } catch (\Exception $e) {
+        $this->db->rollBack();
+        error_log('ScholarshipModel::deleteRecord - ' . $e->getMessage());
+        return ['status' => 'error', 'message' => 'ስህተት ተፈጥሯል፤ እባክዎ በድጋሚ ይሞክሩ።'];
     }
+}
+}

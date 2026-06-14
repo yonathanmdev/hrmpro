@@ -208,7 +208,7 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script>
+<script nonce="<?= htmlspecialchars($GLOBALS['nonce']); ?>">
 // ── Config ────────────────────────────────────────────────────────────────────
 const CSRF      = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 

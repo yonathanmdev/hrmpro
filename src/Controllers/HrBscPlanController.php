@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Helpers\AuthHelper;
 use App\Models\BranchEvaluationWindow;
 use App\Models\BscPlanFile;
+use App\Models\User;
 use Ramsey\Uuid\Uuid;
 use \App\Traits\FileUploadTrait;
 use  App\Models\EfficiencyFileModel;
@@ -65,6 +66,7 @@ class HrBscPlanController extends BaseController
         );
 
         $employees        = [];
+        $withPlan = [];
         $totalEmployees   = 0;
         $withPlanCount    = 0;
         $withoutPlanCount = 0;
@@ -96,6 +98,7 @@ class HrBscPlanController extends BaseController
                 'openSeasons'      => $openSeasons,
                 'selectedSeason'   => $selectedSeason,
                 'employees'        => $employees,
+                'employeesWithPlan'   => $withPlan,   // add this
                 'totalEmployees'   => $totalEmployees,
                 'withPlanCount'    => $withPlanCount,
                 'withoutPlanCount' => $withoutPlanCount
@@ -146,6 +149,21 @@ public function markConfirmed(): void
     );
 
     if ($result) {
+        \App\Helpers\AuditHelper::log(
+    action: 'bsc_plan_confirmed',
+    entityType: 'bsc_plan',
+    entityId: $employeeUuid,
+    oldValues: null,
+    newValues: [
+        'employee_id' => $employeeUuid,
+        'season_id'   => $seasonId,
+        'file_name'   => 'CONFIRMATION_MARK',
+    ],
+    metadata: [
+        'uploaded_by' => $uploadedBy,
+        'branch_id'   => $branchId
+    ]
+);
         $_SESSION['success'] = 'BSC እቅድ በተሳካ ሁኔታ ተያይዟል!';
         echo json_encode(['status' => 'success']);
     } else {
@@ -211,6 +229,21 @@ $seasonId     = $params['record_id'] ?? '';
     );
 
     if ($result) {
+        \App\Helpers\AuditHelper::log(
+    action: 'bsc_plan_uploaded',
+    entityType: 'bsc_plan',
+    entityId: $employeeUuid,
+    oldValues: null,
+    newValues: [
+        'employee_id' => $employeeUuid,
+        'season_id'   => $seasonId,
+        'file_name'   => $fileName
+    ],
+    metadata: [
+        'uploaded_by' => $uploadedBy,
+        'branch_id'   => $branchId
+    ]
+);
         $_SESSION['success'] = 'BSC እቅድ በተሳካ ሁኔታ ተያይዟል!';
     } else {
         $_SESSION['error'] = 'BSC እቅድ ማያያዝ አልተቻለም።';
@@ -235,9 +268,12 @@ public function indexEfficency(array $params = [])
     $selectedSeason = $this->resolveSelectedSeason($openSeasons, $seasonId);
 
     $employees        = [];
+    $withEfficiency = [];
     $totalEmployees   = 0;
     $withFileCount    = 0;
     $withoutFileCount = 0;
+
+    
 
     if ($selectedSeason) {
 
@@ -265,9 +301,11 @@ public function indexEfficency(array $params = [])
             'openSeasons'      => $openSeasons,
             'selectedSeason'   => $selectedSeason,
             'employees'        => $employees,
+             'withEfficiency'   => $withEfficiency,   // add this
             'totalEmployees'   => $totalEmployees,
             'withPlanCount'    => $withFileCount,
             'withoutPlanCount' => $withoutFileCount,
+          
         ]
     );
 }
@@ -328,7 +366,7 @@ public function efficiencyRegistration(array $params = []): void
     }
 
     // ── 6. Upload file ────────────────────────────────────────────────────────
-    $fileName = $this->uploadFile('efficiency_file', 'efficiency');
+    $fileName = $this->uploadFile('efficiency_file', 'documents');
 
     if (!$fileName) {
         $fileError = $_FILES['efficiency_file']['error'] ?? UPLOAD_ERR_NO_FILE;
@@ -356,6 +394,24 @@ public function efficiencyRegistration(array $params = []): void
     );
 
     if ($result) {
+        \App\Helpers\AuditHelper::log(
+    action: 'efficiency_uploaded',
+    entityType: 'efficiency_file',
+    entityId: $employeeUuid,
+    oldValues: null,
+    newValues: [
+        'employee_id'      => $employeeUuid,
+        'season_id'        => $seasonId,
+        'bsc_file_id'      => $bscFileId,
+        'efficiency_mark'  => (float)$mark,
+        'file_name'        => $fileName,
+        'file_size'        => $fileSize
+    ],
+    metadata: [
+        'uploaded_by' => $uploadedBy,
+        'branch_id'   => $branchId
+    ]
+);
         $_SESSION['success'] = 'የብቃት ምዘና ፋይል በተሳካ ሁኔታ ተያይዟል!';
     } else {
         $_SESSION['error'] = 'የብቃት ምዘና ፋይል ማያያዝ አልተቻለም።';
@@ -363,5 +419,195 @@ public function efficiencyRegistration(array $params = []): void
 
     header('Location: ' . $redirectBack);
     exit();
+}
+public function efficiencyUpdate(array $params = []): void
+{
+    AuthHelper::checkRole([
+        'hr_officer',
+        'hr_director'
+    ]);
+
+    $redirectBack = $_SERVER['HTTP_REFERER']
+        ?? rtrim($_ENV['BASE_URL'], '/');
+
+    // ── 1. Validate Efficiency ID ───────────────────────────────
+    $efficiencyId = trim($_POST['efficiency_file_id'] ?? '');
+
+    if (empty($efficiencyId)) {
+        $_SESSION['error'] = 'የብቃት ምዘና ፋይል መለያ አልተገኘም።';
+        header('Location: ' . $redirectBack);
+        exit();
+    }
+
+    // ── 2. Validate Mark ───────────────────────────────────────
+    $mark = trim($_POST['efficiency_mark'] ?? '');
+
+    if (
+        $mark === '' ||
+        !is_numeric($mark) ||
+        (float)$mark < 0 ||
+        (float)$mark > 100
+    ) {
+        $_SESSION['error'] = 'እባክዎ ትክክለኛ ነጥብ (0-100) ያስገቡ።';
+        header('Location: ' . $redirectBack);
+        exit();
+    }
+
+    $efficiencyModel = new EfficiencyFileModel($this->db);
+
+    // ── 3. Get Existing Record ─────────────────────────────────
+    $record = $efficiencyModel->getEfficiencyById($efficiencyId);
+
+    if (!$record) {
+        $_SESSION['error'] = 'የብቃት ምዘና ፋይሉ አልተገኘም።';
+        header('Location: ' . $redirectBack);
+        exit();
+    }
+
+    $updatedBy = $_SESSION['user']['id'];
+
+    // ── 4. Update With New File ────────────────────────────────
+    if (
+        isset($_FILES['efficiency_file']) &&
+        $_FILES['efficiency_file']['error'] !== UPLOAD_ERR_NO_FILE
+    ) {
+
+        $newFileName = $this->uploadFile(
+            'efficiency_file',
+            'documents'
+        );
+
+        if (!$newFileName) {
+            $_SESSION['error'] = 'ፋይሉን መጫን አልተቻለም።';
+            header('Location: ' . $redirectBack);
+            exit();
+        }
+
+
+        $result = $efficiencyModel->updateEfficiency(
+            $efficiencyId,
+            (float)$mark,
+            $newFileName,
+            $newFileName,
+            (int)$_FILES['efficiency_file']['size'],
+            $updatedBy
+        );
+
+    } else {
+
+        // ── 5. Update Mark Only ────────────────────────────────
+        $result = $efficiencyModel->updateEfficiencyMark(
+            $efficiencyId,
+            (float)$mark,
+            $updatedBy
+        );
+    }
+
+    // ── 6. Result Message ──────────────────────────────────────
+    if ($result) {
+         \App\Helpers\AuditHelper::log(
+        action: 'efficiency_updated',
+        entityType: 'efficiency_file',
+        entityId: $efficiencyId,
+        oldValues: $record,
+        newValues: [
+            'efficiency_mark' => (float)$mark,
+            'file_name'       => $newFileName ?? $record['file_name'],
+            'file_path'       => $newFileName ?? $record['file_path'],
+            'file_size'       => isset($_FILES['efficiency_file']) &&
+                                $_FILES['efficiency_file']['error'] !== UPLOAD_ERR_NO_FILE
+                                    ? (int)$_FILES['efficiency_file']['size']
+                                    : $record['file_size']
+        ],
+        metadata: [
+            'updated_by' => $updatedBy,
+            'updated_at' => date('Y-m-d H:i:s')
+        ]
+    );
+        $_SESSION['success'] =
+            'የብቃት ምዘና ፋይል በተሳካ ሁኔታ ተሻሽሏል።';
+    } else {
+        $_SESSION['error'] =
+            'የብቃት ምዘና ፋይል ማሻሻል አልተቻለም።';
+    }
+
+    header('Location: ' . $redirectBack);
+    exit();
+}
+
+public function delete(): void
+{
+    AuthHelper::checkRole(['hr_director', 'hr_officer']);
+    header('Content-Type: application/json');
+
+    $data    = json_decode(file_get_contents('php://input'), true);
+    $id      = trim((string) ($data['id'] ?? ''));
+    $employeeId = trim((string) ($data['uuid'] ?? ''));
+    $reason = trim($data['reason']      ?? '');
+    $password = $data['confirm_password'] ?? '';
+    $source = 'INDIVIDUAL';
+    $adminId = (string) ($_SESSION['user']['id'] ?? '');
+
+     // Validate input
+        if (!$id || !$reason || !$password || !$source) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ሁሉም መስኮች አስፈላጊ ናቸው።'
+            ]);
+            return;
+        }
+
+        $user           = $_SESSION['user'] ?? [];
+        $organizationId = $user['organization_id'] ?? null;
+        $branchId = $user['branch_id'] ?? null;
+
+        if (!$organizationId || !$branchId) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ያልተፈቀደ ድርጊት።'
+            ]);
+            return;
+        }
+
+        // Verify password
+        $userModel = new User($this->db);
+        if (!$userModel->verifyPassword($user['id'], $password)) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'ፓስዋርዱ ትክክል አይደለም።'
+            ]);
+            return;
+        }
+
+    try {
+        $model  = new BscPlanFile($this->db);
+        $result = $model->deleteRecord($id, $employeeId, $adminId, $reason, $source);
+
+        if ($result['status'] === 'success') {
+            \App\Helpers\AuditHelper::log(
+                action:     'document_deleted',
+                entityType: 'document',
+                entityId:   $id,
+                oldValues:  $result['oldRecord'],   // snapshot of deleted record
+                newValues:  null,                   // nothing after delete
+                metadata:   [
+                    'deleted_type'          => 'soft',
+                    'deleted_documents'     => $result['deletedDocumentCount'] ?? 0,
+                    'deletion_source'       => 'INDIVIDUAL_ACTION',
+                    'reason'          => $reason,
+                    'performed_by'          => $adminId,
+                ]
+            );
+
+            // strip internal fields before sending to client
+            unset($result['oldRecord'], $result['deletedDocumentCount']);
+        }
+
+        echo json_encode($result);
+
+    } catch (\Exception $e) {
+        error_log('ArchiveController::delete - ' . $e->getMessage());
+        echo json_encode(['status' => 'error', 'message' => 'ስህተት ተፈጥሯል፤ እባክዎ በድጋሚ ይሞክሩ።']);
+    }
 }
 }

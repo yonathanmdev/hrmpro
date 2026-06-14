@@ -74,7 +74,7 @@ class EfficiencyFileModel
                 ef.efficiency_mark,
                 ef.file_name,
                 ef.file_path,
-                ef.uploaded_at
+                ef.created_at
 
             FROM employees_table e
 
@@ -155,8 +155,6 @@ class EfficiencyFileModel
                 file_path,
                 file_size,
                 uploaded_by,
-                uploaded_at,
-                is_deleted,
                 deleted_at
             )
             VALUES
@@ -171,8 +169,6 @@ class EfficiencyFileModel
                 :file_path,
                 :file_size,
                 :uploaded_by,
-                NOW(),
-                0,
                 NULL
             )
         ";
@@ -192,5 +188,71 @@ class EfficiencyFileModel
             'uploaded_by'     => $uploadedBy,
         ]);
     }
-    
+  public function updateEfficiency(
+    string $id,
+    float $mark,
+    string $fileName,
+    string $filePath,
+    int $fileSize,
+    string $updatedBy
+): bool {
+
+    $stmt = $this->db->prepare("
+        UPDATE efficiency_files
+        SET
+            efficiency_mark = :efficiency_mark,
+            file_name       = :file_name,
+            file_path       = :file_path,
+            file_size       = :file_size,
+            updated_by      = :updated_by
+        WHERE id = :id
+          AND is_deleted = 0
+    ");
+
+    return $stmt->execute([
+        'efficiency_mark' => $mark,
+        'file_name'       => $fileName,
+        'file_path'       => $filePath,
+        'file_size'       => $fileSize,
+        'updated_by'      => $updatedBy,
+        'id'              => $id
+    ]);
+}
+public function updateEfficiencyMark(
+    string $id,
+    float $mark,
+    string $updatedBy
+): bool {
+
+    $stmt = $this->db->prepare("
+        UPDATE efficiency_files
+        SET
+            efficiency_mark = :efficiency_mark,
+            updated_by      = :updated_by
+        WHERE id = :id
+          AND is_deleted = 0
+    ");
+
+    return $stmt->execute([
+        'efficiency_mark' => $mark,
+        'updated_by'      => $updatedBy,
+        'id'              => $id
+    ]);
+}
+public function getEfficiencyById(string $id): ?array
+{
+    $stmt = $this->db->prepare("
+        SELECT *
+        FROM efficiency_files
+        WHERE id = :id
+          AND is_deleted = 0
+        LIMIT 1
+    ");
+
+    $stmt->execute([
+        'id' => $id
+    ]);
+
+    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+}
 }

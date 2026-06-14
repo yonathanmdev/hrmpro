@@ -44,14 +44,16 @@ return [
     'delete-season'
         => ['EvaluationSettingsController', 'deleteSeason', true],
 
-        'bsc-plan-management' => ['HrBscPlanController', 'index', true],
-        'bsc-plan-mark-confirmed' => ['HrBscPlanController', 'markConfirmed', true],
-        'bsc-plan-upload' => ['HrBscPlanController', 'upload', true],
+    'bsc-plan-management' => ['HrBscPlanController', 'index', true],
+    'bsc-plan-mark-confirmed' => ['HrBscPlanController', 'markConfirmed', true],
+    'bsc-plan-upload' => ['HrBscPlanController', 'upload', true],
+    'bsc-plan-remove' => ['HrBscPlanController', 'delete', true],
         // efficency management
 
-        'efficiency-management' => ['HrBscPlanController', 'indexEfficency', true],
+    'efficiency-management' => ['HrBscPlanController', 'indexEfficency', true],
     'efficiency-file-upload' => ['HrBscPlanController', 'efficiencyRegistration', true],
-        // Branch Management
+    'efficiency-file-update' => ['HrBscPlanController', 'efficiencyUpdate', true],
+    // Branch Management
     'register-branch'               => ['OrgController', 'showRegisterForm', true],
     'register-branch-process'       => ['OrgController', 'handleBranchRegistration', true],
     'update-branch-process'   => ['OrgController', 'handleEditBranch', true],
@@ -76,9 +78,9 @@ return [
     'get-position'               => ['DirectorController', 'getPositionById', true],
     'getPositionById'            => ['DirectorController', 'getPositionById', true],
     'delete-position-process'    => ['DirectorController', 'deletePosition', true],
-        'deleted-positions'         => ['DirectorController', 'showDeletedPositions', true],
-        'restore-position'   => ['DirectorController', 'restorePosition', true],
-        'purge-position'    => ['DirectorController', 'purgePosition', true],
+    'deleted-positions'         => ['DirectorController', 'showDeletedPositions', true],
+    'restore-position'   => ['DirectorController', 'restorePosition', true],
+    'purge-position'    => ['DirectorController', 'purgePosition', true],
     //employee
     'employee-active'       => ['EmployeeRegistrationController', 'showForm', true],
     'employee-registration-save'  => ['EmployeeRegistrationController', 'handleRegistration', true],
@@ -109,6 +111,7 @@ return [
     // File Management
     'employee-archive' => ['ScholarshipController', 'getDocument', true],
     'upload-certificate' => ['ArchiveController', 'attachFile', true],
+    'archive-remove' => ['ArchiveController', 'delete', true],
     //scholarship
     'employee-scholarship'         => ['ScholarshipController', 'showScholarshipForm', true],
     'employee-scholarship-search'  => ['ScholarshipController', 'liveSearch', true],
