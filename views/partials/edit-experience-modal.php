@@ -60,10 +60,9 @@
               <select name="employment_type" id="edit_employment_type"
                       class="form-control form-control-sm" required>
                 <option value="">-- ይምረጡ --</option>
-                <option value="Full-time">ሙሉ ጊዜ</option>
-                <option value="Part-time">ትርፍ ጊዜ</option>
+                <option value="Full-time">ቋሚ</option>
                 <option value="Contract">ኮንትራት</option>
-                <option value="Freelance">ፍሪላንስ</option>
+                 <option value="Delegate">ውክልና</option>
               </select>
             </div>
 

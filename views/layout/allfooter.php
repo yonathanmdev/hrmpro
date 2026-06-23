@@ -178,8 +178,7 @@ function myAsset($path) {
      <?php if (isset($is_employee_scholarship_page) && $is_employee_scholarship_page === true): ?>
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
     <script src="plugins/jquery-validation/additional-methods.min.js"></script>
-    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
-    <script src="<?= myAsset('js/employee-scholarship.js') ?>"></script>  
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script> 
     <?php endif; ?>
 <?php if (isset($is_employee_scholarship_edit_page) && $is_employee_scholarship_edit_page === true): ?>
     <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
@@ -188,6 +187,20 @@ function myAsset($path) {
     <script src="<?= myAsset('js/employee-scholarship.js') ?>"></script>
     
     <?php endif; ?>
+
+    <?php if (isset($is_employee_on_scholarship_page) && $is_employee_on_scholarship_page === true): ?>
+    <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
+    <script src="plugins/jquery-validation/additional-methods.min.js"></script>
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
+    <?php endif; ?>
+    
+    <?php if (isset($is_employee_scholarship_returnee) && $is_employee_scholarship_returnee === true): ?>
+    <script src="plugins/jquery-validation/jquery.validate.min.js"></script>
+    <script src="plugins/jquery-validation/additional-methods.min.js"></script>
+    <script src="<?= myAsset('js/ethiopian-calendar.js') ?>"></script>
+    
+    <?php endif; ?>
+    
     <?php if (isset($is_employee_warranty_page) && $is_employee_warranty_page === true): ?>
           <script src="<?= myAsset('js/employee-warranty.js') ?>"></script>
         <?php endif; ?>

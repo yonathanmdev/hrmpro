@@ -318,7 +318,7 @@ public function storeExperience()
                 ]
             );
 
-            $_SESSION['error'] = 'በተመረጠው የጊዜ ገደብ ውስጥ ተመሳሳይ የቅጥር አይነት (' . $employment_type . ') ቀድሞ ተመዝግቧል።';
+            $_SESSION['error'] = 'በተመረጠው የጊዜ ገደብ ውስጥ ሌላ ልምድ  ቀድሞ ተመዝግቧል።';
             header("Location: " . $_SERVER['HTTP_REFERER']);
             exit();
         }
@@ -578,7 +578,7 @@ public function updateExperience()
                 ]
             );
 
-            $_SESSION['error'] = 'በተመረጠው የጊዜ ገደብ ውስጥ ተመሳሳይ የቅጥር አይነት (' . $employment_type . ') ቀድሞ ተመዝግቧል።';
+            $_SESSION['error'] = 'በተመረጠው የጊዜ ገደብ ውስጥ ሌላ ልምድ ቀድሞ ተመዝግቧል።';
             header("Location: " . $_SERVER['HTTP_REFERER']);
             exit();
         }

@@ -2,6 +2,17 @@
 use App\Helpers\EthiopianDateHelper;
 $is_exprience_registration_page = true;
 
+// ── Separate delegate vs regular experiences ──────────────────────────────────
+$regularExperiences  = [];
+$delegateExperiences = [];
+
+foreach (($experiences ?? []) as $exp) {
+    if (($exp['employment_type'] ?? '') === 'Delegate') {
+        $delegateExperiences[] = $exp;
+    } else {
+        $regularExperiences[] = $exp;
+    }
+}
 function calcDuration(string $start, ?string $end): array {
     $s    = new DateTime($start);
     $e    = $end ? new DateTime($end) : new DateTime();
@@ -1189,6 +1200,7 @@ if ($hireStart) {
                     <th style="width:40px">#</th>
                     <th>የሥራ ቦታ</th>
                     <th>የሥራ መደብ</th>
+                     <th>የቅጥር ዓይነት</th>
                     <th>የሥራ ዘመን</th>
                     <th style="width:22%">የተጣራ ልምድ</th>
                 </tr>
@@ -1251,7 +1263,7 @@ if ($hireStart) {
                     <td>
                         <strong><?= htmlspecialchars($employee['job_name'] ?? '') ?></strong>
                     </td>
-
+                    <td><?= htmlspecialchars($employee['employment_situation'] ?? '') ?></td>
                     <td>
                         ከ<?= EthiopianDateHelper::getMonthName($startEth['month']) ?>
                         <?= $startEth['day'] ?>
@@ -1282,9 +1294,9 @@ if ($hireStart) {
             <!-- ═══════════════════════════════
                  EXTERNAL EXPERIENCES
             ═══════════════════════════════ -->
-            <?php if (!empty($experiences)): ?>
+            <?php if (!empty($regularExperiences)): ?>
 
-                <?php foreach ($experiences as $exp): ?>
+                <?php foreach ($regularExperiences as $exp): ?>
 
                     <?php
                     $rawDuration = calcDuration(
@@ -1324,6 +1336,15 @@ if ($hireStart) {
                         <td>
                             <strong><?= htmlspecialchars($exp['job_title'] ?? '') ?></strong>
                         </td>
+  <?php
+$employmentTypeLabels = [
+    'Full-time' => 'ቋሚ',
+    'Contract'  => 'ኮንትራት',
+    'Delegate'  => 'ውክልና',
+];
+?>
+
+<td><?= htmlspecialchars($employmentTypeLabels[$exp['employment_type']] ?? $exp['employment_type'] ?? '') ?></td>
 
                         <td>
                             ከ<?= EthiopianDateHelper::getMonthName($startEth['month']) ?>
@@ -1359,7 +1380,63 @@ if ($hireStart) {
         </table>
 
     </div>
+<?php if (!empty($delegateExperiences)): ?>
 
+<div class="section-heading" style="margin-top:18px;">
+    <div class="bar"></div>
+    <h2>በውክልና የሰሩበት ጊዜ</h2>
+</div>
+
+<div class="experience-table-wrap">
+    <table class="experience-table">
+        <thead>
+            <tr>
+                <th style="width:40px">#</th>
+                <th>የሥራ ቦታ</th>
+                <th>የሥራ መደብ</th>
+                <th>የሥራ ዘመን</th>
+                <th style="width:22%">ልምድ</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($delegateExperiences as $i => $exp):
+            $rawDuration = calcDuration($exp['start_date'], $exp['end_date'] ?? null);
+            $sp       = explode('-', $exp['start_date']);
+            $startEth = EthiopianDateHelper::toEthCalendar($sp[2], $sp[1], $sp[0]);
+            $endEth   = null;
+            if (!empty($exp['end_date'])) {
+                $ep     = explode('-', $exp['end_date']);
+                $endEth = EthiopianDateHelper::toEthCalendar($ep[2], $ep[1], $ep[0]);
+            }
+        ?>
+        <tr>
+            <td class="center"><?= $i + 1 ?></td>
+            <td><?= htmlspecialchars($exp['company_name'] ?? '') ?></td>
+            <td><strong><?= htmlspecialchars($exp['job_title'] ?? '') ?></strong></td>
+            <td>
+                ከ<?= EthiopianDateHelper::getMonthName($startEth['month']) ?>
+                <?= $startEth['day'] ?> <?= $startEth['year'] ?>
+                እስከ
+                <?php if ($endEth): ?>
+                    <?= EthiopianDateHelper::getMonthName($endEth['month']) ?>
+                    <?= $endEth['day'] ?> <?= $endEth['year'] ?>
+                <?php else: ?>
+                    <span class="badge-now">
+                        <?= EthiopianDateHelper::getMonthName($todayEth['month']) ?>
+                        <?= $todayEth['day'] ?> <?= $todayEth['year'] ?>
+                    </span>
+                <?php endif; ?>
+            </td>
+            <td class="center">
+                <?= formatDurationBadges(daysToYMD($rawDuration['total_days'])) ?>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+
+<?php endif; ?>
     <?php if (!empty($studyLeaveRows)): ?>
 
     <div class="section-heading" style="margin-top:18px;">

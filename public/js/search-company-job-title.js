@@ -1,16 +1,198 @@
+// ── Helper: get today's date at midnight for comparison ──────────────────────
+function getTodayDate() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+}
+
+// ── Helper: parse date string as local midnight (avoids UTC offset issues) ───
+function toLocalMidnight(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d);
+}
+
+// ── Add Form Validation ──────────────────────────────────────────────────────
+$('#addExperienceForm').on('submit', function(e) {
+    const startVal        = $('#add_start_date').val();
+    const endVal          = $('#add_end_date').val();
+    const $ethEndInput    = $('#add_eth_end_date');
+    const $ethStartInput  = $('#add_eth_start_date');
+    const $errorSpan      = $('#date_error_msg');
+    const $startErrorSpan = $('#start_date_error_msg');
+
+    const today = getTodayDate();
+    let isDateValid = true;
+
+    // Start date cannot be in the future
+    if (startVal && toLocalMidnight(startVal) > today) {
+        isDateValid = false;
+        $ethStartInput.addClass('is-invalid');
+        $startErrorSpan.text('ስህተት፡ የጀመሩበት ቀን ከዛሬ በላይ መሆን የለበትም።').show();
+    } else {
+        $ethStartInput.removeClass('is-invalid');
+        $startErrorSpan.hide();
+    }
+
+    // End date cannot be in the future
+    if (endVal && toLocalMidnight(endVal) > today) {
+        isDateValid = false;
+        $ethEndInput.addClass('is-invalid');
+        $errorSpan.text('ስህተት፡ ስራ የጨረሱበት ቀን ከዛሬ በላይ መሆን የለበትም።').show();
+    }
+    // End date cannot be before or equal to start date
+    else if (startVal && endVal && toLocalMidnight(startVal) >= toLocalMidnight(endVal)) {
+        isDateValid = false;
+        $ethEndInput.addClass('is-invalid');
+        $errorSpan.text('ስህተት፡ ስራ የጨረሱበት ቀን ከጀመሩበት ቀን ማነስ የለበትም።').show();
+    } else {
+        $ethEndInput.removeClass('is-invalid');
+        $errorSpan.hide();
+        $ethEndInput[0].setCustomValidity("");
+    }
+
+    if (!isDateValid) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    if (!this.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    $(this).addClass('was-validated');
+});
+
+// Clear add form errors on date change
+$(document).on('change', '#add_eth_start_date', function() {
+    $('#add_eth_start_date').removeClass('is-invalid');
+    $('#start_date_error_msg').hide();
+});
+
+$(document).on('change', '#add_eth_end_date', function() {
+    $('#add_eth_end_date').removeClass('is-invalid');
+    $('#date_error_msg').hide();
+});
+
+// ── Edit Button Click ────────────────────────────────────────────────────────
+$(document).on('click', '.edit-exp-btn', function () {
+    const experienceId = $(this).data('uuid');
+    const employeeUuid = $(this).data('employee');
+
+    // Clear previous data and errors
+    $('#editExperienceForm')[0].reset();
+    $('#edit_date_error_msg').hide();
+    $('#edit_start_date_error_msg').hide();
+    $('#edit_eth_start_date').val('');
+    $('#edit_eth_end_date').val('');
+
+    // Set hidden fields
+    $('#edit_experience_id').val(experienceId);
+    $('#edit_employee_uuid').val(employeeUuid);
+
+    $.ajax({
+        url: `${BASE_URL}/employee-experience-show?uuid=${experienceId}`,
+        method: 'GET',
+        dataType: 'json',
+        success: function (response) {
+            if (response.status !== 'success') {
+                alert(response.message ?? 'መረጃ አልተገኘም።');
+                return;
+            }
+
+            const exp = response.data;
+
+            // Fill text fields
+            $('#edit_company_name').val(exp.company_name);
+            $('#edit_job_title').val(exp.job_title);
+            $('#edit_employment_type').val(exp.employment_type);
+
+            // Fill hidden Gregorian inputs (submitted with form)
+            $('#edit_start_date').val(exp.start_date);
+            $('#edit_end_date').val(exp.end_date);
+
+            // Fill Ethiopian display fields (converted by server)
+            $('#edit_eth_start_date').val(exp.eth_start_date);
+            $('#edit_eth_end_date').val(exp.eth_end_date);
+        },
+        error: function (xhr) {
+            console.log('HTTP Error:', xhr.status);
+            console.log('Response:', xhr.responseText);
+            alert('ከሰርቨር ጋር መገናኘት አልተቻለም።');
+        }
+    });
+});
+
+// ── Edit Form Validation ─────────────────────────────────────────────────────
+$('#editExperienceForm').on('submit', function(e) {
+    const startVal        = $('#edit_start_date').val();
+    const endVal          = $('#edit_end_date').val();
+    const $ethEndInput    = $('#edit_eth_end_date');
+    const $ethStartInput  = $('#edit_eth_start_date');
+    const $errorSpan      = $('#edit_date_error_msg');
+    const $startErrorSpan = $('#edit_start_date_error_msg');
+
+    const today = getTodayDate();
+    let isDateValid = true;
+
+    // Start date cannot be in the future
+    if (startVal && toLocalMidnight(startVal) > today) {
+        isDateValid = false;
+        $ethStartInput.addClass('is-invalid');
+        $startErrorSpan.text('ስህተት፡ የጀመሩበት ቀን ከዛሬ በላይ መሆን የለበትም።').show();
+    } else {
+        $ethStartInput.removeClass('is-invalid');
+        $startErrorSpan.hide();
+    }
+
+    // End date cannot be in the future
+    if (endVal && toLocalMidnight(endVal) > today) {
+        isDateValid = false;
+        $ethEndInput.addClass('is-invalid');
+        $errorSpan.text('ስህተት፡ ስራ የጨረሱበት ቀን ከዛሬ በላይ መሆን የለበትም።').show();
+    }
+    // End date cannot be before or equal to start date
+    else if (startVal && endVal && toLocalMidnight(startVal) >= toLocalMidnight(endVal)) {
+        isDateValid = false;
+        $ethEndInput.addClass('is-invalid');
+        $errorSpan.text('ስህተት፡ ስራ የጨረሱበት ቀን ከጀመሩበት ቀን ማነስ የለበትም።').show();
+    } else {
+        $ethEndInput.removeClass('is-invalid');
+        $errorSpan.hide();
+        $ethEndInput[0].setCustomValidity("");
+    }
+
+    if (!isDateValid) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    if (!this.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    $(this).addClass('was-validated');
+});
+
+// Clear edit form errors on date change
+$(document).on('change', '#edit_eth_start_date', function() {
+    $('#edit_eth_start_date').removeClass('is-invalid');
+    $('#edit_start_date_error_msg').hide();
+});
+
+$(document).on('change', '#edit_eth_end_date', function() {
+    $('#edit_eth_end_date').removeClass('is-invalid');
+    $('#edit_date_error_msg').hide();
+});
+
 /* -----------------------------------------------------------
     Global Variables & Config
 ----------------------------------------------------------- */
-//
-
-/**
- * Generic function to handle autocomplete logic for any field
- */
 let debounceTimer;
 
 function setupAutocomplete(inputId, listId, endpoint, dataKey, editInputId, editListId, editEndpoint, editDataKey) {
 
-    // ── Helper: wire one input to one list ──────────────────────────────────
     function bindInput($input, $list, ep, key, focusNextId) {
 
         $input.on('focus', function () {
@@ -54,7 +236,6 @@ function setupAutocomplete(inputId, listId, endpoint, dataKey, editInputId, edit
                                 $input.val(value);
                                 $list.hide().empty();
 
-                                // Focus next field if specified
                                 if (focusNextId) {
                                     $(`#${focusNextId}`).focus();
                                 }
@@ -71,13 +252,13 @@ function setupAutocomplete(inputId, listId, endpoint, dataKey, editInputId, edit
         });
     }
 
-    // ── Add form ─────────────────────────────────────────────────────────────
+    // ── Add form ──────────────────────────────────────────────────────────────
     bindInput(
         $(`#${inputId}`),
         $(`#${listId}`),
         endpoint,
         dataKey,
-        inputId === 'add_company_name' ? 'add_job_title' : null   // focus next
+        inputId === 'add_company_name' ? 'add_job_title' : null
     );
 
     // ── Edit form ─────────────────────────────────────────────────────────────
@@ -87,7 +268,7 @@ function setupAutocomplete(inputId, listId, endpoint, dataKey, editInputId, edit
             $(`#${editListId}`),
             editEndpoint,
             editDataKey,
-            editInputId === 'edit_company_name' ? 'edit_job_title' : null  // focus next
+            editInputId === 'edit_company_name' ? 'edit_job_title' : null
         );
     }
 }
@@ -116,184 +297,3 @@ $(document).ready(function () {
         }
     });
 });
-// ── Helper: get today's date at midnight for comparison ──────────────────────
-function getTodayDate() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return today;
-}
-
-// ── Add Form Validation ──────────────────────────────────────────────────────
-$('#addExperienceForm').on('submit', function(e) {
-    const startVal     = $('#add_start_date').val();
-    const endVal       = $('#add_end_date').val();
-    const $ethEndInput = $('#add_eth_end_date');
-    const $ethStartInput = $('#add_eth_start_date');
-    const $errorSpan   = $('#date_error_msg');
-    const $startErrorSpan = $('#start_date_error_msg');
-
-    const today = getTodayDate();
-    let isDateValid = true;
-
-    // Start date cannot be in the future
-    if (startVal && new Date(startVal) > today) {
-        isDateValid = false;
-        $ethStartInput.addClass('is-invalid');
-        $startErrorSpan.text('ስህተት፡ የጀመሩበት ቀን ከዛሬ በላይ መሆን የለበትም።').show();
-    } else {
-        $ethStartInput.removeClass('is-invalid');
-        $startErrorSpan.hide();
-    }
-
-    // End date cannot be in the future
-    if (endVal && new Date(endVal) > today) {
-        isDateValid = false;
-        $ethEndInput.addClass('is-invalid');
-        $errorSpan.text('ስህተት፡ ስራ የጨረሱበት ቀን ከዛሬ በላይ መሆን የለበትም።').show();
-    }
-    // End date cannot be before or equal to start date
-    else if (startVal && endVal && new Date(startVal) >= new Date(endVal)) {
-        isDateValid = false;
-        $ethEndInput.addClass('is-invalid');
-        $errorSpan.text('ስህተት፡ ስራ የጨረሱበት ቀን ከጀመሩበት ቀን ማነስ የለበትም።').show();
-    } else {
-        $ethEndInput.removeClass('is-invalid');
-        $errorSpan.hide();
-        $ethEndInput[0].setCustomValidity("");
-    }
-
-    if (!isDateValid) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    if (!this.checkValidity()) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    $(this).addClass('was-validated');
-});
-
-// Clear add form errors on date change
-$(document).on('change', '#add_eth_start_date', function() {
-    $('#add_eth_start_date').removeClass('is-invalid');
-    $('#start_date_error_msg').hide();
-});
-
-$(document).on('change', '#add_eth_end_date', function() {
-    $('#add_eth_end_date').removeClass('is-invalid');
-    $('#date_error_msg').hide();
-});
-
-$(document).on('click', '.edit-exp-btn', function () {
-    const experienceId = $(this).data('uuid');
-    const employeeUuid = $(this).data('employee');
-
-    // Clear previous data and errors
-    $('#editExperienceForm')[0].reset();
-    $('#edit_date_error_msg').hide();
-    $('#edit_eth_start_date').val('');
-    $('#edit_eth_end_date').val('');
-
-    // Set hidden fields
-    $('#edit_experience_id').val(experienceId);
-    $('#edit_employee_uuid').val(employeeUuid);
-
-    $.ajax({
-        url: `${BASE_URL}/employee-experience-show?uuid=${experienceId}`,
-        method: 'GET',
-        dataType: 'json',
-        success: function (response) {
-
-            // ← match your controller's 'status' key
-            if (response.status !== 'success') {
-                alert(response.message ?? 'መረጃ አልተገኘም።');
-                return;
-            }
-
-            const exp = response.data;
-
-            // Fill text fields
-            $('#edit_company_name').val(exp.company_name);
-            $('#edit_job_title').val(exp.job_title);
-            $('#edit_employment_type').val(exp.employment_type);
-
-            // Fill hidden Gregorian inputs (submitted with form)
-            $('#edit_start_date').val(exp.start_date);
-            $('#edit_end_date').val(exp.end_date);
-
-            // Fill Ethiopian display fields (converted by server)
-            $('#edit_eth_start_date').val(exp.eth_start_date);
-            $('#edit_eth_end_date').val(exp.eth_end_date);
-        },
-        error: function (xhr) {
-            console.log('HTTP Error:', xhr.status);
-            console.log('Response:', xhr.responseText);
-            alert('ከሰርቨር ጋር መገናኘት አልተቻለም።');
-        }
-    });
-});
-// ── Edit Form Validation ─────────────────────────────────────────────────────
-$('#editExperienceForm').on('submit', function(e) {
-    const startVal       = $('#edit_start_date').val();
-    const endVal         = $('#edit_end_date').val();
-    const $ethEndInput   = $('#edit_eth_end_date');
-    const $ethStartInput = $('#edit_eth_start_date');
-    const $errorSpan     = $('#edit_date_error_msg');
-    const $startErrorSpan = $('#edit_start_date_error_msg');
-
-    const today = getTodayDate();
-    let isDateValid = true;
-
-    // Start date cannot be in the future
-    if (startVal && new Date(startVal) > today) {
-        isDateValid = false;
-        $ethStartInput.addClass('is-invalid');
-        $startErrorSpan.text('ስህተት፡ የጀመሩበት ቀን ከዛሬ በላይ መሆን የለበትም።').show();
-    } else {
-        $ethStartInput.removeClass('is-invalid');
-        $startErrorSpan.hide();
-    }
-
-    // End date cannot be in the future
-    if (endVal && new Date(endVal) > today) {
-        isDateValid = false;
-        $ethEndInput.addClass('is-invalid');
-        $errorSpan.text('ስህተት፡ ስራ የጨረሱበት ቀን ከዛሬ በላይ መሆን የለበትም።').show();
-    }
-    // End date cannot be before or equal to start date
-    else if (startVal && endVal && new Date(startVal) >= new Date(endVal)) {
-        isDateValid = false;
-        $ethEndInput.addClass('is-invalid');
-        $errorSpan.text('ስህተት፡ ስራ የጨረሱበት ቀን ከጀመሩበት ቀን ማነስ የለበትም።').show();
-    } else {
-        $ethEndInput.removeClass('is-invalid');
-        $errorSpan.hide();
-        $ethEndInput[0].setCustomValidity("");
-    }
-
-    if (!isDateValid) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    if (!this.checkValidity()) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    $(this).addClass('was-validated');
-});
-
-// Clear edit form errors on date change
-$(document).on('change', '#edit_eth_start_date', function() {
-    $('#edit_eth_start_date').removeClass('is-invalid');
-    $('#edit_start_date_error_msg').hide();
-});
-
-$(document).on('change', '#edit_eth_end_date', function() {
-    $('#edit_eth_end_date').removeClass('is-invalid');
-    $('#edit_date_error_msg').hide();
-});
- 

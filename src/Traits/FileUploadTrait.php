@@ -68,4 +68,17 @@ trait FileUploadTrait {
                 return 'An unexpected error occurred during file upload. Please try again.';
         }
     }
+protected function cleanupUploadedFile(bool $wasUploaded, ?string $fileName, string $path = 'documents'): void {
+    if (!$wasUploaded || !$fileName) {
+        return;
+    }
+
+    $folder = trim($path, '/');
+    $storageRoot = dirname(__DIR__, 2) . '/storage/uploads/';
+    $fullPath = rtrim($storageRoot . $folder, '/') . '/' . $fileName;
+
+    if (file_exists($fullPath)) {
+        unlink($fullPath);
+    }
 }
+    }

@@ -263,6 +263,16 @@ $initials       = $first_initial . $father_initial ?: 'GU';
     
 
     </ul>
+
+   <ul class="nav nav-treeview">
+    <li class="nav-item">
+        <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>/employee-scholarship-returnee" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>የተጠናቀቁ የትምህርት እድሎች</p>
+        </a>
+    </li>
+</ul>
+
   </li>
 
 <li class="nav-item small">

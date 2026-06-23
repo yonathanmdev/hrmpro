@@ -4,7 +4,7 @@ $(function () {
     toast: true,
     position: 'top-end',
     showConfirmButton: false,
-    timer: 3000
+    timer: 10000
   });
 
   if (window.__flash.success) {

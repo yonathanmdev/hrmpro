@@ -65,43 +65,142 @@ public function jobSearch(string $term) {
 /**
  * Checks if a specific employment type overlaps with existing records
  */
+private function overlapsWithScholarship(
+    string $employee_uuid,
+    string $start_date,
+    string $comparison_end
+): bool {
+    $sql = "SELECT agreement_date, end_date FROM employee_scholarships
+            WHERE emp_id     = :uuid
+              AND is_deleted = 0
+              AND status    != 'rejected'";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([':uuid' => $employee_uuid]);
+    $scholarships = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+    foreach ($scholarships as $scholarship) {
+        $schStart = $scholarship['agreement_date'];
+        $schEnd   = (!empty($scholarship['end_date']))
+                    ? $scholarship['end_date']
+                    : date('Y-m-d');
+
+        if ($schStart < $comparison_end && $schEnd >= $start_date) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 public function checkEmploymentTypeOverlap(
     string $employee_uuid,
     string $start_date,
-    string $end_date,
+    ?string $end_date,
     string $employment_type,
-    ?string $excludeUuid = null  // ← pass current record uuid on edit, null on store
+    ?string $excludeUuid = null
 ): bool {
+    // ── Normalize: accept timestamp integer or Y-m-d string ──────────────────
+    $start_date     = date('Y-m-d', is_numeric($start_date) ? (int)$start_date : strtotime($start_date));
+    $end_date       = $end_date
+                      ? date('Y-m-d', is_numeric($end_date) ? (int)$end_date : strtotime($end_date))
+                      : null;
     $comparison_end = $end_date ?: '9999-12-31';
 
-    $sql = "SELECT COUNT(*) FROM employee_experiences 
-            WHERE employee_uuid  = :uuid 
-              AND employment_type = :emp_type
-              AND is_deleted      = 0
-              AND start_date      < :new_end 
-              AND end_date        > :new_start";
+    // ── Case 1: Delegate ──────────────────────────────────────────────────────
+    // Blocked by: another Delegate in same interval + scholarship overlap
+    // Allowed   : Full-time/Contract in employee_experiences + main employment
+    if ($employment_type === 'Delegate') {
 
-    // Exclude the record being edited
+        // 1a. Check for another Delegate in same interval
+        $sql = "SELECT COUNT(*) FROM employee_experiences 
+                WHERE employee_uuid   = :uuid 
+                  AND employment_type = 'Delegate'
+                  AND is_deleted      = 0
+                  AND start_date      < :new_end 
+                  AND (end_date IS NULL OR end_date > :new_start)";
+
+        if ($excludeUuid) {
+            $sql .= " AND id != :exclude_uuid";
+        }
+
+        $params = [
+            ':uuid'      => $employee_uuid,
+            ':new_start' => $start_date,
+            ':new_end'   => $comparison_end,
+        ];
+
+        if ($excludeUuid) {
+            $params[':exclude_uuid'] = $excludeUuid;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        if ($stmt->fetchColumn() > 0) {
+            return true;
+        }
+
+        // 1b. Check scholarship overlap
+        return $this->overlapsWithScholarship($employee_uuid, $start_date, $comparison_end);
+    }
+
+    // ── Case 2a: Non-Delegate → blocked by other non-Delegate experiences ─────
+    $sql = "SELECT COUNT(*) FROM employee_experiences 
+            WHERE employee_uuid    = :uuid 
+              AND employment_type != 'Delegate'
+              AND is_deleted       = 0
+              AND start_date       < :new_end 
+              AND (end_date IS NULL OR end_date > :new_start)";
+
     if ($excludeUuid) {
         $sql .= " AND id != :exclude_uuid";
     }
 
-    $stmt = $this->db->prepare($sql);
-
     $params = [
-        'uuid'      => $employee_uuid,
-        'emp_type'  => $employment_type,
-        'new_start' => $start_date,
-        'new_end'   => $comparison_end,
+        ':uuid'      => $employee_uuid,
+        ':new_start' => $start_date,
+        ':new_end'   => $comparison_end,
     ];
 
     if ($excludeUuid) {
-        $params['exclude_uuid'] = $excludeUuid;
+        $params[':exclude_uuid'] = $excludeUuid;
     }
 
+    $stmt = $this->db->prepare($sql);
     $stmt->execute($params);
 
-    return $stmt->fetchColumn() > 0;
+    if ($stmt->fetchColumn() > 0) {
+        return true;
+    }
+
+    // ── Case 2b: Non-Delegate → blocked by main employment period ─────────────
+    // Join through employee_experiences to safely resolve the UUID
+    $sql2 = "SELECT e.date_of_employed 
+             FROM employees_table e
+             JOIN employee_experiences ex ON ex.employee_uuid = e.uuid
+             WHERE ex.employee_uuid = :uuid
+               AND e.is_deleted     != 1
+               AND e.date_of_employed IS NOT NULL
+             LIMIT 1";
+
+    $stmt2 = $this->db->prepare($sql2);
+    $stmt2->execute([':uuid' => $employee_uuid]);
+    $row = $stmt2->fetch(\PDO::FETCH_ASSOC);
+
+    if ($row) {
+        $hireDate = $row['date_of_employed'];
+        $today    = date('Y-m-d');
+
+        // [hireDate, today] overlaps [start_date, comparison_end]
+        // ⟺ hireDate < comparison_end AND today >= start_date
+        if ($hireDate < $comparison_end && $today >= $start_date) {
+            return true;
+        }
+    }
+
+    // ── Case 2c: Non-Delegate → blocked by scholarship overlap ────────────────
+    return $this->overlapsWithScholarship($employee_uuid, $start_date, $comparison_end);
 }
 public function saveExperienceData($experienceData) {
     try {

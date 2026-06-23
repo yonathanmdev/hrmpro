@@ -30,22 +30,40 @@ $is_exprience_registration_page = true; ?>
               <th>የሰሩበት መስሪያ ቤት</th>
               <th>የስራ መደብ</th>
               <th>የስራ ዘመን</th>
+              <th>የቅጥር ዓይነት</th>
               <th>ልምድ</th>
               <th>Actions</th>
             </tr>
           </thead>
           <?php
           function calcDuration(string $start, ?string $end): array {
-              $s = new DateTime($start);
-              $e = $end ? new DateTime($end) : new DateTime();
-              $diff = $s->diff($e);
-              return [
-                  'years'      => $diff->y,
-                  'months'     => $diff->m,
-                  'days'       => $diff->d,
-                  'total_days' => (int)$s->diff($e)->days,
-              ];
-          }
+    $s    = new DateTime($start);
+    $e    = $end ? new DateTime($end) : new DateTime();
+    $diff = $s->diff($e);
+
+    $years  = $diff->y;
+    $months = $diff->m;
+    $days   = $diff->d;
+
+    // Normalize: if days >= 30, roll into months
+    if ($days >= 30) {
+        $months += intdiv($days, 30);
+        $days    = $days % 30;
+    }
+
+    // Normalize: if months >= 12, roll into years
+    if ($months >= 12) {
+        $years  += intdiv($months, 12);
+        $months  = $months % 12;
+    }
+
+    return [
+        'years'      => $years,
+        'months'     => $months,
+        'days'       => $days,
+        'total_days' => (int)$diff->days,
+    ];
+}
 
           function formatDuration(array $d): string {
               $parts = [];
@@ -85,6 +103,7 @@ $is_exprience_registration_page = true; ?>
                 እስከ <span class="badge badge-success">ዛሬ</span>
                 <?= EthiopianDateHelper::getMonthName($endEth['month']) ?> <?= $endEth['day'] ?> <?= $endEth['year'] ?>
               </td>
+              <td><?= htmlspecialchars($employee['employment_situation'] ?? '') ?></td>
               <td class="text-nowrap">
                 <?php $seen = 0; ?>
                 <?php if ($duration['years'] > 0): ?><span class="badge badge-light border"><?= $duration['years'] ?> ዓመት</span><?php $seen++; endif; ?>
@@ -129,6 +148,15 @@ $is_exprience_registration_page = true; ?>
                   <span class="badge badge-success">አሁን</span>
                 <?php endif; ?>
               </td>
+              <?php
+$employmentTypeLabels = [
+    'Full-time' => 'ቋሚ',
+    'Contract'  => 'ኮንትራት',
+    'Delegate'  => 'ውክልና',
+];
+?>
+
+<td><?= htmlspecialchars($employmentTypeLabels[$exp['employment_type']] ?? $exp['employment_type'] ?? '') ?></td>
               <td class="text-nowrap">
                 <?php $seen = 0; ?>
                 <?php if ($duration['years'] > 0): ?><span class="badge badge-light border"><?= $duration['years'] ?> ዓመት</span><?php $seen++; endif; ?>
@@ -192,10 +220,9 @@ $is_exprience_registration_page = true; ?>
               <label for="add_employment_type" class="mb-1"><small class="font-weight-bold">የቅጥር አይነት </small><span class="text-danger">*</span></label>
               <select name="employment_type" id="add_employment_type" class="form-control form-control-sm" required>
                 <option value="">-- ይምረጡ --</option>
-                <option value="Full-time">ሙሉ ጊዜ</option>
-                <option value="Part-time">ትርፍ ጊዜ</option>
+                <option value="Full-time">ቋሚ</option>
                 <option value="Contract">ኮንትራት</option>
-                <option value="Freelance">ፍሪላንስ</option>
+                <option value="Delegate">ውክልና</option>
               </select>
             </div>
             <div class="col-md-4 form-group">

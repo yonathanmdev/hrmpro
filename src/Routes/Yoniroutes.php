@@ -122,6 +122,10 @@ return [
     'employee-scholarship-onleave-approval' => ['ScholarshipController', 'handleOnLeaveApproval', true],
     'employee-scholarship-edit' => ['ScholarshipController', 'showScholarshipEdit', true],
     'employee-scholarship-update' => ['ScholarshipController', 'updateScholarship', true],
+    'employee-scholarship-returnee' => ['ScholarshipController', 'showScholarshipReturnees', true],
+    'get-scholarship-details' => ['ScholarshipController', 'showScholarshipJson', true],
+    'update-scholarship-returnee' => ['ScholarshipController', 'updateScholarshipReturnee', true],
+    'employee-scholarship-return-store' => ['ScholarshipController', 'storeReturnScholarship', true],
     'delete-scholarship-process' => ['ScholarshipController', 'delete', true],
 
     //warranty
