@@ -295,7 +295,7 @@ public function adminSendResetLink() {
     if (empty($userId)) {
         echo json_encode(['status' => 'error', 'message' => 'User ID is required.']);
         exit();
-    
+    }
 
     $userModel = new User($this->db);
     $user = $userModel->findById($userId); // implement if not already present: SELECT * FROM users WHERE id = ?
