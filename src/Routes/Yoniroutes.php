@@ -7,6 +7,7 @@ return [
     'register-process'              => ['UserController', 'handleRegistration', true],
     'edit-user'                     => ['UserController', 'getUserById', true],
     'edit-user-process'             => ['UserController', 'handleUpdateUser', true],
+    'admin-reset-password'          => ['UserController', 'adminSendResetLink', true],
     'delete-user-process'           => ['UserController', 'delete', true],
     'deleted-users'                 => ['UserController', 'showDeletedLists', true],
     'restore-user'           => ['UserController', 'restore', true],
@@ -127,7 +128,10 @@ return [
     'update-scholarship-returnee' => ['ScholarshipController', 'updateScholarshipReturnee', true],
     'employee-scholarship-return-store' => ['ScholarshipController', 'storeReturnScholarship', true],
     'delete-scholarship-process' => ['ScholarshipController', 'delete', true],
+    
+    //promotion
 
+    'employee-promotion'         => ['PromotionController', 'showPromotionForm', true],
     //warranty
     'employee-warranty'         => ['WarrantyController', 'showWarrantyForm', true],
     'employee-warranty-search'  => ['WarrantyController', 'liveSearch', true],

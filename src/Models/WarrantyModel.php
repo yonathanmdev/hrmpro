@@ -15,6 +15,7 @@ public function getWarranties(string $organizationId, string $branchId, $status)
                 e.first_name, 
                 e.father_name, 
                 e.g_father_name,
+                e.sex,
                 jp.job_name, 
                 jp.registered_by,
                 w.id as record_id,

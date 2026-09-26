@@ -27,7 +27,7 @@ class EmployeeOnleaveController extends BaseController {
 
     // Check first before using $employee data
     if (!$employee) {
-        header("Location: /HRM/dashboard?error=employee_not_found");
+        header("Location:" . $_ENV['BASE_URL'] . "/dashboard?error=employee_not_found");
         exit;
     }
 

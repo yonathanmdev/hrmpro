@@ -8,48 +8,15 @@ use App\Models\EmployeeGuarantor;
 use App\Helpers\AuthHelper;
 use Ramsey\Uuid\Uuid;
 use \App\Traits\FileUploadTrait;
-class EmployeeRegistrationController extends BaseController {
+class PromotionController extends BaseController {
     use FileUploadTrait;
-    public function showForm() {
-         AuthHelper::checkRole(['hr_director', 'hr_officer']);
-        $user = $_SESSION['user'] ?? [];
-        $branchId = $user['branch_id'] ?? null;
-        $organizationId = $user['organization_id'] ?? null;
-
-        $jobs = [];
-        if ($branchId) {
-            $positionModel = new \App\Models\Position($this->db);
-            $jobs = $positionModel->getActiveJobsByBranch($branchId);
-        }
-
-        $employees = [];
-        if ($organizationId && $branchId) {
-            $employeeModel = new EmployeeRegistration($this->db);
-            $employees = $employeeModel->getEmployeesByBranch($organizationId, $branchId);
-        }
-
-        $data = [
-            'title' => 'HRM - የሰራተኛ መመዝገቢያ',
-            'user'  => $user,
-            'jobs'  => $jobs,
-            'employees' => $employees,
-        ];
-
-        $this->render('employee-active', $data);
-    }
-
-
-    public function showEditForm($params = []){
-   
+    
+    public function showPromotionForm($params = []){
            AuthHelper::checkRole(['hr_director', 'hr_officer']);
          $uuid = $params['uuid'] ?? ($_GET['uuid'] ?? null);
 
     // Get source from URL segment (record_id holds it)
-    $source = $params['record_id'] ?? 'employee-registration';
-    $allowedSources = ['employee-registration', 'employee-active'];
-    if (!in_array($source, $allowedSources)) {
-        $source = 'employee-registration';
-    }
+    $source = 'employee-promotion';
 
     $redirectUrl = rtrim($_ENV['BASE_URL'], '/') . '/' . $source;
         if (!$uuid) {
@@ -95,7 +62,7 @@ class EmployeeRegistrationController extends BaseController {
         'guarantor'     => $guarantor, // ← add guarantor data
     ];
 
-        $this->render('employee-edit', $data);
+        $this->render('employee-promotion', $data);
     }
 
 public function handleEdit($params = []) {
@@ -238,32 +205,34 @@ if (!preg_match('/^[0-9]{10}$/', $guarantorPhone)) {
 
         // ── Build $data ───────────────────────────────────────────────────────
         $data = [
-            'employee_id'           => trim($position['job_identifier_no']),
-            'pension_number'        => trim($_POST['pension_number'] ?? '') ?: null,
+            'employee_id'           => ($oldJobId != $newJobId)
+                                            ? trim($position['job_identifier_no'])
+                                            : $employeeId,
+            'pension_number'        => trim($_POST['pension_number'] ?? null) ?: null,
             'first_name'            => trim($_POST['first_name'] ?? ''),
             'father_name'           => trim($_POST['father_name'] ?? ''),
             'g_father_name'         => trim($_POST['g_father_name'] ?? ''),
             'mother_name'           => trim($_POST['mother_name'] ?? ''),
             'sex'                   => $_POST['sex'] ?? 'Male',
-            'birth_date'            => trim($_POST['birth_date'] ?? '') ?: null,
-            'phone_number'          => trim($_POST['phone_number'] ?? '') ?: null,
+            'birth_date'            => trim($_POST['birth_date'] ?? null) ?: null,
+            'phone_number'          => trim($_POST['phone_number'] ?? null) ?: null,
             'yegabcha_huneta'       => trim($_POST['yegabcha_huneta'] ?? ''),
             'job_property_id'       => $newJobId,
-            'date_of_employed'      => trim($_POST['date_of_employed'] ?? '') ?: null,
+            'date_of_employed'      => trim($_POST['date_of_employed'] ?? null) ?: null,
             'level_of_education'    => trim($_POST['level_of_education'] ?? ''),
-            'department'            => trim($_POST['department'] ?? '') ?: null,
+            'department'            => trim($_POST['department'] ?? null) ?: null,
             'employment_situation'  => trim($_POST['employment_situation'] ?? ''),
-            'immidate_boss'         => trim($_POST['immidate_boss'] ?? '') ?: null,
-            'experience'            => trim($_POST['experience'] ?? '') ?: null,
+            'immidate_boss'         => trim($_POST['immidate_boss'] ?? null) ?: null,
+            'experience'            => trim($_POST['experience'] ?? null) ?: null,
             'annual_rest'           => isset($_POST['annual_rest']) ? (int) $_POST['annual_rest'] : 0,
             'displin_situation'     => trim($_POST['displin_situation'] ?? ''),
-            'competency_situation'  => trim($_POST['competency_situation'] ?? '') ?: null,
+            'competency_situation'  => trim($_POST['competency_situation'] ?? null) ?: null,
             'effeciency'            => $this->normalizeDecimal($_POST['effeciency'] ?? null),
-            'level_of_effeciency'   => trim($_POST['level_of_effeciency'] ?? '') ?: null,
+            'level_of_effeciency'   => trim($_POST['level_of_effeciency'] ?? null) ?: null,
             'no_of_files_in_folder' => isset($_POST['no_of_files_in_folder']) ? (int) $_POST['no_of_files_in_folder'] : 0,
             'employee_image'        => $imageName,
             'employee_file201'      => $file201Name,
-            'remark'                => trim($_POST['remark'] ?? '') ?: null,
+            'remark'                => trim($_POST['remark'] ?? null) ?: null,
         ];
 
         // ── Persist ───────────────────────────────────────────────────────────
@@ -469,33 +438,33 @@ if (!preg_match('/^[0-9]{10}$/', $guarantorPhone)) {
         $data = [
             'uuid'                  => $employeeUuid,
             'employee_id'           => trim($position['job_identifier_no']),
-            'pension_number'        => trim($_POST['pension_number'] ?? '') ?: null,
+            'pension_number'        => trim($_POST['pension_number'] ?? null) ?: null,
             'first_name'            => trim($_POST['first_name'] ?? ''),
             'father_name'           => trim($_POST['father_name'] ?? ''),
             'g_father_name'         => trim($_POST['g_father_name'] ?? ''),
             'mother_name'           => trim($_POST['mother_name'] ?? ''),
             'sex'                   => $_POST['sex'] ?? 'Male',
-            'birth_date'            => trim($_POST['birth_date'] ?? '') ?: null,
-            'phone_number'          => trim($_POST['phone_number'] ?? '') ?: null,
+            'birth_date'            => trim($_POST['birth_date'] ?? null) ?: null,
+            'phone_number'          => trim($_POST['phone_number'] ?? null) ?: null,
             'yegabcha_huneta'       => trim($_POST['yegabcha_huneta'] ?? ''),
             'organization_id'       => $organizationId,
             'branch_id'             => $branchId,
             'job_property_id'       => trim($_POST['job_property_id'] ?? ''),
-            'date_of_employed'      => trim($_POST['date_of_employed'] ?? '') ?: null,
+            'date_of_employed'      => trim($_POST['date_of_employed'] ?? null) ?: null,
             'level_of_education'    => trim($_POST['level_of_education'] ?? ''),
-            'department'            => trim($_POST['department'] ?? '') ?: null,
+            'department'            => trim($_POST['department'] ?? null) ?: null,
             'employment_situation'  => trim($_POST['employment_situation'] ?? ''),
-            'immidate_boss'         => trim($_POST['immidate_boss'] ?? '') ?: null,
-            'experience' => trim($_POST['experience'] ?? '') ?: null,
+            'immidate_boss'         => trim($_POST['immidate_boss'] ?? null) ?: null,
+            'experience'            => trim($_POST['experience'] ?? null) ?: null,
             'annual_rest'           => isset($_POST['annual_rest']) ? (int) $_POST['annual_rest'] : 0,
             'displin_situation'     => trim($_POST['displin_situation'] ?? ''),
-            'competency_situation'  => trim($_POST['competency_situation'] ?? '') ?: null,
+            'competency_situation'  => trim($_POST['competency_situation'] ?? null) ?: null,
             'effeciency'            => $this->normalizeDecimal($_POST['effeciency'] ?? null),
-            'level_of_effeciency'   => trim($_POST['level_of_effeciency'] ?? '') ?: null,
+            'level_of_effeciency'   => trim($_POST['level_of_effeciency'] ?? null) ?: null,
             'no_of_files_in_folder' => isset($_POST['no_of_files_in_folder']) ? (int) $_POST['no_of_files_in_folder'] : 0,
             'employee_image'        => $imageName,
             'employee_file201'      => $file201Name,
-            'remark'                => trim($_POST['remark'] ?? '') ?: null,
+            'remark'                => trim($_POST['remark'] ?? null) ?: null,
             'reg_by'                => $user['id'],
         ];
 

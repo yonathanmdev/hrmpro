@@ -71,6 +71,7 @@
               <option>XVIII</option>
               <option>XIX</option>
               <option>XX</option>
+               <option>Career</option>
             </select>
           </div>
     </div>
@@ -81,6 +82,7 @@
             <label for="edit_sera_rken" class="mb-1"><small class="font-weight-bold">የደረጃ እርከን</small></label>
             <select name="sera_rken" id="edit_sera_rken" class="form-control form-control-sm" required>
               <option value="" disabled="disabled">← ይምረጡ →</option>
+              <option>ሹመት</option>
               <option>1</option>
               <option>2</option>
               <option>3</option>

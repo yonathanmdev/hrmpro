@@ -254,8 +254,10 @@ public function handleEditPosition() {
                           ? (int)$_POST['vacancy_count'] 
                           : null;
         $nesaHkmna = isset($_POST['nesa_hkmna']) ? trim($_POST['nesa_hkmna']) : '';
-        $clothDuration = isset($_POST['cloth_duration']) ? trim($_POST['cloth_duration']) : '';
-        $description = isset($_POST['description']) ? trim($_POST['description']) : '';
+      $clothDuration = trim($_POST['cloth_duration'] ?? '');
+      $clothDuration = $clothDuration !== ''? $clothDuration
+    : null;        
+    $description = isset($_POST['description']) ? trim($_POST['description']) : '';
 
         if (empty($positionId) || empty($positionName) || empty($directorId)) {
             echo json_encode(['status' => 'error', 'message' => 'እባክዎ ሁሉንም አስፈላጊ መረጃዎች በትክክል ያስገቡ!']);
@@ -292,7 +294,7 @@ public function handleEditPosition() {
                 echo json_encode(['status' => 'success', 'message' => 'መደቡ በተሳካ ሁኔታ ተሻሽሏል!']);
                 exit();
             } else {
-                echo json_encode(['status' => 'error', 'message' => 'ማስተካከያው አልተሳካም፤ ምንም የተቀየረ መረጃ የለም።']);
+                echo json_encode(['status' => 'error', 'message' => 'ማስተካከያው አልተሳካም፤ ምንም የተቀየረ መረጃ የለም።'.$clothDuration]);
                 exit();
             }
         } catch (\PDOException $e) {

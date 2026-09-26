@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Models;
-
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
@@ -34,6 +33,7 @@ class AuditLog
             )
         );
     }
+
 
     // =========================================================================
     //  WRITE
@@ -89,8 +89,7 @@ class AuditLog
             if ($newValues !== null) $logData['new_values'] = $newValues;
             if ($metadata  !== [])  $logData['metadata']   = $metadata;
 
-            $this->logger->info($action, $logData);
-
+           
             return $ok;
 
         } catch (\Exception $e) {

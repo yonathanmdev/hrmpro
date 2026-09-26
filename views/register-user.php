@@ -64,6 +64,13 @@ echo htmlspecialchars($roleMap[$role] ?? 'ባለሙያ');
                       data-id="<?= $row['id'] ?>"  title="አስተካክል"  >
                 <i class="fas fa-edit"></i>
               </button> 
+               <button class="btn btn-outline-warning btn-sm reset-password" 
+          data-id="<?= $row['id'] ?>" 
+          data-name="<?= htmlspecialchars($row['first_name']).' '.htmlspecialchars($row['father_name']).' '.htmlspecialchars($row['grand_father_name']) ?>" 
+          data-email="<?= htmlspecialchars($row['email']) ?>"
+          title="Reset Password">
+      <i class="fas fa-sync-alt"></i>
+  </button> 
               <button class="btn btn-outline-danger btn-sm delete-user" 
                       data-id="<?= $row['id'] ?>"  data-name="<?= htmlspecialchars($row['first_name']).' '.htmlspecialchars($row['father_name']).' '.htmlspecialchars($row['grand_father_name']) ?>"  title="ሰርዝ">
 
@@ -225,3 +232,46 @@ echo htmlspecialchars($roleMap[$role] ?? 'ባለሙያ');
     </div>
   </div>
 </div>
+<script nonce="<?php echo $GLOBALS['nonce']; ?>">
+  // public/assets/js/reset-password.js  (or wherever your other button handlers live)
+
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.reset-password');
+    if (!btn) return;
+
+    const userId   = btn.dataset.id;
+    const userName = btn.dataset.name;
+    const userEmail = btn.dataset.email;
+
+    const confirmed = confirm(
+        `የ "${userName}" የይለፍ ቃል መቀየሪያ ማስፈንጠሪያ በኢሜይል ይላካል። እርግጠኛ ነዎት?`
+    );
+
+    if (!confirmed) return;
+
+    btn.disabled = true;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch(`${BASE_URL}/admin-reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert(data.message);
+        } else {
+            alert('ስህተት: ' + (data.message || 'ማስፈንጠሪያውን መላክ አልተሳካም።'));
+        }
+    })
+    .catch(() => {
+        alert('የኔትወርክ ስህተት። እባክዎ እንደገና ይሞክሩ።');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+    });
+});
+</script>

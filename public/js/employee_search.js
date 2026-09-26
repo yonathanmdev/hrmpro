@@ -65,6 +65,9 @@ $(document).ready(function() {
                             if (sanitizedSource === 'onleave') {
                                 destinationUrl = `${BASE_URL}/employee-leave/${emp.uuid}`;
                             }
+                              if (sanitizedSource === 'promotion') {
+                                destinationUrl = `${BASE_URL}/employee-promotion/${emp.uuid}`;
+                            }
                             
                             window.location.href = destinationUrl;
                         });

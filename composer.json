@@ -9,7 +9,8 @@
     "require": {
         "ramsey/uuid": "^4.9",
         "vlucas/phpdotenv": "^5.6",
-        "monolog/monolog": "^3.10"
+        "monolog/monolog": "^3.10",
+        "phpmailer/phpmailer": "^7.1"
     },
     "config": {
         "optimize-autoloader": true,

@@ -94,7 +94,7 @@ class ReportController extends BaseController {
             $viewName = 'report-view';
         }
 
-        $this->render($viewName, [
+        $this->renderPrintable($viewName, [
             'reportTitle'   => $this->reportTitles[$reportType] ?? $this->reportTitles['discipline'],
             'reportType'    => $reportType,
             'branchId'      => $branchId,

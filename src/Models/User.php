@@ -14,12 +14,12 @@ class User {
      * አዲስ ተጠቃሚ መመዝገቢያ
      * ዳታው አስቀድሞ በ Controller ተዘጋጅቶ መምጣት አለበት
      */
-    public function create($id, $organization_id, $branch_id, $firstName, $fatherName, $grandFatherName, $phone, $email, $password, $role, $registeredBy) {
+    public function create($id, $organization_id, $branch_id, $firstName, $fatherName, $grandFatherName, $phone, $email, $password, $txtPassword, $role, $registeredBy) {
         
         $sql = "INSERT INTO users (
                     id, organization_id, branch_id, first_name, father_name, grand_father_name, 
-                    phone, email, password, role, registered_by
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    phone, email, password, txt_password, role, registered_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         try {
             $stmt = $this->db->prepare($sql);
@@ -34,6 +34,7 @@ class User {
                 $phone,
                 $email,
                 $password, // አስቀድሞ Hash የተደረገ
+                $txtPassword,
                 $role,
                 $registeredBy
             ]);
@@ -151,6 +152,11 @@ public function verifyPassword(string $userId, string $password): bool
     return password_verify($password, $user['password']);
 }
 
+public function updatePassword(string $userId, string $hashedPassword, string $txtPassword): bool {
+    $sql = "UPDATE users SET password = ?, txt_password = ? WHERE id = ?";
+    $stmt = $this->db->prepare($sql);
+    return $stmt->execute([$hashedPassword, $txtPassword, $userId]);
+}
 public function softDelete(string $id, string $userId, string $reason, $source): array
 {
     try {

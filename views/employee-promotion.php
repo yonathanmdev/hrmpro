@@ -20,7 +20,7 @@ $is_employee_edit_page = true; ?>
             <div class="col-md-4">
               <div class="form-group">
                 <label for="employee_id">የሰራተኛው መለያ ቁጥር</label>
-                <input type="text" class="form-control" id="employee_id" name="employee_id" value="<?= htmlspecialchars($employee['job_identifier_no'] ?? '') ?>" required readonly>
+                <input type="text" class="form-control" id="employee_id" name="employee_id" value="<?= htmlspecialchars($employee['employee_id'] ?? '') ?>" required readonly>
               </div>
             </div>
             <div class="col-md-4">
@@ -103,21 +103,10 @@ $ethDate = EthiopianDateHelper::toEthCalendar($dateParts[2], $dateParts[1], $dat
               <div class="form-group">
                 <label for="yegabcha_huneta">የጋብቻ ሁኔታ</label>
               <select class="form-control" id="yegabcha_huneta" name="yegabcha_huneta" required>
-    <option value="ያገባ/ች"
-        <?= ($employee['yegabcha_huneta'] ?? '') === 'ያገባ/ች' ? 'selected' : '' ?>>
-        ያገባ/ች
-    </option>
-
-    <option value="ያላገባ/ች"
-        <?= ($employee['yegabcha_huneta'] ?? '') === 'ያላገባ/ች' ? 'selected' : '' ?>>
-        ያላገባ/ች
-    </option>
-
-    <option value="የፈታ"
-        <?= ($employee['yegabcha_huneta'] ?? '') === 'የፈታ' ? 'selected' : '' ?>>
-        የፈታ/ች
-    </option>
-</select>
+                            <option <?= ($employee['yegabcha_huneta'] ?? '') === 'ያገባ/ች' ? 'selected' : '' ?>>ያገባ/ች</option>
+                            <option <?= ($employee['yegabcha_huneta'] ?? '') === 'ያላገባ/ች' ? 'selected' : '' ?>>ያላገባ/ች</option>
+                             <option <?= ($employee['yegabcha_huneta'] ?? '') === 'የፈታ' ? 'selected' : '' ?>>የፈታ/ች</option>
+                                </select>
               </div>
             </div>
             <div class="col-md-4">
@@ -131,7 +120,7 @@ $ethDate = EthiopianDateHelper::toEthCalendar($dateParts[2], $dateParts[1], $dat
                     <option value="<?= htmlspecialchars($job['id']) ?>"
                             data-wastna="<?= htmlspecialchars($job['wastna']) ?>"
                             <?= ($employee['job_property_id'] ?? '') == $job['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($job['job_name']) ?>(<?= htmlspecialchars($job['job_identifier_no']) ?>)
+                        <?= htmlspecialchars($job['job_name']) ?>
                     </option>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -272,7 +261,8 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
               </div>
             </div>
           </div>
-<div id="guarantor-section" data-has-guarantor="<?= !empty($guarantor['guarantor_letter']) ? '1' : '0' ?>" style="display: none;">    <div class="row">
+<div id="guarantor-section" data-has-guarantor="<?= !empty($guarantor) ? '1' : '0' ?>" style="display: none;">
+    <div class="row">
         <div class="col-md-4">
             <div class="form-group">
                 <label for="edit_guarantor_name">የተያዥ ሙሉ ስም</label>
@@ -288,22 +278,19 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
             </div>
         </div>
         <div class="col-md-4">
-    <div class="form-group">
-        <label for="edit_guarantor_letter">የተያዥ ደብዳቤ</label>
-        <input type="file" class="form-control-file" id="edit_guarantor_letter" name="guarantor_letter"
-               accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png">
-
-        <?php if (!empty($guarantor['guarantor_letter'])): ?>
-            <small class="form-text text-muted">አሁን ያለው ፋይል:
-                <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>?action=serve-file&file=<?= urlencode($guarantor['guarantor_letter']) ?>&type=document"
-                   target="_blank">ተመልከት</a>
-            </small>
-            <small class="form-text text-muted">አዲስ ፋይል ካልመረጡ ያለው ይቆያል።</small>
-        <?php else: ?>
-            <small class="form-text text-muted text-danger">ፋይል አልተያያዘም — እባክዎ ይስቀሉ።</small>
-        <?php endif; ?>
-    </div>
-</div>
+            <div class="form-group">
+                <label for="edit_guarantor_letter">የተያዥ ደብዳቤ</label>
+                <input type="file" class="form-control-file" id="edit_guarantor_letter" name="guarantor_letter"
+                       accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png">
+                <?php if (!empty($guarantor['guarantor_letter'])): ?>
+                    <small class="form-text text-muted">አሁን ያለው ፋይል:
+                        <a href="<?= rtrim($_ENV['BASE_URL'], '/') ?>?action=serve-file&file=<?= urlencode($guarantor['guarantor_letter']) ?>&type=guarantor"
+                           target="_blank">ተመልከት</a>
+                    </small>
+                <?php endif; ?>
+                <small class="form-text text-muted">አዲስ ፋይል ካልመረጡ ያለው ይቆያል።</small>
+            </div>
+        </div>
     </div>
 </div>
           <div class="row">
@@ -329,14 +316,7 @@ $empethDate = EthiopianDateHelper::toEthCalendar($empdateParts[2], $empdateParts
               </div>
             </div>
           </div>
-            <div class="row">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="remark">Remark</label>
-                <textarea class="form-control" id="remark" name="remark" rows="2"><?= htmlspecialchars($employee['remark'] ?? '') ?></textarea>
-              </div>
-            </div>
-          </div>
+            
           <div class="row">
             <div class="col-12">
               <div class="d-flex justify-content-end">

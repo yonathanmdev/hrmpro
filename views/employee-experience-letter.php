@@ -142,7 +142,7 @@ if ($hireStart) {
 <html lang="am" dir="ltr"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ደብረ ታቦር ከተማ አስተዳደር ት/ት መምሪያ — የሥራ ልምድ</title>
+    <title><?= htmlspecialchars($_SESSION['user']['branch_name']);?> — የሥራ ልምድ</title>
 
     <style>
         /* ═══════════════════════════════════════
@@ -793,12 +793,29 @@ if ($hireStart) {
         }
 
 
-        /* ══ META ══ */
-        .meta-row {
-            display: flex; flex-direction: column; align-items: flex-end;
-            font-size: 9pt; color: #444; margin-bottom: 10px; text-align: right;
-        }
-        .meta-row .ref { font-style: italic; }
+     /* ══ META ══ */
+.meta-row {
+    display: flex; flex-direction: column; align-items: flex-end;
+    font-size: 9pt; color: #444; margin-bottom: 10px; text-align: right;
+}
+.meta-row .ref { font-style: italic; }
+
+.ref-number-field {
+    display: inline-block;
+    width: 110px;              /* fixed so typing doesn't stretch the line */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: left;          /* text reads left-to-right inside the fixed box */
+    border-bottom: 1px dotted #444;
+    outline: none;
+    vertical-align: baseline;
+}
+
+.ref-number-field:empty::before {
+    content: attr(data-placeholder);
+    color: #999;
+}
         /* ═══════════════════════════════════════
            EXPERIENCE TABLE
         ═══════════════════════════════════════ */
@@ -1086,19 +1103,19 @@ if ($hireStart) {
     <div class="report-title-band">
 
         <!-- ══ META ROW ══ -->
-        <div class="meta-row">
-            <span class="ref">
-                ቁጥር:
-                <?= htmlspecialchars($employee['ref_number'] ?? '_____/_____/___') ?>
-            </span>
-
-            <span>
-                ቀን:
-                <?= EthiopianDateHelper::getMonthName($todayEth['month']) ?>
-                <?= $todayEth['day'] ?>
-                <?= $todayEth['year'] ?> ዓ.ም
-            </span>
-        </div>
+       <!-- ══ META ROW ══ -->
+<div class="meta-row">
+    <span class="ref">
+        ቁጥር:
+        <span class="ref-number-field" contenteditable="true" data-placeholder="_____/_____/___"><?= htmlspecialchars($employee['ref_number'] ?? '') ?></span>
+    </span>
+    <span>
+        ቀን:
+        <?= EthiopianDateHelper::getMonthName($todayEth['month']) ?>
+        <?= $todayEth['day'] ?>
+        <?= $todayEth['year'] ?> ዓ.ም
+    </span>
+</div>
 
         <div class="employee-name">
             ለአቶ/ወ/ሮ/ወ/ሪ/ት፦  <?= htmlspecialchars(
@@ -1494,7 +1511,7 @@ $employmentTypeLabels = [
     <div class="total-exp-box">
         <span class="label">በአጠቃላይ
 
-        <?= formatDurationBadges($netYMD) ?> ያገለገሉ መሆናቸውን እንገልጻለን። ያገለገሉ እና አሁንም በማገልገል ላይ ያሉ መሆናቸውን እንገልጻለን።
+        <?= formatDurationBadges($netYMD) ?> ያገለገሉ መሆናቸውን እየገለጽን አሁንም በማገልገል ላይ ያሉ መሆናቸውን እንገልጻለን።
         </span>
     </div>
 

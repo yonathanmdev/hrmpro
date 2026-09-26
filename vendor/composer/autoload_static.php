@@ -29,6 +29,7 @@ class ComposerStaticInite4f6e93e15fd7a66c431e184d04ea545
         array (
             'Psr\\Log\\' => 8,
             'PhpOption\\' => 10,
+            'PHPMailer\\PHPMailer\\' => 20,
         ),
         'M' =>
         array (
@@ -81,6 +82,10 @@ class ComposerStaticInite4f6e93e15fd7a66c431e184d04ea545
         array (
             0 => __DIR__ . '/..' . '/phpoption/phpoption/src/PhpOption',
         ),
+        'PHPMailer\\PHPMailer\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
+        ),
         'Monolog\\' =>
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
@@ -105,6 +110,7 @@ class ComposerStaticInite4f6e93e15fd7a66c431e184d04ea545
 
     public static $classMap = array (
         'App\\Config\\Database' => __DIR__ . '/../..' . '/src/Config/Database.php',
+        'App\\Controllers\\ArchiveController' => __DIR__ . '/../..' . '/src/Controllers/ArchiveController.php',
         'App\\Controllers\\AuditController' => __DIR__ . '/../..' . '/src/Controllers/AuditController.php',
         'App\\Controllers\\AuthController' => __DIR__ . '/../..' . '/src/Controllers/AuthController.php',
         'App\\Controllers\\BaseController' => __DIR__ . '/../..' . '/src/Controllers/BaseController.php',
@@ -112,10 +118,14 @@ class ComposerStaticInite4f6e93e15fd7a66c431e184d04ea545
         'App\\Controllers\\DebtSuspensionController' => __DIR__ . '/../..' . '/src/Controllers/DebtSuspensionController.php',
         'App\\Controllers\\DirectorController' => __DIR__ . '/../..' . '/src/Controllers/DirectorController.php',
         'App\\Controllers\\EmployeeController' => __DIR__ . '/../..' . '/src/Controllers/EmployeeController.php',
+        'App\\Controllers\\EmployeeOnleaveController' => __DIR__ . '/../..' . '/src/Controllers/EmployeeOnleaveController.php',
         'App\\Controllers\\EmployeeRegistrationController' => __DIR__ . '/../..' . '/src/Controllers/EmployeeRegistrationController.php',
+        'App\\Controllers\\EvaluationSettingsController' => __DIR__ . '/../..' . '/src/Controllers/EvaluationSettingsController.php',
         'App\\Controllers\\ExperiencesController' => __DIR__ . '/../..' . '/src/Controllers/ExperiencesController.php',
         'App\\Controllers\\FileController' => __DIR__ . '/../..' . '/src/Controllers/FileController.php',
+        'App\\Controllers\\HrBscPlanController' => __DIR__ . '/../..' . '/src/Controllers/HrBscPlanController.php',
         'App\\Controllers\\OrgController' => __DIR__ . '/../..' . '/src/Controllers/OrgController.php',
+        'App\\Controllers\\PromotionController' => __DIR__ . '/../..' . '/src/Controllers/PromotionController.php',
         'App\\Controllers\\ReportController' => __DIR__ . '/../..' . '/src/Controllers/ReportController.php',
         'App\\Controllers\\ScholarshipController' => __DIR__ . '/../..' . '/src/Controllers/ScholarshipController.php',
         'App\\Controllers\\TeddyController' => __DIR__ . '/../..' . '/src/Controllers/TeddyController.php',
@@ -126,15 +136,25 @@ class ComposerStaticInite4f6e93e15fd7a66c431e184d04ea545
         'App\\Helpers\\AuditHelper' => __DIR__ . '/../..' . '/src/Helpers/AuditHelper.php',
         'App\\Helpers\\AuthHelper' => __DIR__ . '/../..' . '/src/Helpers/AuthHelper.php',
         'App\\Helpers\\EthiopianDateHelper' => __DIR__ . '/../..' . '/src/Helpers/EthiopianDateHelper.php',
+        'App\\Helpers\\MailHelper' => __DIR__ . '/../..' . '/src/Helpers/MailHelper.php',
+        'App\\Models\\Anual_rest_Model' => __DIR__ . '/../..' . '/src/Models/Anual_rest_Model.php',
+        'App\\Models\\ArchiveModel' => __DIR__ . '/../..' . '/src/Models/ArchiveModel.php',
         'App\\Models\\AuditLog' => __DIR__ . '/../..' . '/src/Models/AuditLog.php',
         'App\\Models\\Branch' => __DIR__ . '/../..' . '/src/Models/Branch.php',
+        'App\\Models\\BranchEvaluationWindow' => __DIR__ . '/../..' . '/src/Models/BranchEvaluationWindow.php',
+        'App\\Models\\BscPlanFile' => __DIR__ . '/../..' . '/src/Models/BscPlanFile.php',
         'App\\Models\\DebtSuspension' => __DIR__ . '/../..' . '/src/Models/DebtSuspension.php',
         'App\\Models\\Developer' => __DIR__ . '/../..' . '/src/Models/Developer.php',
         'App\\Models\\Director' => __DIR__ . '/../..' . '/src/Models/Director.php',
+        'App\\Models\\EfficiencyFileModel' => __DIR__ . '/../..' . '/src/Models/EfficiencyFileModel.php',
+        'App\\Models\\EmployeeGuarantor' => __DIR__ . '/../..' . '/src/Models/EmployeeGuarantor.php',
         'App\\Models\\EmployeeRegistration' => __DIR__ . '/../..' . '/src/Models/EmployeeRegistration.php',
+        'App\\Models\\EvaluationSeason' => __DIR__ . '/../..' . '/src/Models/EvaluationSeason.php',
         'App\\Models\\ExperienceModel' => __DIR__ . '/../..' . '/src/Models/ExperienceModel.php',
         'App\\Models\\Organization' => __DIR__ . '/../..' . '/src/Models/Organization.php',
+        'App\\Models\\PasswordResetModel' => __DIR__ . '/../..' . '/src/Models/PasswordResetModel.php',
         'App\\Models\\Position' => __DIR__ . '/../..' . '/src/Models/Position.php',
+        'App\\Models\\ReportModel' => __DIR__ . '/../..' . '/src/Models/ReportModel.php',
         'App\\Models\\ScholarshipModel' => __DIR__ . '/../..' . '/src/Models/ScholarshipModel.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/src/Models/User.php',
         'App\\Models\\WarrantyModel' => __DIR__ . '/../..' . '/src/Models/WarrantyModel.php',
@@ -321,6 +341,13 @@ class ComposerStaticInite4f6e93e15fd7a66c431e184d04ea545
         'Monolog\\Test\\MonologTestCase' => __DIR__ . '/..' . '/monolog/monolog/src/Monolog/Test/MonologTestCase.php',
         'Monolog\\Test\\TestCase' => __DIR__ . '/..' . '/monolog/monolog/src/Monolog/Test/TestCase.php',
         'Monolog\\Utils' => __DIR__ . '/..' . '/monolog/monolog/src/Monolog/Utils.php',
+        'PHPMailer\\PHPMailer\\DSNConfigurator' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/DSNConfigurator.php',
+        'PHPMailer\\PHPMailer\\Exception' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/Exception.php',
+        'PHPMailer\\PHPMailer\\OAuth' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/OAuth.php',
+        'PHPMailer\\PHPMailer\\OAuthTokenProvider' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/OAuthTokenProvider.php',
+        'PHPMailer\\PHPMailer\\PHPMailer' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/PHPMailer.php',
+        'PHPMailer\\PHPMailer\\POP3' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/POP3.php',
+        'PHPMailer\\PHPMailer\\SMTP' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/SMTP.php',
         'PhpOption\\LazyOption' => __DIR__ . '/..' . '/phpoption/phpoption/src/PhpOption/LazyOption.php',
         'PhpOption\\None' => __DIR__ . '/..' . '/phpoption/phpoption/src/PhpOption/None.php',
         'PhpOption\\Option' => __DIR__ . '/..' . '/phpoption/phpoption/src/PhpOption/Option.php',

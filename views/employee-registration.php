@@ -195,7 +195,7 @@ $regethDate = EthiopianDateHelper::toEthCalendar($regdateParts[2], $regdateParts
                             <option value="" selected="selected" disabled="disabled">-- ይምረጡ --</option>   
                             <option value="ያገባ/ች">ያገባ/ች</option>
                             <option value="ያላገባ/ች">ያላገባ/ች</option>
-                             <option value="የፈታ/ች">የፈታ/ች</option>
+                             <option value="የፈታ">የፈታ/ች</option>
                                 </select>
                 
               </div>

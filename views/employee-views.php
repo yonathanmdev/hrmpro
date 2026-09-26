@@ -40,7 +40,7 @@ use App\Helpers\EthiopianDateHelper;
                   <h2 class="font-weight-bold mb-1 text-dark">
                     <?= htmlspecialchars($employee['first_name'] ?? '') ?> <?= htmlspecialchars($employee['father_name'] ?? '') ?> <?= htmlspecialchars($employee['g_father_name'] ?? '') ?>
                   </h2>
-                  <p class="text-muted mb-3"><i class="fas fa-hashtag mr-1"></i> ID: <strong><?= htmlspecialchars($employee['employee_id'] ?? '') ?></strong></p>
+                  <p class="text-muted mb-3"><i class="fas fa-hashtag mr-1"></i> ID: <strong><?= htmlspecialchars($employee['job_identifier_no'] ?? '') ?></strong></p>
                 </div>
                 <div class="col-md-4">
                   <small class="text-muted text-uppercase d-block font-weight-bold">የስራ መደብ</small>

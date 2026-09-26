@@ -23,7 +23,7 @@ class AuthHelper {
                 echo json_encode([
                     'status' => 'error',
                     'message' => 'access_denied',
-                    'redirect' => '/HRM/login'
+                     'redirect' => rtrim($_ENV['BASE_URL'], '/') . '/login'
                 ]);
                 exit();
             } else {

@@ -33,7 +33,7 @@ public function assignJob(string $newJobId, string $branchId, ?string $oldJobId 
 
         $stmt = $this->db->prepare("
             UPDATE job_property
-            SET current_filled = current_filled - 1
+            SET current_filled = 0
             WHERE id = ?
         ");
         $stmt->execute([$oldJobId]);

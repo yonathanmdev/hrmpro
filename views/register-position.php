@@ -165,7 +165,7 @@
                 <select name="sera_dereja" class="form-control form-control-sm" required>
                   <option value="" disabled selected>← ይምረጡ →</option>
                   <option>ሹመት</option>
-                  <?php foreach (['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX'] as $r): ?>
+                  <?php foreach (['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','Career'] as $r): ?>
                     <option><?= $r ?></option>
                   <?php endforeach; ?>
                 </select>

@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <base href="/HRM/">
+    <base href="<?= $_ENV['BASE_URL'] ?>/">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Log in — Warka Hub HRMS</title>
@@ -193,38 +193,49 @@ if (session_status() === PHP_SESSION_NONE) {
             border: 1px solid rgba(45,106,79,0.15);
         }
 
-        /* — Alert — */
-        .alert {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            background: var(--danger-lt);
-            border: 1px solid rgba(163,45,45,0.2);
-            border-left: 3px solid var(--danger);
-            border-radius: 10px;
-            padding: 12px 14px;
-            font-size: 14px;
-            color: var(--danger);
-            margin-bottom: 1.5rem;
-            animation: slideIn 0.25s ease;
-        }
+   /* — Alert — */
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--danger-lt);
+    border: 1px solid rgba(163,45,45,0.2);
+    border-left: 3px solid var(--danger);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--danger);
+    margin-bottom: 1.5rem;
+    animation: slideIn 0.25s ease;
+}
 
-        .alert i { margin-top: 2px; flex-shrink: 0; }
+.alert i { margin-top: 2px; flex-shrink: 0; }
 
-        .alert-close {
-            margin-left: auto;
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--danger);
-            opacity: 0.6;
-            padding: 0;
-            font-size: 16px;
-            line-height: 1;
-            flex-shrink: 0;
-        }
-        .alert-close:hover { opacity: 1; }
+.alert-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--danger);
+    opacity: 0.6;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.alert-close:hover { opacity: 1; }
 
+/* — Success variant — */
+.alert-success {
+    background: var(--success-lt, #d1fae5);
+    border-color: rgba(5, 150, 105, 0.2);
+    border-left-color: var(--success, #059669);
+    color: var(--success, #059669);
+}
+
+.alert-success .alert-close {
+    color: var(--success, #059669);
+}
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(-6px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -417,13 +428,22 @@ if (session_status() === PHP_SESSION_NONE) {
             </div>
 
             <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert" role="alert" id="error-alert">
-                <i class="fas fa-exclamation-circle"></i>
-                <span><?php echo htmlspecialchars($_SESSION['error']); ?></span>
-                <button class="alert-close" onclick="document.getElementById('error-alert').remove()" aria-label="Close">&times;</button>
-            </div>
-            <?php unset($_SESSION['error']); ?>
-            <?php endif; ?>
+    <div class="alert" role="alert" id="error-alert">
+        <i class="fas fa-exclamation-circle"></i>
+        <span><?php echo htmlspecialchars($_SESSION['error']); ?></span>
+        <button class="alert-close" onclick="document.getElementById('error-alert').remove()" aria-label="Close">&times;</button>
+    </div>
+    <?php unset($_SESSION['error']); ?>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['success'])): ?>
+    <div class="alert alert-success" role="alert" id="success-alert">
+        <i class="fas fa-check-circle"></i>
+        <span><?php echo htmlspecialchars($_SESSION['success']); ?></span>
+        <button class="alert-close" onclick="document.getElementById('success-alert').remove()" aria-label="Close">&times;</button>
+    </div>
+    <?php unset($_SESSION['success']); ?>
+<?php endif; ?>
 
             <form action="login_process" method="post" novalidate>
 

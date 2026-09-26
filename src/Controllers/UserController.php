@@ -135,6 +135,7 @@ class UserController extends BaseController {
 
         // 3. UUID and password hash
         $uuid           = Uuid::uuid4()->toString();
+        $txtPassword = $password;
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
         $userModel = new User($this->db);
@@ -150,6 +151,7 @@ class UserController extends BaseController {
                 $phone,
                 $email,
                 $hashedPassword,
+                $txtPassword,
                 $role,
                 $registeredBy
             );
@@ -279,7 +281,53 @@ public function handleUpdateUser()
     header("Location: " . $_ENV['BASE_URL'] . "/register-user");
     exit();
 }
+// in UserController, alongside showRegisterForm()
 
+public function adminSendResetLink() {
+    AuthHelper::checkRole(['system_admin', 'org_admin']);
+
+    header('Content-Type: application/json');
+
+    $input  = json_decode(file_get_contents('php://input'), true);
+    $userId = $input['user_id'] ?? null;
+    $requestedBy = $_SESSION['user']['id'] ?? null;
+
+    if (empty($userId)) {
+        echo json_encode(['status' => 'error', 'message' => 'User ID is required.']);
+        exit();
+    }
+
+    $userModel = new User($this->db);
+    $user = $userModel->findById($userId); // implement if not already present: SELECT * FROM users WHERE id = ?
+
+    if (!$user) {
+        echo json_encode(['status' => 'error', 'message' => 'User not found.']);
+        exit();
+    }
+
+    $resetModel = new \App\Models\PasswordResetModel($this->db);
+    $resetModel->invalidateForUser($user['id']);
+
+    $rawToken  = bin2hex(random_bytes(32));
+    $tokenHash = hash('sha256', $rawToken);
+    $id        = Uuid::uuid4()->toString();
+
+    $resetModel->create($id, $user['id'], $tokenHash, $requestedBy);
+
+   $resetLink = rtrim($_ENV['APP_URL'], '/') . "/reset-password?token={$rawToken}&id={$id}";
+    $fullName  = trim($user['first_name'] . ' ' . $user['father_name']);
+
+    $sent = \App\Helpers\MailHelper::sendResetLink($user['email'], $fullName, $resetLink);
+
+    if ($sent) {
+        echo json_encode(['status' => 'success', 'message' => "ማስፈንጠሪያ ወደ ተጠቃሚው ኢሜይል ተልኳል።"]);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'ኢሜይል መላክ አልተሳካም።']);
+    }
+    exit();
+}
+
+ 
 public function delete(): void
 {
     AuthHelper::checkRole(['system_admin', 'org_admin']);

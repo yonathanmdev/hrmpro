@@ -57,6 +57,8 @@ class AuthController extends BaseController {
         $_SESSION['user']['phone_number'] = !empty($branchData['phone_number']) ? $branchData['phone_number'] : null;
         $_SESSION['user']['postal_code'] = !empty($branchData['postal_code']) ? $branchData['postal_code'] : null;
         $_SESSION['user']['logo_url'] = !empty($branchData['logo_url']) ? $branchData['logo_url'] : null;
+       
+
     } else {
         // Fallback defaults for system-wide/global administrators
         $_SESSION['user']['branch_name']     = 'ዋናው መስሪያ ቤት (Headquarters)';
@@ -108,6 +110,89 @@ class AuthController extends BaseController {
         header("Location: " . $_ENV['BASE_URL'] . "/login");
         exit();
     }
+}
+// GET /reset-password?token=...&id=...
+    public function showResetForm() {
+        $token = $_GET['token'] ?? '';
+        $id    = $_GET['id'] ?? '';
+
+        if (empty($token) || empty($id)) {
+            die("Invalid or missing reset link.");
+        }
+
+        $resetModel =new \App\Models\PasswordResetModel($this->db);
+        $tokenHash = hash('sha256', $token);
+        $record = $resetModel->findValidByHash($tokenHash);
+
+        if (!$record || $record['id'] !== $id) {
+            die("This reset link is invalid or has expired.");
+        }
+
+        $this->renderPrintable('auth/reset-password', [
+            'title' => 'የይለፍ ቃል ዳግም አስጀምር',
+            'token' => $token,
+            'id'    => $id,
+        ]);
+    }
+
+    // POST /reset-password-process
+public function handleReset() {
+    $token    = $_POST['token'] ?? '';
+    $id       = $_POST['id'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $confirm  = $_POST['password_confirm'] ?? '';
+
+    if (empty($token) || empty($id)) {
+        die("Invalid reset request.");
+    }
+
+    $passwordErrors = [];
+
+    if (strlen($password) < 8) {
+        $passwordErrors[] = 'ቢያንስ 8 ፊደላት';
+    }
+    if (!preg_match('/[a-z]/', $password)) {
+        $passwordErrors[] = 'ትንሽ ፊደል (a-z)';
+    }
+    if (!preg_match('/[A-Z]/', $password)) {
+        $passwordErrors[] = 'ትልቅ ፊደል (A-Z)';
+    }
+    if (!preg_match('/[0-9]/', $password)) {
+        $passwordErrors[] = 'ቁጥር (0-9)';
+    }
+    if (!preg_match('/[^A-Za-z0-9]/', $password)) {
+        $passwordErrors[] = 'የተለየ ምልክት (!@#$%...)';
+    }
+
+    if (!empty($passwordErrors)) {
+        $_SESSION['error'] = 'የይለፍ ቃል የሚከተሉትን ማካተት አለበት: ' . implode(', ', $passwordErrors);
+        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/reset-password?token={$token}&id={$id}");
+        exit();
+    }
+
+    if ($password !== $confirm) {
+        $_SESSION['error'] = 'የይለፍ ቃላት አይመሳሰሉም።';
+        header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/reset-password?token={$token}&id={$id}");
+        exit();
+    }
+
+    $resetModel = new \App\Models\PasswordResetModel($this->db);
+    $tokenHash = hash('sha256', $token);
+    $record = $resetModel->findValidByHash($tokenHash);
+
+    if (!$record || $record['id'] !== $id) {
+        die("This reset link is invalid or has expired.");
+    }
+   $txtPassword = $password;
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+    $userModel = new \App\Models\User($this->db);
+    $userModel->updatePassword($record['user_id'], $hashedPassword, $txtPassword);
+    $resetModel->markUsed($record['id']);
+
+    $_SESSION['success'] = 'የይለፍ ቃልዎ በትክክል ተቀይሯል። ወደ ሲስተሙ ለመግባት አዲስ ያስገቡትን የይለፍ ቃል ይጠቀሙ።';
+    header("Location: " . rtrim($_ENV['BASE_URL'], '/') . "/login");
+    exit();
 }
     /**
      * መውጫ (Logout)
