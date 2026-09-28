@@ -11,3 +11,4 @@ storage/
 /public/.htaccess
 .env
 *.sql
+.env
